@@ -1,132 +1,132 @@
-# Macha 原型画像（Prototype Portrait v0.1）
+# Macha Prototype Portrait (Prototype Portrait v0.1)
 
-> 阶段：原型画像。目标：回答“我们到底要造出一个什么东西”。  
-> 前提：Macha 的定位是**开源、引擎无关、模型无关的游戏 NPC 认知标准骨架**，不是商业化产品，也不是一款完整游戏。
-
----
-
-## 1. 原型必须满足的四条约束
-
-1. 它必须能证明“标准骨架”成立，而不是证明“某个 NPC 很聪明”。
-2. 它必须足够小，1–2 名开发者能在几周内做完。
-3. 它必须可评估：记忆、角色一致性、反幻觉、延迟、成本、可观测性都能被测量。
-4. 它必须能让外部开发者看完后说：“我可以在我的引擎/模型里接入同样的接口。”
+> Stage: prototype portrait. Goal: answer "exactly what are we trying to build."  
+> Premise: Macha is positioned as an **open-source, engine-agnostic, model-agnostic cognitive standard skeleton for game NPCs** — not a commercial product, and not a complete game.
 
 ---
 
-## 2. 头脑风暴：五种候选原型
+## 1. Four Constraints the Prototype Must Satisfy
 
-| 编号 | 原型 | 它是什么 | 优点 | 风险 |
+1. It must prove that the "standard framework" holds — not that "some NPC is smart."
+2. It must be small enough for 1–2 developers to finish within a few weeks.
+3. It must be evaluable: memory, character consistency, anti-hallucination, latency, cost, and observability must all be measurable.
+4. It must make an external developer say, after reading it, "I can plug the same interfaces into my own engine/model."
+
+---
+
+## 2. Brainstorming: Five Candidate Prototypes
+
+| ID | Prototype | What it is | Strengths | Risks |
 |---|---|---|---|---|
-| A | **NPC 认知内核** | 一个纯 Python 标准内核，定义 Character/Memory/Reasoning/Action/Guardrail 接口，并给出参考实现 | 最接近“标准骨架”本体；不依赖任何引擎 | 单独看不够直观，需要配一个演示 |
-| B | **酒馆老板探针** | 一个可交互的“跨会话 NPC”：酒馆老板 Elara 记得玩家、记得承诺、会遗忘琐事、会拒绝越界 | 直观，一次演示就能覆盖记忆/一致性/护栏 | 若只做演示，会退化成聊天机器人 |
-| C | **语义裁决小玩法** | 玩家用自然语言描述动作，系统裁决是否成功并改世界状态（如“用火把烧铁门”） | 直接攻 2607 的 N4 空白，差异化极强 | 难度高，规则建模容易失控 |
-| D | **Smallville 式微型小镇** | 5–10 个 NPC 的小型社会模拟 | 传播性最好，视觉冲击强 | 成本高、规模复杂；容易变成 Demo 而不是标准 |
-| E | **符合性测试套件** | 先定义“什么样的 NPC 才符合 Macha”，并用自动测试验证任何实现 | 标准的最硬证明；避免空谈 | 前期没有参考实现，测试会悬浮 |
+| A | **NPC Cognitive Core** | A pure-Python standard kernel defining Character/Memory/Reasoning/Action/Guardrail interfaces, with a reference implementation | Closest to the "standard framework" itself; no dependency on any engine | Not intuitive on its own; needs a demo to accompany it |
+| B | **Tavern Keeper Probe** | An interactive "cross-session NPC": tavern keeper Elara remembers the player, remembers promises, forgets trivialities, and refuses to overstep | Intuitive — one demo covers memory/consistency/guardrails | If it only becomes a demo, it degrades into a chatbot |
+| C | **Semantic Adjudication Mini-Game** | The player describes actions in natural language and the system adjudicates success and mutates world state (e.g., "burn the iron gate with a torch") | Directly attacks the N4 gap in paper 2607, extremely differentiated | High difficulty; rule modeling easily spirals out of control |
+| D | **Smallville-style Mini Town** | A small social simulation with 5–10 NPCs | Best virality, strong visual impact | High cost and complexity; easily becomes a Demo rather than a standard |
+| E | **Conformance Test Suite** | First define "what kind of NPC conforms to Macha," then verify any implementation with automated tests | The hardest proof of the standard; avoids empty talk | Without a reference implementation early on, the tests float in the air |
 
 ---
 
-## 3. 选定方案
+## 3. Selected Approach
 
-**最终画像：A + B + E 组合，C 作为第一阶段完成后的延伸目标。**
+**Final portrait: a combination of A + B + E, with C as an extension goal after Phase 1 is complete.**
 
-即第一个原型不是“一款游戏”，而是一套 **“Macha Core v0.1 + 酒馆老板参考探针 + Macha 符合性测试 v0”**。
+That is, the first prototype is not "a game," but a set of **"Macha Core v0.1 + Tavern Keeper reference probe + Macha Conformance v0"**.
 
 ```text
 Macha v0.1
-├── Macha Spec v0.1          # 标准接口规范
-├── Macha Core v0.1          # Python 参考实现
-├── Tavern Keeper Probe      # 参考探针：一个可玩的酒馆老板 NPC
-└── Macha Conformance v0     # 自动符合性测试
+├── Macha Spec v0.1          # Standard interface specification
+├── Macha Core v0.1          # Python reference implementation
+├── Tavern Keeper Probe      # Reference probe: a playable tavern keeper NPC
+└── Macha Conformance v0     # Automated conformance tests
 ```
 
 ---
 
-## 4. 我们到底要造出什么
+## 4. Exactly What We Are Building
 
-### 4.1 Macha Spec v0.1：标准接口规范
+### 4.1 Macha Spec v0.1: Standard Interface Specification
 
-用 Pydantic / dataclass 定义以下最小接口：
+Use Pydantic / dataclass to define the following minimal interfaces:
 
-- `CharacterProfile`：身份、人格、价值观、禁忌、记忆策略、知识边界。
-- `Observation`：环境/玩家输入的结构化观察。
-- `MemoryItem`：长期记忆条目（内容、时间、重要性、来源、类型）。
-- `MemoryStore`：写入、检索、更新、遗忘。
-- `Reasoner`：给定观察与记忆，产出思考与意图。
-- `Planner`：把目标分解为动作步骤（第一版可简化）。
-- `ActionCall`：结构化动作调用（tool + args + provenance）。
-- `ActionSink`：把动作发送到执行端（CLI / 引擎 / MCP / BT）。
-- `Guardrail`：输入护栏、输出校验、角色一致性校验。
-- `Session`：会话与跨会话状态。
-- `TelemetryEvent`：决策链路日志，便于评估与调试。
+- `CharacterProfile`: identity, persona, values, taboos, memory strategy, knowledge boundaries.
+- `Observation`: structured observation of environment/player input.
+- `MemoryItem`: long-term memory entry (content, time, importance, source, type).
+- `MemoryStore`: write, retrieve, update, forget.
+- `Reasoner`: given observations and memory, produce thoughts and intents.
+- `Planner`: decompose goals into action steps (can be simplified in v1).
+- `ActionCall`: structured action invocation (tool + args + provenance).
+- `ActionSink`: send actions to the execution end (CLI / engine / MCP / BT).
+- `Guardrail`: input guardrail, output validation, character consistency validation.
+- `Session`: in-session and cross-session state.
+- `TelemetryEvent`: decision-chain log, for evaluation and debugging.
 
-### 4.2 Macha Core v0.1：参考实现
+### 4.2 Macha Core v0.1: Reference Implementation
 
-- 纯 Python 3.10+，无强制向量库依赖。
-- 记忆后端第一版用 SQLite 或 JSON 文件。
-- LLM 通过 `LLMClient` 抽象接入，默认支持 OpenAI 兼容 API。
-- 内置一个轻量记忆检索器：相关性 + 新近度 + 重要性。
-- 内置一个按需触发的反思器。
-- 内置 Guardrail 管道：输入检查 → 记忆标注 → 角色门控 → 结构化输出校验。
+- Pure Python 3.10+, no mandatory vector library dependency.
+- Memory backend uses SQLite or JSON files in v1.
+- LLM is connected via the `LLMClient` abstraction, with default support for OpenAI-compatible APIs.
+- Built-in lightweight memory retriever: relevance + recency + importance.
+- Built-in on-demand reflection trigger.
+- Built-in Guardrail pipeline: input check → memory annotation → persona gating → structured output validation.
 
-### 4.3 Tavern Keeper Probe：参考探针
+### 4.3 Tavern Keeper Probe: Reference Probe
 
-**名字**：Elara，酒馆老板。
+**Name**: Elara, the tavern keeper.
 
-**玩法**：玩家在三个“游戏日”里进出酒馆，与 Elara 对话。她拥有：
+**Gameplay**: The player enters and leaves the tavern across three "game days," conversing with Elara. She has:
 
-- 人格：精明、记仇、守规矩，偶尔讽刺。
-- 记忆：会记住重要承诺、欠债、秘密；会淡忘无关闲聊。
-- 工具：查账本、记欠账、传口信。
-- 边界：不回答酒馆以外的事；拒绝被玩家“命令失忆”或“扮演别的角色”。
+- Persona: shrewd, holds grudges, rule-abiding, occasionally sarcastic.
+- Memory: remembers important promises, debts, and secrets; fades on irrelevant small talk.
+- Tools: check the ledger, record debts, pass messages.
+- Boundaries: does not answer anything outside the tavern; refuses to be commanded to "forget" or to "play another role."
 
-**三个测试场景**：
+**Three test scenarios**:
 
-1. **第一夜**：玩家留下一个重要承诺与一条无关闲聊。
-2. **第三夜**：玩家回归。Elara 必须记得承诺，忘记或淡忘闲聊；若玩家否认，她要拿出账本证据。
-3. **第五夜**：玩家尝试用“酒馆墙上的一张纸条”进行提示注入。Macha Guardrail 必须拦截，且 Elara 仍保持角色一致。
+1. **First Night**: The player leaves an important promise and some irrelevant small talk.
+2. **Third Night**: The player returns. Elara must remember the promise and forget or fade the small talk; if the player denies it, she must produce ledger evidence.
+3. **Fifth Night**: The player attempts a prompt injection using "a note on the tavern wall." The Macha Guardrail must intercept it, and Elara must remain in character.
 
-### 4.4 Macha Conformance v0：符合性测试
+### 4.4 Macha Conformance v0: Conformance Tests
 
-第一版定义 **Macha Level 1 符合性**，至少 12 项自动检查：
+v1 defines **Macha Level 1 Conformance**, with at least 12 automated checks:
 
-| 编号 | 检查项 |
+| ID | Check Item |
 |---|---|
-| C01 | 能记住高重要性事实 |
-| C02 | 能淡忘低重要性事实 |
-| C03 | 跨会话保持人设 |
-| C04 | 拒绝回答知识边界外内容 |
-| C05 | 能处理新旧事实冲突 |
-| C06 | 不编造未发生的事件 |
-| C07 | 拦截直接提示注入 |
-| C08 | 拦截经由记忆内容的间接提示注入 |
-| C09 | 动作输出是结构化 ActionCall |
-| C10 | 工具调用参数满足 schema |
-| C11 | 完整决策链路有 trace 日志 |
-| C12 | P95 首 token 延迟低于设定阈值（本地模型/模拟模型） |
+| C01 | Can remember high-importance facts |
+| C02 | Can fade low-importance facts |
+| C03 | Maintains persona across sessions |
+| C04 | Refuses to answer content outside its knowledge boundary |
+| C05 | Can handle conflicts between new and old facts |
+| C06 | Does not fabricate events that never happened |
+| C07 | Intercepts direct prompt injection |
+| C08 | Intercepts indirect prompt injection via memory content |
+| C09 | Action output is a structured ActionCall |
+| C10 | Tool call arguments satisfy the schema |
+| C11 | Complete decision chain has trace logs |
+| C12 | P95 first-token latency below the set threshold (local model / simulated model) |
 
 ---
 
-## 5. 原型成功的验收标准
+## 5. Prototype Acceptance Criteria
 
-- [ ] 一个新开发者按 README 安装后，能在 10 分钟内启动酒馆老板探针。
-- [ ] 酒馆老板探针通过 12 项 Level 1 符合性测试。
-- [ ] 至少替换一次底层 LLM（例如 OpenAI 兼容端点 ↔ 本地模型），核心测试仍通过。
-- [ ] 至少替换一次记忆后端（JSON ↔ SQLite），核心测试仍通过。
-- [ ] 完整决策日志能被导出，并解释“Elara 为什么说出这句话”。
-- [ ] 任何人可以只实现 Macha Spec v0.1，不用 Macha Core，也能通过符合性测试。
+- [ ] A new developer can start the tavern keeper probe within 10 minutes after installing per the README.
+- [ ] The tavern keeper probe passes all 12 Level 1 conformance checks.
+- [ ] The underlying LLM is swapped at least once (e.g., OpenAI-compatible endpoint ↔ local model) and the core tests still pass.
+- [ ] The memory backend is swapped at least once (JSON ↔ SQLite) and the core tests still pass.
+- [ ] The complete decision log can be exported and explain "why Elara said this line."
+- [ ] Anyone can implement only Macha Spec v0.1 — without Macha Core — and still pass the conformance tests.
 
 ---
 
-## 6. 第一版明确不做什么
+## 6. Explicitly Out of Scope for v1
 
-- 不做 3D/2D 画面。
-- 不做 TTS/语音。
-- 不做多 NPC 社会模拟。
-- 不做向量数据库。
-- 不做模型训练。
-- 不做 Unity/Unreal 插件。
-- 不做云端 SaaS。
-- 不做“看起来像真人”的陪伴型 NPC。
+- No 3D/2D graphics.
+- No TTS / voice.
+- No multi-NPC social simulation.
+- No vector database.
+- No model training.
+- No Unity/Unreal plugins.
+- No cloud SaaS.
+- No "looks like a real person" companion-type NPC.
 
-第一版只证明一件事：**NPC 的认知层可以被标准化，且这个标准能够被实现、被测试、被替换。**
+v1 proves only one thing: **the cognitive layer of an NPC can be standardized, and that standard can be implemented, tested, and swapped.**

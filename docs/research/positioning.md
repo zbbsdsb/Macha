@@ -1,28 +1,38 @@
-# 研究定位：四篇论文与 Macha 的关系
+# Research Positioning: The Relationship Between Four Papers and Macha
 
-## 四篇论文的层级差异
+## Hierarchical Differences Among the Four Papers
 
-| 论文 | 定位 | 对 Macha 的启示 |
+| Paper | Positioning | Implication for Macha |
 |---|---|---|
-| 2304.03442v2（Smallville） | 具体实现原型 | NPC 需要“记忆流 + 反思 + 规划”三大件，才能产生可信社交行为 |
-| 2404.02039v5（Hu 等） | 系统架构综述 | 用统一的“感知—记忆—推理—行动”框架来设计 NPC 系统 |
-| 2402.18659v5（Gallotta 等） | 应用角色综述 | 先明确 NPC 在游戏中承担的角色，再决定技术选型 |
-| 2607.00527v2（AI-Native） | 设计本体论 | 用“移除测试”判断哪些 AI 能力真正重构了玩法 |
+| 2304.03442v2 (Smallville) | Concrete implementation prototype | NPCs need the three pillars of "memory stream + reflection + planning" to produce believable social behavior |
+| 2404.02039v5 (Hu et al.) | System architecture survey | Design the NPC system using a unified "perception—memory—reasoning—action" framework |
+| 2402.18659v5 (Gallotta et al.) | Applied-role survey | First clarify the role the NPC plays in the game, then decide on technology selection |
+| 2607.00527v2 (AI-Native) | Design ontology | Use the "removal test" to judge which AI capabilities truly restructure gameplay |
 
-## Macha 的初步定位
+## Macha's Preliminary Positioning
 
-Macha 应聚焦在：
+Macha should focus on:
 
-- **底层**：可复用的 NPC 认知架构（记忆、反思、规划）。
-- **接口**：能接入不同游戏引擎的感知/行动层。
-- **评估**：不仅看任务完成率，还要看角色一致性、长期记忆稳定性和玩家可信度。
+- **Foundation**: a reusable NPC cognitive architecture (memory, reflection, planning).
+- **Interface**: a perception / action layer that can connect to different game engines.
+- **Evaluation**: not just task completion rate, but also character consistency, long-term memory stability, and player-perceived believability.
 
-## 我们建议的切入点
+## The Core Positioning of the Paper
 
-从四篇论文交叉来看，最值得先做的是：
+The core contribution of the paper is to **redefine the problem, not to deliver a final implementation**.
 
-1. **长期世界模型记忆**：把对话流水账升级为结构化因果记忆。
-2. **角色一致性**：让 NPC 在长时间交互中保持稳定人格。
-3. **可插拔架构**：先提供清晰的 Python 接口，再逐步接入具体 LLM 和游戏引擎。
+We are not writing a "game engine architecture paper," nor an "AetherFlow technical report." Our initial question is:
 
-> 详细方向见 [direction.md](direction.md)。
+> Answer from the player's perspective: what is the game Agent we long for? Why do existing Agents break our immersion? What should a standard skeleton guarantee?
+
+Therefore, the value of the paper lies in proposing a new way of looking at the "player—NPC—world" relationship, and in providing a theoretical direction for Macha. Questions at the implementation level (in-world embedded computation network vs. character extension, how to design the macro simulation layer, etc.) belong to later phases and should not become the main body of the paper.
+
+## Our Suggested Entry Points
+
+Looking across the intersection of the four papers, the most worthwhile things to do first are:
+
+1. **Long-term world-model memory**: upgrade the dialogue transcript into structured causal memory.
+2. **Character consistency**: let the NPC maintain a stable persona over long interactions.
+3. **Pluggable architecture**: first provide clear Python interfaces, then gradually connect specific LLMs and game engines.
+
+> See [direction.md](direction.md) for detailed direction.

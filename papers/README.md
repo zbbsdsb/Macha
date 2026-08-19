@@ -1,30 +1,30 @@
 # Papers
 
-本目录用于存放 Macha 团队自己撰写与维护的论文、技术报告和思想草案。
+This directory holds papers, technical reports, and idea drafts authored and maintained by the Macha team.
 
-## 命名约定
+## Naming Convention
 
-- 文件名使用英文 slug，便于跨平台与 Git 管理。
-- 中文标题放在文件头部 YAML metadata 中。
-- 同一篇论文的修订版本在同一文件中更新，不创建 `v2` 副本。
+- File names use English slugs to ease cross-platform and Git management.
+- The Chinese title is placed in the YAML metadata at the top of the file.
+- Revised versions of the same paper are updated within the same file; do not create `v2` copies.
 
-## 文件状态说明
+## File Status Legend
 
-| 状态 | 含义 |
+| Status | Meaning |
 |---|---|
-| `draft` | 正在起草，内容尚未完整 |
-| `review` | 已完成初稿，等待内部评审 |
-| `submitted` | 已投稿 |
-| `published` | 已发表 |
+| `draft` | Being drafted; content is not yet complete |
+| `review` | First draft complete; awaiting internal review |
+| `submitted` | Submitted for publication |
+| `published` | Published |
 
-## 当前文件
+## Current Files
 
-| 文件 | 标题 | 状态 |
+| File | Title | Status |
 |---|---|---|
-| [2026-crossing-the-game-agent-gap.md](2026-crossing-the-game-agent-gap.md) | 跨越游戏Agent的那个鸿沟 | draft |
+| [2026-crossing-the-game-agent-gap.md](2026-crossing-the-game-agent-gap.md) | Crossing the Game-Agent Gap | draft |
 
-## 提交规则
+## Submission Rules
 
-1. 每篇论文单独一个 `.md` 文件；若需要图片，放在 `papers/assets/<论文slug>/` 下。
-2. 初稿先写清楚：问题、核心概念、论证链、结论；不要过早美化措辞。
-3. 每次更新在文件末尾追加“修订记录”。
+1. Each paper is a single `.md` file; if images are needed, place them under `papers/assets/<paper-slug>/`.
+2. The first draft should make the problem, core concepts, argument chain, and conclusions clear; do not polish wording too early.
+3. Append a "Revision Log" at the end of the file with each update.

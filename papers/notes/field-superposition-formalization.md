@@ -1,181 +1,181 @@
-# 场域叠加：概念形式化笔记
+# Field Superposition: Concept Formalization Notes
 
-> 用途：为《跨越游戏Agent的那个鸿沟》一文中的“场域叠加”提供可进入论文的正式定义、记号和例子。
-> 状态：讨论稿，不直接等同于论文正文。
-
----
-
-## 1. 对“发出者视角 / 接收者视角”的理解
-
-- **发出者视角 = 信息源头视角**。传统游戏 AI 先对信息做来源分类：自然信息、社会信息，再给不同权重。它回答的问题是：“这条信息是哪里发出的？我应该给它多大权重？”
-- **接收者视角 = 信息处理视角**。场域叠加回答的是另一个问题：“同一条信息，落在谁的认知场里？这个认知场由哪些视角叠加而成？信息在这里被解释成了什么？”
-
-一句话总结：
-
-> 传统做法是“按发出者拆解信息”，Macha 的场域叠加是“按接收者重构信息”。
+> Purpose: To provide formal definitions, notation, and examples for "field superposition" in the paper "Crossing the Game-Agent Gap" that can enter the paper.
+> Status: Discussion draft, not directly equivalent to the paper body.
 
 ---
 
-## 2. 建议的正式定义
+## 1. Understanding "Sender Perspective / Receiver Perspective"
 
-### 2.1 事件与信息源
+- **Sender perspective = information-source perspective**. Traditional game AI first classifies information by source: natural information, social information, then assigns different weights. The question it answers is: "Where was this information sent from? What weight should I give it?"
+- **Receiver perspective = information-processing perspective**. Field superposition answers a different question: "Which cognitive field does the same information fall into? What perspectives does this cognitive field superpose from? What is the information interpreted as here?"
 
-设游戏世界中发生一个事件：
+One-sentence summary:
+
+> The traditional approach is "decompose information by sender," while Macha's field superposition is "reconstruct information by receiver."
+
+---
+
+## 2. Proposed Formal Definitions
+
+### 2.1 Events and Information Sources
+
+Let an event occur in the game world:
 
 \[
 e \in E
 \]
 
-事件的**信息源标记**为：
+The **information-source marker** of the event is:
 
 \[
 s(e) \in \{N, S, M\}
 \]
 
-其中 \(N\) 表示自然源（环境、物理、物品），\(S\) 表示社会源（关系、声誉、组织），\(M\) 表示混合源。
+where \(N\) denotes a natural source (environment, physics, items), \(S\) denotes a social source (relations, reputation, organization), and \(M\) denotes a mixed source.
 
-传统源域模型可写为：
+The traditional source-domain model can be written as:
 
 \[
 I(e) = \alpha(e) I_S(e) + \beta(e) I_N(e)
 \]
 
-其中 \(\alpha, \beta\) 是源权重。这个模型的特点是：
+where \(\alpha, \beta\) are source weights. The characteristics of this model are:
 
-- 它在信息进入主体之前完成；
-- 它不依赖接收者是谁；
-- 它假设信息的意义主要由来源决定。
+- It is completed before the information enters the subject;
+- It does not depend on who the receiver is;
+- It assumes the meaning of the information is mainly determined by its source.
 
-### 2.2 认知场域
+### 2.2 Cognitive Field
 
-对任意主体 \(a\)，定义其**认知场域**：
+For any subject \(a\), define its **cognitive field**:
 
 \[
 F_a = (W_a, \Phi_a, T_a, V_a)
 \]
 
-- \(W_a\)：主体可观察的窗口，即哪些事件能够进入它的认知；
-- \(\Phi_a\)：解释函数，把事件映射为主体的认知意义；
-- \(T_a\)：时间与记忆层，影响事件如何与过去叠加；
-- \(V_a\)：价值与人格层，决定事件在主体世界中的评价。
+- \(W_a\): the subject's observable window, i.e. which events can enter its cognition;
+- \(\Phi_a\): the interpretation function, mapping events into the subject's cognitive meaning;
+- \(T_a\): the temporal and memory layer, affecting how events superpose with the past;
+- \(V_a\): the value and persona layer, determining how events are evaluated within the subject's world.
 
-主体对事件的处理不是简单加权，而是：
+The subject's processing of an event is not simple weighting, but:
 
 \[
 m_a(e) = \Phi_a(e; T_a, V_a)
 \]
 
-\(m_a(e)\) 是事件 \(e\) 在主体 \(a\) 的场域中被重构后的意义。
+\(m_a(e)\) is the meaning of event \(e\) after it is reconstructed within the subject \(a\)'s field.
 
-### 2.3 场域叠加
+### 2.3 Field Superposition
 
-玩家的场域至少由两层叠加：
+The player's field is superposed from at least two layers:
 
 \[
 F_{player} = F_{in} \oplus F_{meta}
 \]
 
-- \(F_{in}\)：游戏内视角。玩家作为游戏世界中的一个行动者。
-- \(F_{meta}\)：游戏外全局视角。玩家作为知道系统、玩法、任务、社交语境的外部观察者。
+- \(F_{in}\): the in-game perspective. The player as an actor within the game world.
+- \(F_{meta}\): the out-of-game global perspective. The player as an external observer who knows the system, gameplay, quests, and social context.
 
-NPC 的场域通常是：
+The NPC's field is typically:
 
 \[
 F_{npc} \subseteq F_{in}
 \]
 
-即 NPC 只在游戏内视角中处理信息。
+That is, the NPC processes information only within the in-game perspective.
 
-**关键点**：\(\oplus\) 不是标量相加，而是两个参考系同时作用于同一事件。同一条信息会在两个场中分别获得意义，并可能产生冲突。例如：
+**Key point**: \(\oplus\) is not scalar addition, but two reference frames acting simultaneously on the same event. The same piece of information acquires meaning separately in the two fields, and may produce conflict. For example:
 
-- \(F_{in}\) 说：“这个 NPC 很固执。”
-- \(F_{meta}\) 说：“这个 NPC 是脚本写的，只会重复三句话。”
+- \(F_{in}\) says: "This NPC is very stubborn."
+- \(F_{meta}\) says: "This NPC is scripted and only repeats three lines."
 
-玩家始终同时经历这两种解释，而 NPC 只经历第一种。
+The player always experiences both interpretations simultaneously, while the NPC experiences only the first.
 
-### 2.4 鸿沟的形式化
+### 2.4 Formalization of the Gap
 
-定义玩家与 NPC 之间的**视角鸿沟**：
+Define the **perspective gap** between player and NPC:
 
 \[
 G = F_{player} \setminus F_{npc}
 \]
 
-更准确地说：
+More precisely:
 
 \[
 G \approx F_{meta}
 \]
 
-它不是“NPC 少接收了某种信息”，而是“NPC 缺少一层信息处理场”。因此，鸿沟不能靠增加输入权重、增加感知来源来填补，只能通过重新设计 NPC 的信息处理结构来回应。
+It is not that "the NPC receives less of some kind of information," but that "the NPC lacks a layer of information-processing field." Therefore, the gap cannot be filled by increasing input weights or increasing perception sources; it can only be addressed by redesigning the NPC's information-processing structure.
 
 ---
 
-## 3. 两个关键命题
+## 3. Two Key Propositions
 
-**命题 1：源域分解是接收者无关的；场域叠加是接收者相关的。**
+**Proposition 1: Source-domain decomposition is receiver-independent; field superposition is receiver-dependent.**
 
 \[
 I(e) = \alpha I_S(e) + \beta I_N(e)
 \]
 
-对任意接收者都相同；但
+is the same for any receiver; but
 
 \[
 m_a(e) = \Phi_a(e; T_a, V_a)
 \]
 
-因主体不同而不同。
+differs depending on the subject.
 
-**命题 2：当存在多视角场时，源域权重模型退化为场域叠加的一个特例。**
+**Proposition 2: When multiple perspective fields exist, the source-domain weight model degenerates into a special case of field superposition.**
 
-只有当所有主体共享同一 \(F\) 时，信息意义才能被全局权重替代。游戏 NPC 的失败，正是因为开发者用“统一源域”去处理“本应分散在场域中的意义”。
+Only when all subjects share the same \(F\) can the meaning of information be replaced by global weights. The failure of game NPCs is precisely because developers used a "unified source domain" to process "meanings that should have been dispersed across fields."
 
-**命题 3（本文核心）**：
+**Proposition 3 (core of this paper)**:
 
-> 游戏 Agent 的真实性鸿沟，不是信息缺失，而是场域缺失。
+> The authenticity gap of the game agent is not missing information, but a missing field.
 
-NPC 与玩家的差别不在于 NPC 不知道足够多，而在于玩家在一个叠加场中处理信息，NPC 在一个单一场中处理信息。
+The difference between NPC and player lies not in the NPC not knowing enough, but in that the player processes information within a superposed field while the NPC processes information within a single field.
 
 ---
 
-## 4. 可写进论文的对比表
+## 4. Comparison Table That Can Enter the Paper
 
-| 维度 | 发出者视角（源域分解） | 接收者视角（场域叠加） |
+| Dimension | Sender Perspective (Source-Domain Decomposition) | Receiver Perspective (Field Superposition) |
 |---|---|---|
-| 回答的问题 | 信息从哪里来 | 信息在谁的认知中成为意义 |
-| 运算对象 | 信息源 | 认知场 |
-| 方向 | 发出 → 接收 | 接收 → 解释 → 行动 |
-| 典型形式 | 权重、注意力、多域融合 | 场域、视角、解释函数 |
-| 是否依赖主体 | 否 | 是 |
-| 失败模式 | 权重错配 | 场域缺失或场域冲突 |
-| 对应游戏 AI | Utility、感知权重、信息过滤 | Macha 的记忆/人格/推理结构 |
+| Question answered | Where does the information come from | In whose cognition does the information become meaning |
+| Object of operation | Information source | Cognitive field |
+| Direction | Sender → receiver | Receiver → interpretation → action |
+| Typical form | Weights, attention, multi-domain fusion | Fields, perspectives, interpretation function |
+| Depends on subject | No | Yes |
+| Failure mode | Weight mismatch | Missing field or field conflict |
+| Corresponding game AI | Utility, perception weights, information filtering | Macha's memory / persona / reasoning structure |
 
 ---
 
-## 5. 一个具体例子
+## 5. A Concrete Example
 
-事件 \(e\)：玩家连续三次在夜间进入同一家酒馆，只和同一个 NPC 说话。
+Event \(e\): The player enters the same tavern three nights in a row and only speaks with the same NPC.
 
-- **源域模型**：
-  - 自然源：时间、位置、动作频率；
-  - 社会源：与 NPC 的熟悉度增加；
-  - 输出：\(I(e) = 0.3 I_N + 0.7 I_S\)，NPC 对玩家更友好。
+- **Source-domain model**:
+  - Natural source: time, location, action frequency;
+  - Social source: increased familiarity with the NPC;
+  - Output: \(I(e) = 0.3 I_N + 0.7 I_S\), the NPC is friendlier to the player.
 
-- **场域叠加模型**：
-  - NPC 场域 \(F_{npc}\)：这是“一个夜夜光顾的熟客”，并和自己的记忆、债务、对陌生人的警惕叠加。
-  - 玩家游戏内场 \(F_{in}\)：这是“我要提高这个 NPC 的好感度”。
-  - 玩家游戏外场 \(F_{meta}\)：这是“任务系统大概率有隐藏奖励；这个 NPC 是关键角色；我在进行资源投入”。
-  - 玩家同时用 \(F_{in} \oplus F_{meta}\) 评价 NPC。NPC 的任何一句对白都被放在两层场中解释。NPC 若只能处理 \(F_{npc}\)，玩家就会感到“它不像一个真实存在的人”。
+- **Field-superposition model**:
+  - NPC field \(F_{npc}\): this is "a regular who comes every night," superposed with its own memory, debts, and wariness of strangers.
+  - Player in-game field \(F_{in}\): this is "I want to raise this NPC's favorability."
+  - Player out-of-game field \(F_{meta}\): "the quest system likely has hidden rewards; this NPC is a key character; I am making a resource investment."
+  - The player evaluates the NPC simultaneously with \(F_{in} \oplus F_{meta}\). Any line of dialogue from the NPC is interpreted within the two layers. If the NPC can only process \(F_{npc}\), the player will feel "it is not like a real, existing person."
 
 ---
 
-## 6. 如何与“真实的必要”连接
+## 6. How to Connect with "The Necessity of Authenticity"
 
-“真实”不是 NPC 拥有更多信息，而是：
+"Authenticity" is not that the NPC possesses more information, but:
 
-1. NPC 有明确且稳定的场域边界；
-2. 场域内的解释、记忆与行动彼此一致；
-3. 玩家的叠加场能够理解 NPC 的单一场，并感到其行为“像真的”。
+1. The NPC has a clear and stable field boundary;
+2. The interpretation, memory, and action within the field are mutually consistent;
+3. The player's superposed field can understand the NPC's single field, and feel its behavior is "like real."
 
-因此，跨越鸿沟的目标不是让 NPC 获得玩家的游戏外视角，而是让 NPC 的认知架构从“源域加权”升级为“场域处理”，并且把这个处理过程做成可观察、可理解、可设计的结构。
+Therefore, the goal of crossing the gap is not to let the NPC acquire the player's out-of-game perspective, but to upgrade the NPC's cognitive architecture from "source-domain weighting" to "field processing," and to make this processing observable, understandable, and designable.

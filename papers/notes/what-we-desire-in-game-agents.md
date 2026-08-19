@@ -1,183 +1,183 @@
-# 深度讨论：我们渴望的游戏 Agent 是什么
+# In-Depth Discussion: What Is the Game Agent We Desire
 
-> 状态：开放讨论笔记，供团队后续讨论。
-> 前提：暂时保留“场域叠加”作为切片之一，不把它当作全貌。
-> 目标：重新回到论文的总问题——“从玩家角度，我们渴望的游戏 Agent 是什么？”并对分类机制本身进行探讨。
-
----
-
-## 1. 先怀疑问题里的一个隐含假设
-
-“我们渴望什么样的 Agent”这个问题，容易把人引向“更聪明、更有记忆、更自主”这类能力清单。
-
-但如果从玩家角度重新问，玩家其实很少渴望“一个 Agent”。玩家渴望的是：
-
-> **一个会看见我、记住我、评价我、被我改变、并因此让世界产生后果的东西。**
-
-Agent 只是世界变得“会回应”的那个接口。
-
-所以更准确的问题不是“Agent 应该具备什么能力”，而是：
-
-> **玩家希望世界在哪里、以什么方式回应他？**
+> Status: Open discussion note, for the team to discuss later.
+> Premise: Tentatively keep "field superposition" as one of the slices, not as the whole picture.
+> Goal: Return to the paper's overall question — "from the player's perspective, what is the game agent we desire?" — and discuss the classification mechanism itself.
 
 ---
 
-## 2. 现有分类机制都只是切片
+## 1. First, Doubt an Implicit Assumption in the Question
 
-### 技术分类（FSM / BT / GOAP / Utility / LLM）
+The question "what kind of agent do we desire" easily leads people toward a capability list like "smarter, more memory, more autonomous."
 
-分类的是“系统如何做出决定”。它不回答玩家会怎么感受这个角色。
+But if we re-ask from the player's perspective, the player rarely desires "an agent." What the player desires is:
 
-### 来源分类（自然信息 / 社会信息）
+> **Something that will see me, remember me, evaluate me, be changed by me, and thereby produce consequences in the world.**
 
-分类的是“信息从哪里发出来”。它是发出者视角，不是接收者视角。
+The agent is merely the interface through which the world becomes "responsive."
 
-### 角色分类（玩家 / NPC / GM / 设计师）
+So the more accurate question is not "what capabilities should the agent have," but:
 
-分类的是“AI 在游戏生产中的工种”。它解决谁做什么，不解决玩家和角色之间发生了什么。
-
-### 机制依赖分类（AI 增强 / AI 原生）
-
-分类的是“去掉 AI 后玩法是否成立”。它回答技术是不是核心，不回答玩家是不是在乎。
-
-### 场域叠加
-
-分类的是“信息在谁的认知场中被解释”。它比前几种更接近玩家，但仍主要解释“视角差”这一个切片。
-
-**共同问题**：这些分类都是从外部观察者或系统设计者出发。它们都在问“这个 Agent 是什么”，而玩家真正面对的问题是“它和我之间正在发生什么”。
+> **Where, and in what way, does the player want the world to respond to them?**
 
 ---
 
-## 3. 从玩家欲望出发的六个问题
+## 2. All Existing Classification Mechanisms Are Merely Slices
 
-### 3.1 它看见我吗？
+### Technical Classification (FSM / BT / GOAP / Utility / LLM)
 
-玩家不只需要 NPC 做出反应，还需要反应**针对自己**。
+Classifies "how the system makes decisions." It does not answer how the player will feel about the character.
 
-- 好的例子：玩家满身是血回到城镇，卫兵多看了一眼，酒馆老板没有像对待其他客人一样寒暄。
-- 失败的例子：玩家刚屠了龙，全村仍用同一句欢迎语。
+### Source Classification (Natural Information / Social Information)
 
-“被看见”不等于信息感知。它意味着 NPC 的反应里包含了对玩家当前状态的理解。
+Classifies "where the information comes from." It is the sender perspective, not the receiver perspective.
 
-### 3.2 它记得我吗？
+### Role Classification (Player / NPC / GM / Designer)
 
-记忆不是数据库。玩家对记忆的期待是**道德性和关系性的**：
+Classifies "what job AI performs in game production." It solves who does what, not what happens between player and character.
 
-- 记得承诺，比记得“你上次买了三瓶药水”更重要；
-- 记得背叛，比记得对话文本更重要；
-- 淡忘闲聊是合理的，忘记债务不可原谅。
+### Mechanism-Dependence Classification (AI-augmented / AI-native)
 
-玩家想要的不是 NPC 记得更多，而是 NPC 记得**该记的东西**。
+Classifies "does the gameplay hold up after removing AI." It answers whether the technology is core, not whether the player cares.
 
-### 3.3 它是谁？
+### Field Superposition
 
-玩家希望 NPC 有边界。这个边界不是“角色设定写了什么”，而是它**会拒绝什么**。
+Classifies "in whose cognitive field the information is interpreted." It is closer to the player than the previous ones, but still mainly explains the single slice of "perspective difference."
 
-- 一个会拒绝交易的商人，比一个什么都卖的商人更真实。
-- 一个会因为立场拒绝帮助玩家的角色，比一个随叫随到的助手更有存在感。
-
-身份的本质不是人设标签，而是“不能被玩家随意改写的那部分”。
-
-### 3.4 我能改变它吗？
-
-玩家需要自己的行为在 NPC 身上留下痕迹。
-
-- 救过它，它以后会犹豫；
-- 骗过它，它以后会警惕；
-- 帮过它，它可能在不经意间回报。
-
-可改变性不能没有代价。如果 NPC 可以被无限刷好感、无限道歉恢复关系，改变就失去了意义。
-
-### 3.5 它会超出我吗？
-
-玩家偶尔需要 NPC 做出“不是为玩家准备”的行为。
-
-- 两个 NPC 在玩家不在场时争吵；
-- 某个 NPC 有自己的日程，今天不在这里；
-- 一个角色拒绝了玩家的邀请，因为它有自己更想做的事。
-
-这制造了一种“世界不围绕我转”的感觉。完全围绕玩家的 NPC 最终会像家具。
-
-### 3.6 它和世界连在一起吗？
-
-NPC 不能是漂浮在场景里的对话窗口。它应该受到空间、时间、经济、组织、天气、事件的约束。
-
-- 战争爆发时，商人会涨价；
-- 夜间店铺关门；
-- 流言从一个镇传到另一个镇。
-
-玩家对 NPC 的信任，来自它的反应与世界的因果一致。
+**Common problem**: These classifications all start from the external observer or system designer. They all ask "what is this agent," while the player's real problem is "what is happening between it and me."
 
 ---
 
-## 4. 这六个问题指向的不是能力，而是关系
+## 3. Six Questions Starting from the Player's Desire
 
-可以把它们合并成一句话：
+### 3.1 Does It See Me?
 
-> **玩家渴望的不是一个更智能的角色，而是一个可以被相信、被改变、并会留下后果的他者。**
+The player does not only need the NPC to react, but needs the reaction to be **directed at themselves**.
 
-这个“他者”同时具备：
+- Good example: The player returns to town covered in blood; the guard takes a second look, and the tavern keeper does not greet them like other customers.
+- Failed example: The player just killed the dragon, yet the whole village uses the same welcome line.
 
-- 反应性：它对玩家敏感；
-- 独立性：它不完全属于玩家；
-- 持续性：它在时间中存在；
-- 可读性：玩家能理解它的规律；
-- 可塑性：玩家能留下影响；
-- 世界性：它被世界约束。
+"Being seen" is not the same as information perception. It means the NPC's reaction contains an understanding of the player's current state.
 
-这里每一对都天然存在矛盾：太敏感就失去独立性，太独立就变得不可读，太持久就显得重复，太可塑就失去身份。
+### 3.2 Does It Remember Me?
 
-所以“最好的 Agent”不是某一项指标最高，而是能够在这些张力中保持稳定。
+Memory is not a database. The player's expectation of memory is **moral and relational**:
 
----
+- Remembering a promise matters more than remembering "you bought three potions last time";
+- Remembering a betrayal matters more than remembering dialogue text;
+- Letting small talk fade is reasonable; forgetting a debt is unforgivable.
 
-## 5. 对分类机制本身的重新提议
+The player does not want the NPC to remember more, but to remember **what should be remembered**.
 
-现有分类可以继续存在，但 Macha 需要补一个**从玩家关系出发的分类轴**：
+### 3.3 Who Is It?
 
-> 不是问“这个 Agent 是怎么实现的”，而是问“这个 Agent 正在满足玩家的哪一种欲望”。
+The player wants the NPC to have boundaries. This boundary is not "what the character setting wrote," but **what it will refuse**.
 
-初步可以提出四种关系原型：
+- A merchant who refuses a trade is more real than one who sells everything.
+- A character who refuses to help the player out of stance has more presence than an on-call assistant.
 
-1. **见证者**：让玩家感到“世界看见了我”。
-2. **关系者**：让玩家感到“我的行为在别人身上留下了历史”。
-3. **阻力者**：让玩家感到“世界有规则、有代价、有拒绝”。
-4. **他者**：让玩家感到“这里有不完全围绕我的生命”。
+The essence of identity is not a persona label, but "the part that cannot be arbitrarily rewritten by the player."
 
-一个具体 NPC 可以同时是几种原型，比例不同。
+### 3.4 Can I Change It?
 
-这个分类的价值在于：技术选型应该从关系原型倒推。比如“阻力者”需要的是规则裁决和边界一致性；“关系者”需要的是长期记忆和态度更新；“他者”需要的是独立日程和自主目标。
+The player needs their own actions to leave traces on the NPC.
 
----
+- Having saved it, it will hesitate later;
+- Having deceived it, it will be wary later;
+- Having helped it, it may repay unintentionally.
 
-## 6. 与“场域叠加”的关系
+Changeability cannot be without cost. If the NPC can be infinitely farm-grinded for favorability, and relationships infinitely restored by apology, change loses its meaning.
 
-场域叠加仍然是一个有力的切片，但它解释的主要是：
+### 3.5 Does It Exceed Me?
 
-> 玩家和 NPC 在解释同一事件时，所站的位置不同。
+The player occasionally needs the NPC to do something "not prepared for the player."
 
-如果放进六个问题里，它最接近“它看见我吗”和“它和世界连在一起吗”之间的解释层。
+- Two NPCs argue when the player is absent;
+- An NPC has its own schedule and is not here today;
+- A character rejects the player's invitation because it has something it would rather do.
 
-但它不直接解释：
+This creates a feeling that "the world does not revolve around me." An NPC that revolves entirely around the player will eventually be like furniture.
 
-- NPC 为什么该记住某件事；
-- NPC 为什么该拒绝；
-- NPC 如何被玩家改变；
-- NPC 如何超出玩家。
+### 3.6 Is It Connected to the World?
 
-因此建议论文的推进方式是：
+The NPC cannot be a dialogue window floating in the scene. It should be constrained by space, time, economy, organization, weather, and events.
 
-1. 总问题：玩家渴望什么样的 Agent？
-2. 场域叠加：指出其中一个切片——玩家与 NPC 的视角差。
-3. 然后展开：这种视角差只是更普遍的“关系鸿沟”的一层。关系鸿沟还包括记忆、身份、可塑、独立、世界因果。
-4. 最后提出：跨越鸿沟不是让 Agent 拥有所有能力，而是让 Agent 在六个关系维度上都有稳定的边界和反馈。
+- When war breaks out, the merchant raises prices;
+- Shops close at night;
+- Rumors travel from one town to another.
+
+The player's trust in the NPC comes from the causal consistency of its reactions with the world.
 
 ---
 
-## 7. 留给团队讨论的问题
+## 4. These Six Questions Point Not to Capabilities, but to Relationships
 
-1. “玩家渴望的是他者，还是世界的回应？”这两个定义会导致完全不同的架构。
-2. 六个问题是否要合并、排序或改名？
-3. 四种关系原型是否足以作为分类起点？
-4. “真实”是关系维度之一，还是所有维度共同的结果？
-5. 场域叠加应该作为论文的“第一个切片”先写，还是先建立更大的关系框架，再把场域叠加放进其中？
+They can be combined into one sentence:
+
+> **What the player desires is not a smarter character, but an other that can be believed, changed, and will leave consequences.**
+
+This "other" simultaneously possesses:
+
+- Reactivity: it is sensitive to the player;
+- Independence: it does not belong entirely to the player;
+- Persistence: it exists in time;
+- Readability: the player can understand its patterns;
+- Malleability: the player can leave influence;
+- Worldliness: it is constrained by the world.
+
+Each pair here naturally contains a contradiction: too sensitive loses independence, too independent becomes unreadable, too persistent seems repetitive, too malleable loses identity.
+
+So the "best agent" is not the highest on some metric, but one that maintains stability among these tensions.
+
+---
+
+## 5. A New Proposal for the Classification Mechanism Itself
+
+The existing classifications can continue to exist, but Macha needs to add a **classification axis starting from the player relationship**:
+
+> Not asking "how is this agent implemented," but asking "which desire of the player is this agent satisfying."
+
+We can initially propose four relationship archetypes:
+
+1. **Witness**: Makes the player feel "the world has seen me."
+2. **Relation-holder**: Makes the player feel "my actions have left a history on others."
+3. **Resistor**: Makes the player feel "the world has rules, costs, and refusals."
+4. **Other**: Makes the player feel "there is a life here that does not revolve entirely around me."
+
+A concrete NPC can be several archetypes at once, in different proportions.
+
+The value of this classification is: technical selection should be reverse-derived from the relationship archetype. For example, a "resistor" needs rule adjudication and boundary consistency; a "relation-holder" needs long-term memory and attitude updating; an "other" needs an independent schedule and autonomous goals.
+
+---
+
+## 6. Relationship with "Field Superposition"
+
+Field superposition remains a powerful slice, but what it mainly explains is:
+
+> When the player and NPC interpret the same event, they stand in different positions.
+
+Placed among the six questions, it is closest to the interpretive layer between "does it see me" and "is it connected to the world."
+
+But it does not directly explain:
+
+- Why the NPC should remember something;
+- Why the NPC should refuse;
+- How the NPC is changed by the player;
+- How the NPC exceeds the player.
+
+Therefore the suggested progression of the paper is:
+
+1. Overall question: What kind of agent does the player desire?
+2. Field superposition: Point out one slice — the perspective difference between player and NPC.
+3. Then expand: This perspective difference is only one layer of the more general "relationship gap." The relationship gap also includes memory, identity, malleability, independence, and world causality.
+4. Finally propose: Crossing the gap is not to give the agent all capabilities, but to let the agent have stable boundaries and feedback on the six relationship dimensions.
+
+---
+
+## 7. Questions Left for Team Discussion
+
+1. "Does the player desire an other, or the world's response?" These two definitions lead to completely different architectures.
+2. Should the six questions be merged, ordered, or renamed?
+3. Are the four relationship archetypes sufficient as a classification starting point?
+4. Is "authenticity" one of the relationship dimensions, or the joint result of all dimensions?
+5. Should field superposition be written first as the paper's "first slice," or should a larger relationship framework be established first, then field superposition placed within it?

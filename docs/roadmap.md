@@ -1,40 +1,40 @@
-# 开发路线图
+# Development Roadmap
 
-## Phase 0：仓库初始化（当前）
+## Phase 0: Repository Initialization (Current)
 
-- [x] README、LICENSE、.gitignore
-- [x] 基础项目结构
-- [x] 研究文档整理
-- [ ] 团队确认第一个 MVP 方向
-- [ ] 初始化 Git 并推送远端（如尚未执行）
+- [x] README, LICENSE, .gitignore
+- [x] Basic project structure
+- [x] Research document organization
+- [ ] Team confirms the first MVP direction
+- [ ] Initialize Git and push to remote (if not yet executed)
 
-## Phase 1：最小认知内核
+## Phase 1: Minimal Cognitive Core
 
-- [ ] 定义 `Agent`、`Memory`、`Perception`、`Reasoning`、`Action` 接口
-- [ ] 实现基于 JSON/SQLite 的长期记忆
-- [ ] 实现一个简单的 LLM 调用封装
-- [ ] 跑通“5 轮对话后仍记住关键事实”的冒烟测试
+- [ ] Define `Agent`, `Memory`, `Perception`, `Reasoning`, `Action` interfaces
+- [ ] Implement long-term memory based on JSON/SQLite
+- [ ] Implement a simple LLM call wrapper
+- [ ] Pass a smoke test that "still remembers key facts after 5 rounds of dialogue"
 
-## Phase 2：角色一致性与反思
+## Phase 2: Character Consistency and Reflection
 
-- [ ] 实现反思机制：从经历中生成人格摘要
-- [ ] 加入重要性评分与记忆检索
-- [ ] 增加“角色一致性”测试场景
-- [ ] 引入人类评估/自动化评估脚本
+- [ ] Implement a reflection mechanism: generate persona summaries from experiences
+- [ ] Add importance scoring and memory retrieval
+- [ ] Add "character consistency" test scenarios
+- [ ] Introduce human evaluation / automated evaluation scripts
 
-## Phase 3：环境接入
+## Phase 3: Environment Integration
 
-- [ ] 选择第一个目标环境（如文本冒险、Minecraft 类沙盒、或自研 Demo）
-- [ ] 实现 Perception/Action 适配器
-- [ ] 接入具体游戏状态
+- [ ] Select the first target environment (e.g., text adventure, Minecraft-like sandbox, or a self-built Demo)
+- [ ] Implement Perception/Action adapters
+- [ ] Connect to concrete game state
 
-## Phase 4：多智能体与评估
+## Phase 4: Multi-Agent and Evaluation
 
-- [ ] 多 NPC 通信与协作
-- [ ] 长期压力测试
-- [ ] 推理成本优化
-- [ ] 发布 v0.1 可演示版本
+- [ ] Multi-NPC communication and collaboration
+- [ ] Long-term stress testing
+- [ ] Reasoning cost optimization
+- [ ] Release a demonstrable v0.1 version
 
-## 当前建议
+## Current Recommendation
 
-不要急着写复杂系统。先把 Phase 1 的“最小认知内核”做出来，再根据实际效果调整架构。
+Do not rush into writing a complex system. First build the Phase 1 "minimal cognitive core," then adjust the architecture based on actual results.

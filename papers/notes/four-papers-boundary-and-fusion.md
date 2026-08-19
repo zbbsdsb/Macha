@@ -1,193 +1,193 @@
-# 四篇论文的边界试探与观点融合
+# Boundary Probing of Four Papers and Idea Fusion
 
-> 状态：讨论稿。
-> 目标：不推翻四篇论文，也不把它们的结论堆在一起，而是先试探每篇论文“解释到哪里为止”，再尝试把它们的边界与 Macha 自己的问题融合起来。
-> 我们自己的问题：从玩家角度，我们渴望的游戏 Agent 是什么？
-
----
-
-## 1. 边界试探的方法
-
-对每篇论文只问四个问题：
-
-1. 它把 Agent 定义成什么？
-2. 它回答了玩家欲望的哪一块？
-3. 它走到哪里就停住了？
-4. 它能给我们什么？它给不了我们什么？
+> Status: Discussion draft.
+> Goal: Without overturning the four papers or piling their conclusions together, first probe where each paper "stops explaining," then attempt to fuse their boundaries with Macha's own problem.
+> Our own question: From the player's perspective, what is the game agent we desire?
 
 ---
 
-## 2. 第一篇：Generative Agents（2304，Smallville）
+## 1. Method of Boundary Probing
 
-### 它把 Agent 定义成什么
+For each paper, ask only four questions:
 
-一个拥有记忆流、反思与规划能力，并在共享沙盒中持续生活的生成式代理。
-
-### 它回答了玩家欲望的哪一块
-
-- **它有自己的生活**：Agent 有日程、有关系、有自发行为。
-- **它记得事情**：记忆流与反思让行为具有时间连续性。
-- **它和世界相连**：25 个 Agent 之间的关系会涌现出信息传播与社交协调。
-
-### 它走到哪里就停住了
-
-- 它是“被观察的沙盒”，不是“玩家与 NPC 的关系场”。
-- 玩家不是中心，甚至玩家基本不在场。
-- 没有输赢、目标、规则裁决，社会涌现不等于玩法。
-- 评估标准是“观察者是否相信”，不是“玩家是否觉得自己被回应”。
-
-### 给我们的东西
-
-它证明了一件事：**如果一个 Agent 有记忆、反思和计划，玩家确实可能把它当作一个持续存在的他者。**
-
-它给不了的是：这个他者如何回应我、拒绝我、记住我、被我改变。它提供了“他者”的一半，缺少“关系”的另一半。
+1. What does it define an agent as?
+2. Which part of the player's desire does it answer?
+3. Where does it stop?
+4. What can it give us? What can it not give us?
 
 ---
 
-## 3. 第二篇：Hu et al.（2404，LLM 游戏代理综述）
+## 2. Paper One: Generative Agents (2304, Smallville)
 
-### 它把 Agent 定义成什么
+### What It Defines an Agent As
 
-一个由记忆、推理、感知-行动接口组成的系统，可以被拆解、组合和评估。
+A generative agent with a memory stream, reflection, and planning capabilities, living continuously in a shared sandbox.
 
-### 它回答了玩家欲望的哪一块
+### Which Part of the Player's Desire It Answers
 
-- 它提供了“它看见我、它记得我、它行动”的工程底座。
-- 挑战中心分类法间接承认：不同游戏里，玩家对 Agent 的核心要求不同。
-  - 动作游戏要快；
-  - RPG 要角色保真；
-  - 冒险游戏要世界状态；
-  - 沙盒要自我目标。
+- **It has its own life**: The agent has a schedule, relationships, and spontaneous behavior.
+- **It remembers things**: The memory stream and reflection give behavior temporal continuity.
+- **It is connected to the world**: The relationships among 25 agents emerge into information propagation and social coordination.
 
-### 它走到哪里就停住了
+### Where It Stops
 
-- 它是系统视角：一切都被还原为组件和挑战。
-- 它没有回答“为什么角色保真度重要”，只说“RPG 需要角色保真度”。
-- 它把游戏类型当成最高分类，却没有把玩家与 NPC 的关系类型当成分类。
+- It is an "observed sandbox," not a "relationship field between player and NPC."
+- The player is not the center; in fact the player is basically absent.
+- There is no win/lose, goal, or rule adjudication; social emergence is not the same as gameplay.
+- The evaluation criterion is "does the observer believe," not "does the player feel responded to."
 
-### 给我们的东西
+### What It Gives Us
 
-它给 Macha 提供了“身体”：记忆、推理、感知、行动。
+It proves one thing: **if an agent has memory, reflection, and planning, the player may indeed treat it as a continuously existing other.**
 
-它给不了“灵魂”：这些组件为什么服务？玩家想从这些组件中得到什么体验？
-
-融合点：我们可以保留它的四模块，但在模块之上加一个关系目标层——同一套记忆系统，服务“见证者”还是“阻力者”，实现策略不同。
+What it cannot give is: how this other responds to me, refuses me, remembers me, or is changed by me. It provides half of "the other," missing the other half of "the relationship."
 
 ---
 
-## 4. 第三篇：Gallotta et al.（2402，LLM 与游戏综述）
+## 3. Paper Two: Hu et al. (2404, LLM Game-Agent Survey)
 
-### 它把 Agent 定义成什么
+### What It Defines an Agent As
 
-一个在游戏生态中承担某种角色的功能单元：玩家、NPC、GM、裁判、设计师、分析师等。
+A system composed of memory, reasoning, and a perception-action interface, which can be decomposed, combined, and evaluated.
 
-### 它回答了玩家欲望的哪一块
+### Which Part of the Player's Desire It Answers
 
-- 它承认 Agent 可以站在游戏的不同位置。
-- 它把 NPC 从“敌人”扩展到了 GM、助手、机制、评论员等更丰富的生态角色。
+- It provides the engineering base for "it sees me, it remembers me, it acts."
+- The challenge-centered taxonomy indirectly acknowledges: in different games, the player's core requirements for the agent differ.
+  - Action games need speed;
+  - RPGs need character fidelity;
+  - Adventure games need world state;
+  - Sandboxes need self-directed goals.
 
-### 它走到哪里就停住了
+### Where It Stops
 
-- 它回答的是“AI 在游戏里能干什么活”，不是“玩家和它之间发生什么关系”。
-- NPC 这个角色内部被严重压缩：同样是 NPC，见证者、阻力者、他者是完全不同的关系，但在这篇论文里都叫 NPC。
-- 它的广度让它很难继续向下追问体验。
+- It is a system perspective: everything is reduced to components and challenges.
+- It does not answer "why character fidelity matters," only says "RPGs need character fidelity."
+- It takes game genre as the highest classification, but does not take the type of relationship between player and NPC as a classification.
 
-### 给我们的东西
+### What It Gives Us
 
-它提供了“位置”：Agent 在游戏生态里站在哪里。
+It gives Macha a "body": memory, reasoning, perception, action.
 
-它给不了“关系”：站在同一个位置上的两个 NPC，和玩家之间可能是完全不同的关系。
+It cannot give the "soul": what do these components serve? What experience does the player want from them?
 
-融合点：把角色轴保留，但在角色之下再切一刀关系轴。NPC 不是终点，而是关系原型发生的容器。
-
----
-
-## 5. 第四篇：AI-Native Games（2607）
-
-### 它把 Agent 定义成什么
-
-它不定义 Agent，它定义玩法：当生成式 AI 被移除后核心循环是否崩塌。
-
-### 它回答了玩家欲望的哪一块
-
-- **世界有规则**：它强调语义裁决，AI 可以判断玩家的开放行为是否符合世界规则。
-- **世界不完全围绕玩家**：多智能体模拟、AI GM 都在制造玩家的“非中心感”。
-- **玩法需要稳定**：机械不变量、生成-验证管道，保证玩家能建立对世界规则的心理模型。
-
-### 它走到哪里就停住了
-
-- 它关心“这个玩法是否依赖 AI”，不关心“玩家和 NPC 之间是什么关系”。
-- G/N 轴是机制轴，不是关系轴。N4 语义裁决和 N5 多智能体模拟在机制上差别很大，但它们服务的玩家欲望却可能重叠。
-- 它基本不讨论长期记忆与角色一致性；它关心机制稳定，不关心关系历史。
-
-### 给我们的东西
-
-它提供了“规则”和“世界性”：一个 Agent 只有嵌进可裁决、可验证、有后果的规则系统里，才不会沦为聊天窗口。
-
-它给不了“关系记忆”：它知道语义裁决重要，但没追问“裁决必须被玩家理解、记忆和相信”。
-
-融合点：它的“移除测试”可以改造成“关系移除测试”——如果移除 NPC 的记忆、拒绝能力或自己的生活，玩家对世界的信任会不会崩塌？
+Fusion point: We can keep its four modules, but add a relationship-goal layer above the modules — the same memory system serves a "witness" or a "resistor" with different implementation strategies.
 
 ---
 
-## 6. 边界试探的结论
+## 4. Paper Three: Gallotta et al. (2402, LLM and Games Survey)
 
-四篇论文分别覆盖：
+### What It Defines an Agent As
 
-| 论文 | 它提供了 | 它停在哪里 |
+A functional unit assuming some role in the game ecosystem: player, NPC, GM, judge, designer, analyst, etc.
+
+### Which Part of the Player's Desire It Answers
+
+- It acknowledges that an agent can stand in different positions in the game.
+- It expands the NPC from "enemy" to richer ecosystem roles such as GM, assistant, mechanism, commentator, etc.
+
+### Where It Stops
+
+- It answers "what work AI can do in the game," not "what relationship occurs between the player and it."
+- The NPC role is severely compressed internally: a witness, a resistor, and an other are completely different relationships, yet in this paper they are all called NPC.
+- Its breadth makes it hard to keep probing downward into experience.
+
+### What It Gives Us
+
+It provides a "position": where the agent stands in the game ecosystem.
+
+It cannot give "relationship": two NPCs standing in the same position may have completely different relationships with the player.
+
+Fusion point: Keep the role axis, but cut one more slice — a relationship axis — beneath the role. The NPC is not the endpoint, but the container where relationship archetypes occur.
+
+---
+
+## 5. Paper Four: AI-Native Games (2607)
+
+### What It Defines an Agent As
+
+It does not define an agent; it defines gameplay: whether the core loop collapses after generative AI is removed.
+
+### Which Part of the Player's Desire It Answers
+
+- **The world has rules**: It emphasizes semantic adjudication; AI can judge whether the player's open-ended behavior conforms to world rules.
+- **The world does not revolve entirely around the player**: Multi-agent simulation and AI GM both create the player's sense of "non-centrality."
+- **Gameplay needs stability**: Mechanical invariants and a generate-verify pipeline ensure the player can build a mental model of world rules.
+
+### Where It Stops
+
+- It cares about "does this gameplay depend on AI," not "what relationship exists between player and NPC."
+- The G/N axis is a mechanism axis, not a relationship axis. N4 semantic adjudication and N5 multi-agent simulation differ greatly mechanistically, yet the player desire they serve may overlap.
+- It basically does not discuss long-term memory and character consistency; it cares about mechanical stability, not relationship history.
+
+### What It Gives Us
+
+It provides "rules" and "worldliness": only when an agent is embedded in a rule system that can be adjudicated, verified, and has consequences, will it not degrade into a chat window.
+
+It cannot give "relationship memory": it knows semantic adjudication matters, but does not ask "must the adjudication be understood, remembered, and believed by the player."
+
+Fusion point: Its "removal test" can be transformed into a "relationship removal test" — if the NPC's memory, refusal ability, or own life is removed, will the player's trust in the world collapse?
+
+---
+
+## 6. Conclusions of the Boundary Probing
+
+The four papers respectively cover:
+
+| Paper | What It Provides | Where It Stops |
 |---|---|---|
-| 2304 | 一个能持续生活、记忆、反思的 Agent | 沙盒观察，不是玩家关系 |
-| 2404 | 可拆解的认知系统与工程挑战 | 系统视角，不是体验视角 |
-| 2402 | Agent 在游戏生态中的位置 | 功能角色，不是关系类型 |
-| 2607 | AI 成为玩法核心的规则条件 | 机制本体，不是关系历史 |
+| 2304 | An agent that can live continuously, remember, and reflect | Sandbox observation, not player relationship |
+| 2404 | A decomposable cognitive system and engineering challenges | System perspective, not experience perspective |
+| 2402 | The agent's position in the game ecosystem | Functional role, not relationship type |
+| 2607 | The rule conditions for AI as the gameplay core | Mechanism ontology, not relationship history |
 
-它们合起来回答了一个问题：
+Together they answer one question:
 
-> **一个可信的游戏 Agent 应该由什么构成、站在哪里、依赖什么规则？**
+> **What should a believable game agent be composed of, where should it stand, and what rules should it depend on?**
 
-但它们没有回答：
+But they do not answer:
 
-> **玩家希望这个 Agent 和自己之间发生什么？**
+> **What does the player want to happen between themselves and this agent?**
 
-这就是 Macha 可以进入的位置。
+This is where Macha can enter.
 
 ---
 
-## 7. 一次谨慎的融合尝试
+## 7. A Cautious Fusion Attempt
 
-不推翻任何一篇，而是把它们放进同一个结构：
+Without overturning any paper, put them into the same structure:
 
 ```text
-玩家关系层（Macha 要补的）
-  玩家希望被看见、被记住、被拒绝、被改变、被超出
+Player-relationship layer (what Macha must supply)
+  The player wants to be seen, remembered, refused, changed, exceeded
         ↑
-玩法规则层（2607）
-  这个 Agent 是否嵌入核心循环？是否被世界规则裁决？
+Gameplay-rule layer (2607)
+  Is this agent embedded in the core loop? Is it adjudicated by world rules?
         ↑
-生态位置层（2402）
-  这个 Agent 在游戏里承担什么角色？
+Ecosystem-position layer (2402)
+  What role does this agent assume in the game?
         ↑
-认知架构层（2404）
-  记忆、推理、感知、行动如何组装？
+Cognitive-architecture layer (2404)
+  How are memory, reasoning, perception, action assembled?
         ↑
-原型证据层（2304）
-  这种组装方式是否能产生持续可信的行为？
+Prototype-evidence layer (2304)
+  Can this assembly produce continuously believable behavior?
 ```
 
-### 融合后对“游戏 Agent”的一个临时定义
+### A Tentative Definition of "Game Agent" After Fusion
 
-> 游戏 Agent 是一个以认知架构为身体，以生态角色为位置，以玩法规则为边界，并且必须在玩家关系中证明自己的存在物。
+> A game agent is an entity whose body is cognitive architecture, whose position is an ecosystem role, whose boundary is gameplay rules, and which must prove its existence within the player relationship.
 
-- 2304 证明“身体”能跑；
-- 2404 规范“身体”怎么造；
-- 2402 说明“身体”站在哪里；
-- 2607 说明“身体”必须嵌入什么样的规则；
-- Macha 要说明的是：**“身体”最终必须让玩家感到自己正在被世界回应。**
+- 2304 proves the "body" can run;
+- 2404 specifies how to build the "body";
+- 2402 says where the "body" stands;
+- 2607 says what rules the "body" must be embedded in;
+- Macha must explain: **the "body" must ultimately make the player feel they are being responded to by the world.**
 
 ---
 
-## 8. 下一步怎么走
+## 8. How to Proceed Next
 
-1. 先用这四篇论文检验我们的六个欲望问题：哪些被覆盖，哪些没有被覆盖。
-2. 再决定“场域叠加”放在融合结构的哪一层——初步判断它属于玩家关系层中的一个解释机制。
-3. 最后形成论文的边界声明：我们不是在写第五篇综述，而是在四篇论文共同停下来的地方继续往前问。
+1. First use these four papers to test our six desire questions: which are covered, which are not.
+2. Then decide which layer of the fusion structure "field superposition" belongs to — the preliminary judgment is that it is an interpretive mechanism within the player-relationship layer.
+3. Finally form the paper's boundary statement: we are not writing a fifth survey, but continuing to ask forward from where the four papers jointly stop.

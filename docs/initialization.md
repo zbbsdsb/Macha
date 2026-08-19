@@ -1,14 +1,14 @@
-# 仓库初始化清单
+# Repository Initialization Checklist
 
-## 1. 确认目录
+## 1. Confirm the Directory
 
 ```bash
 cd "D:/github projects/Macha"
 ```
 
-> 注意：路径中有空格，命令行中务必加引号。
+> Note: the path contains spaces, so be sure to quote it on the command line.
 
-## 2. 初始化 Git（如果还没有）
+## 2. Initialize Git (if not already done)
 
 ```bash
 git init
@@ -16,9 +16,9 @@ git add .
 git commit -m "chore: initialize Macha repository structure"
 ```
 
-## 3. 创建远端仓库并推送
+## 3. Create the Remote Repository and Push
 
-假设远端地址为 `git@github.com:your-org/Macha.git`：
+Assuming the remote address is `git@github.com:your-org/Macha.git`:
 
 ```bash
 git remote add origin git@github.com:your-org/Macha.git
@@ -26,7 +26,7 @@ git branch -M main
 git push -u origin main
 ```
 
-## 4. 安装开发环境
+## 4. Install the Development Environment
 
 ```bash
 python -m venv .venv
@@ -38,14 +38,14 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-## 5. 运行测试
+## 5. Run Tests
 
 ```bash
 pytest
 ```
 
-## 6. 第一次团队对齐
+## 6. First Team Alignment
 
-- [ ] 阅读 `docs/research/positioning.md`，确认研究方向。
-- [ ] 阅读 `docs/research/direction.md`，确认第一个 MVP 范围。
-- [ ] 阅读 `docs/roadmap.md`，认领 Phase 1 任务。
+- [ ] Read `docs/research/positioning.md` and confirm the research direction.
+- [ ] Read `docs/research/direction.md` and confirm the first MVP scope.
+- [ ] Read `docs/roadmap.md` and claim a Phase 1 task.

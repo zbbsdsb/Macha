@@ -1,674 +1,674 @@
-# 现有 NPC 技术栈的"功能边界"和"痛点清单"
+# Functional Boundaries and Pain-Point List of Existing NPC Tech Stacks
 
-> 类别：工程实现（Macha 六层框架中的第 2 层）
-> 研究目标：摸清游戏工业现有 NPC / 游戏 AI 架构的"能做什么、做不了什么、哪里会崩"，为 Macha 决定"**替换 vs 兼容**"现有标准（行为树 / GOAP / HTN / Utility AI / FSM）提供事实依据。
-> 关联文档：`direction.md`（Macha = 感知—记忆—推理—行动）、`positioning.md`（认知模型与可插拔架构）。
-
----
-
-## 0. 一句话结论（给后续决策用）
-
-现有工业标准全部是**"执行层 / 控制层"**技术：它们擅长把"已经确定的意图"变成"可运行的动作序列"，却**几乎不解决** Macha 关心的三件事——
-
-1. **长期记忆与角色一致性**（NPC 跨会话记得玩家、人格不漂移）；
-2. **语义级感知与反思**（从游戏事件里抽取结构化观察、抽象成高层认知）；
-3. **生成式 / LLM 驱动的涌现行为**（开放对话、自主规划、社会性）。
-
-因此 Macha 的正确姿态是：**在认知/记忆/规划这一"上层"做标准骨架，把行为树/GOAP/HTN/Utility/FSM 以及各大引擎的 AI 系统当作"下层执行器"去 wrap（适配兼容）；对现有开源框架里那些各自为战、临时拼凑的"记忆/人格"补丁，则用统一标准去 replace（取代）。** 下文逐条论证。
+> Category: Engineering implementation (Layer 2 of the Macha six-layer framework)
+> Research goal: Map out what the game industry's existing NPC / game AI architectures "can do, cannot do, and where they break," to provide factual evidence for Macha's decision on **replace vs. compatibilize** the existing standards (Behavior Tree / GOAP / HTN / Utility AI / FSM).
+> Related docs: `direction.md` (Macha = Perception—Memory—Reasoning—Action), `positioning.md` (cognitive model and pluggable architecture).
 
 ---
 
-## 1. 经典游戏 AI 架构（工业标准）
+## 0. One-Line Conclusion (for downstream decisions)
 
-### 1.1 FSM（有限状态机）
-- **解决的问题**：用"状态 + 转移条件"建模互斥行为（巡逻 / 追击 / 攻击 / 逃跑），是游戏 AI 最古老、最易调试的基线。
-- **典型数据模型**：`状态集合 S` + `转移表 T: (状态, 事件) → 状态` + 每个状态的 `Enter/Update/Exit` 钩子。
-- **常见实现**：几乎所有引擎自研；Unity Animator 状态机、Unreal StateTree 的底层思想、RimWorld 的 `ThinkNode`/`LordJob` 状态机（见 §4.3）。
-- **功能边界（尤其 LLM 生成式 NPC）**：
-  - 能：清晰、确定、易 QA 的离散行为；适合"行为身份固定"的敌人。
-  - 不能：状态数爆炸（Halo 时代 FSM 已超 80 状态，见 §3 的 Isla 论述）；无法表达"按需组合动作"；**完全没有记忆/人格/语义推理**，对 LLM 对话型 NPC 毫无帮助。
-- **痛点清单**：
-  - 状态爆炸——行为一复杂，转移边呈组合增长，难以维护（peerdh/Unity 中文社区均有论述）。
-  - 耦合高——逻辑与状态绑定，改一处牵全身。
-  - 不可涌现——无法产生设计师没显式编排的行为，与"生成式 NPC"目标天然冲突。
+All existing industry standards are **"execution-layer / control-layer"** technologies: they excel at turning "an already-decided intent" into "a runnable sequence of actions," yet they **barely address** the three things Macha cares about—
 
-### 1.2 Behavior Tree（行为树，BT）
-- **解决的问题**：作为 FSM 的升级，用"组合节点（Sequence/Selector/Parallel）+ 装饰节点 + 叶子节点 + 黑板（Blackboard）"表达可复用、可读、可可视化调试的分层决策，解决了 FSM 的状态爆炸与耦合问题。
-- **典型数据模型**：树（根→组合节点→条件/动作叶子）；`Blackboard` 作为一（黑板）对多（树）的共享数据区；Tick 每帧自顶向下求值。
-- **常见实现**：
-  - **Unreal Engine** 内建 Behavior Tree + Blackboard + Service/Decorator（行业标准事实）；
-  - **Godot** 第三方 Beehave 插件（`github.com/bitbrain/beehave`，含运行时调试视图）；
-  - **Unity** 原 Behavior Designer / 新版 `com.unity.behavior` 可视化行为树包；
-  - **Rival Theory RAIN**（见 §3.5）、**Wise Feline**（Unreal Utility BT）等。
-- **功能边界（尤其 LLM 生成式 NPC）**：
-  - 能：强可控、可 QA、设计师友好；适合"英雄 NPC / 敌人"的战术行为；可与 GOAP/HTN 组合（GOAP 在叶子节点做规划）。
-  - 不能：BT 本质是**被动求值**——Isla（Halo 2，BT 奠基人）在 *Game AI Uncovered* 中指出"传统行为树不 reactive"，需要 Reactive BT 补丁；BT **不保存世界状态、没有记忆、不产生意图**，它只是"按树结构选动作"。对 LLM 驱动的开放对话与社会行为，BT 只能充当"执行外壳"，无法提供认知。
-- **痛点清单**：
-  - 非响应式（需额外机制处理突发事件，见 Game AI Uncovered 摘录）。
-  - 复杂树难调试——深度过大、并行节点语义易错（Beehave 指南专门列"别在 `_tick` 阻塞""别每帧重算路径"等安全规则）。
-  - 难表达"多 NPC 协作"——黑板是 1:N，但跨 NPC 的意图协调仍需手写。
-  - **对生成式 NPC 无能为力**：BT 无法让 NPC"记住三天前玩家救过它"或"自主决定下一步做什么"。
+1. **Long-term memory and character consistency** (NPC remembers the player across sessions, persona does not drift);
+2. **Semantic-level perception and reflection** (extracting structured observations from game events, abstracting them into high-level cognition);
+3. **Generative / LLM-driven emergent behavior** (open dialogue, autonomous planning, sociality).
 
-### 1.3 GOAP（Goal-Oriented Action Planning，目标导向行动规划）
-- **解决的问题**：把"意图（Goal）"和"动作库（Action，含 precondition/effect/cost）"交给一个 **A\* 规划器**，实时搜出从当前世界状态到目标状态的最短动作序列。F.E.A.R.（2005，Jeff Orkin）是其奠基作——角色 FSM 只有 3 个状态（Goto / Animate / UseSmartObject），所有战术智能来自规划器。
-- **典型数据模型**：`WorldState`（布尔/枚举向量，30–50 个事实）+ `Action{precondition, effect, cost}` + `Goal{目标状态}` + A\* 在状态空间搜索。
-- **常见实现**：F.E.A.R. 原始实现；*Shadow of Mordor*、*Tomb Raider*、*Just Cause 2*、*Horizon: Zero Dawn* 启发式 HTN（orikin  lineage）；社区实现（theneuralbase 教学、Godot GOAP demo）。
-- **功能边界（尤其 LLM 生成式 NPC）**：
-  - 能：产生**涌现式战术**（侧翼包抄、压制火力是 AI"自己"决定的，而非脚本）；动作空间可控（5–15 个动作最佳）；通过调 cost 调难度/人格。
-  - 不能：**行动集必须由设计师手工编写**，没法"喂个神经网络就变聪明"；无法处理多 NPC 自发的协作（需显式多智能体动作，行动空间爆炸）；**没有长期记忆、没有语义理解、不会对话**。
-- **痛点清单**（行业共识，见 beatai / theneuralbase / bentebent）：
-  - **可控性危机**：自由搜索会找出设计师没料到的方案，QA 必须在组合爆炸的空间里验证行为——这是 GOAP 未能"一统天下"的根本原因（生产现实，非技术局限）。
-  - 性能：当前主机上并发规划器 >30 个/帧延迟不可接受；复杂度最坏 O((nm)^d)。
-  - 可预测性差：加一个动作，整体行为难以预估。
-  - 调试难：计划图可视化成本高。
-  - **对 LLM NPC 无直接价值**：它优化"动作序列搜索"，不解决"记忆/人格/对话"。
+Therefore the correct posture for Macha is: **build the standard skeleton on the cognitive/memory/planning "upper layer," and wrap (adapt/compatibilize) Behavior Trees/GOAP/HTN/Utility/FSM and the AI systems of major engines as "lower-layer executors"; for the fragmented, ad-hoc "memory/persona" patches that exist in current open-source frameworks, replace them with a unified standard.** The following sections argue this point by point.
 
-### 1.4 HTN（Hierarchical Task Network，分层任务网络）
-- **解决的问题**：用"复合任务 → 方法 → 原子任务"的**递归分解**做规划，在规划阶段就把任务展开成原子动作序列（"推演"）。相比 GOAP 的搜索，HTN **用领域知识（方法）引导搜索方向**，搜索空间更小、更可控、更可预测。
-- **典型数据模型**：`WorldState`（与 GOAP 一样用世界状态副本做"脑补推演"）+ `复合任务 / 方法 / 原子任务` 三层 + 方法带前置条件；规划阶段分解、执行阶段跑原子任务并回写世界状态。
-- **常见实现**：*Horizon: Zero Dawn*、*Transformers: Fall of Cybertron*；经典的 SHOP/SHOP2 规划器（Lisp/Java/Python 开源）；*Game AI Pro*（Steve Rabin 编）HTN 章节；RTS 中的对抗式 HTN（AHTN）。
-- **功能边界（尤其 LLM 生成式 NPC）**：
-  - 能：比 GOAP 更可控、更可预测、规划更深（一次规划出含多个动作的复合任务，"有点预知未来"）；适合复杂敌人 AI 与 RTS。
-  - 不能：**领域知识（方法）仍需人工编写**；对多 NPC 协作、长期记忆、对话、人格一致性同样无能为力；与 GOAP 一样只解决"动作规划"，不解决"认知/记忆"。
-- **痛点清单**：
-  - 仍需大量手工领域建模（任务/方法树）。
-  - 失败即放弃（AHTN 的变体才做失败修复），对动态环境鲁棒性有限。
-  - 完全信息假设（AHTN）与游戏"战争迷雾"部分可观现实冲突。
-  - **与 LLM 生成式 NPC 正交**：它是"确定性规划器"，不是"认知内核"。
+---
 
-### 1.5 Utility AI（效用 AI）
-- **解决的问题**：把"多输入、多考虑的复杂决策"映射到**归一化效用空间**，对每个候选动作算 0–1 分，取最高分（或按效用加权随机）。The Sims、Guild Wars 2、The Sims 4 是代表。
-- **典型数据模型**：`Agent 动机/需求`（数值，随时间衰减）+ `Action 含若干 Consideration` + 每个 Consideration 经**响应曲线**归一到 0–1 + 各 Consideration **连乘**得动作总分。
-- **常见实现**：Dave Mark《Behavioral Mathematics for Game AI》与 GDC 讲座；Mike Lewis 在 *Game AI Pro 3* 的"Infinite Axis Utility System"（Guild Wars 2）；Wise Feline（Unreal Utility AI 商业插件）；The Sims 需求系统（见 §4.4）。
-- **功能边界（尤其 LLM 生成式 NPC）**：
-  - 能：天然适合"连续加权、共享知识"的决策（如珊瑚礁动物、NPC 动机驱动）；数据驱动、设计师友好；能产生"软性涌现"（不同需求组合出不同行为）；**最接近"需求/动机驱动人格"的工业技术**。
-  - 不能：Consideration 与曲线**仍需手工设计**；本质是"打分选动作"，**不涉及语言、记忆、反思、长期目标**；对"LLM 开放对话"只能做"说话意图触发"，做不了对话本身。
-- **痛点清单**：
-  - 设计 Consideration / 调曲线是门手艺，经验门槛高（Lewis 专章讲"如何选有效的 Consideration"）。
-  - 复杂系统时分数可解释性下降。
-  - 没有记忆/语义层，无法支撑"生成式 NPC"的核心诉求。
+## 1. Classic Game AI Architectures (Industry Standards)
 
-### 1.6 经典架构对比矩阵
+### 1.1 FSM (Finite State Machine)
+- **Problem solved**: Models mutually exclusive behaviors (patrol / chase / attack / flee) with "states + transition conditions," the oldest and most debuggable baseline in game AI.
+- **Typical data model**: `state set S` + `transition table T: (state, event) → state` + `Enter/Update/Exit` hooks per state.
+- **Common implementations**: Self-built in almost every engine; the underlying idea of Unity Animator state machines, Unreal StateTree, and RimWorld's `ThinkNode`/`LordJob` state machines (see §4.3).
+- **Functional boundaries (especially for LLM generative NPCs)**:
+  - Can: clear, deterministic, QA-friendly discrete behavior; suited for "identity-fixed" enemies.
+  - Cannot: state-number explosion (FSMs already exceeded 80 states in the Halo era, see Isla's discussion in §3); cannot express "on-demand composition of actions"; **has no memory/persona/semantic reasoning at all**, and is useless for LLM dialogue-type NPCs.
+- **Pain-point list**:
+  - State explosion—behavior grows complex, transition edges grow combinatorially, hard to maintain (discussed in both peerdh/Unity Chinese community).
+  - High coupling—logic is bound to state; changing one place ripples through everything.
+  - No emergence—cannot produce behaviors not explicitly choreographed by designers, inherently conflicting with the "generative NPC" goal.
 
-| 维度 | FSM | 行为树 BT | GOAP | HTN | Utility AI |
+### 1.2 Behavior Tree (BT)
+- **Problem solved**: As an upgrade to FSM, uses "composite nodes (Sequence/Selector/Parallel) + decorator nodes + leaf nodes + Blackboard" to express reusable, readable, visually debuggable hierarchical decisions, solving FSM's state explosion and coupling problems.
+- **Typical data model**: Tree (root → composite nodes → condition/action leaves); `Blackboard` as a one (blackboard)-to-many (trees) shared data area; Tick evaluates top-down every frame.
+- **Common implementations**:
+  - **Unreal Engine** built-in Behavior Tree + Blackboard + Service/Decorator (industry de facto standard);
+  - **Godot** third-party Beehave plugin (`github.com/bitbrain/beehave`, with runtime debug view);
+  - **Unity** original Behavior Designer / new `com.unity.behavior` visual behavior tree package;
+  - **Rival Theory RAIN** (see §3.5), **Wise Feline** (Unreal Utility BT), etc.
+- **Functional boundaries (especially for LLM generative NPCs)**:
+  - Can: strongly controllable, QA-able, designer-friendly; suited for tactical behavior of "hero NPC / enemies"; can be combined with GOAP/HTN (GOAP does planning at a leaf node).
+  - Cannot: BT is essentially **passive evaluation**—Isla (Halo 2, BT pioneer) noted in *Game AI Uncovered* that "traditional behavior trees are not reactive," requiring Reactive BT patches; BT **does not store world state, has no memory, produces no intent**—it merely "selects actions by tree structure." For LLM-driven open dialogue and social behavior, BT can only serve as an "execution shell," providing no cognition.
+- **Pain-point list**:
+  - Non-reactive (needs extra mechanisms to handle sudden events, see Game AI Uncovered excerpt).
+  - Complex trees are hard to debug—excessive depth, parallel node semantics are error-prone (Beehave guide specifically lists safety rules like "don't block in `_tick`", "don't recompute path every frame").
+  - Hard to express "multi-NPC collaboration"—blackboard is 1:N, but cross-NPC intent coordination still requires hand-writing.
+  - **Powerless for generative NPCs**: BT cannot make an NPC "remember the player saved it three days ago" or "autonomously decide what to do next."
+
+### 1.3 GOAP (Goal-Oriented Action Planning)
+- **Problem solved**: Hands "intent (Goal)" and "action library (Action, with precondition/effect/cost)" to an **A\* planner**, which searches in real time for the shortest action sequence from current world state to goal state. F.E.A.R. (2005, Jeff Orkin) is its foundational work—the character FSM has only 3 states (Goto / Animate / UseSmartObject), all tactical intelligence comes from the planner.
+- **Typical data model**: `WorldState` (boolean/enum vector, 30–50 facts) + `Action{precondition, effect, cost}` + `Goal{goal state}` + A\* search in state space.
+- **Common implementations**: F.E.A.R. original implementation; *Shadow of Mordor*, *Tomb Raider*, *Just Cause 2*, *Horizon: Zero Dawn* heuristic HTN (Orkin lineage); community implementations (theneuralbase tutorial, Godot GOAP demo).
+- **Functional boundaries (especially for LLM generative NPCs)**:
+  - Can: produces **emergent tactics** (flanking, suppressive fire are decided "by the AI itself," not scripted); controllable action space (5–15 actions optimal); tuning cost to tune difficulty/persona.
+  - Cannot: **action set must be hand-authored by designers**, no "feed a neural net and it gets smart"; cannot handle spontaneous multi-NPC collaboration (requires explicit multi-agent actions, action space explodes); **no long-term memory, no semantic understanding, no dialogue**.
+- **Pain-point list** (industry consensus, see beatai / theneuralbase / bentebent):
+  - **Controllability crisis**: free search finds solutions designers didn't anticipate; QA must verify behavior in combinatorial explosion space—this is the root reason GOAP failed to "unify the world" (production reality, not technical limitation).
+  - Performance: on current consoles, concurrent planners >30/frame incur unacceptable latency; worst-case complexity O((nm)^d).
+  - Poor predictability: adding one action, overall behavior becomes hard to estimate.
+  - Hard to debug: plan graph visualization is costly.
+  - **No direct value for LLM NPCs**: it optimizes "action sequence search," not "memory/persona/dialogue."
+
+### 1.4 HTN (Hierarchical Task Network)
+- **Problem solved**: Uses "composite task → method → atomic task" **recursive decomposition** for planning, expanding tasks into atomic action sequences at planning time ("look-ahead simulation"). Compared to GOAP's search, HTN **uses domain knowledge (methods) to guide the search direction**, giving a smaller, more controllable, more predictable search space.
+- **Typical data model**: `WorldState` (same as GOAP, uses a world-state copy for "mental simulation") + `composite task / method / atomic task` three layers + methods with preconditions; plan-phase decomposition, execution-phase running of atomic tasks and write-back of world state.
+- **Common implementations**: *Horizon: Zero Dawn*, *Transformers: Fall of Cybertron*; classic SHOP/SHOP2 planners (Lisp/Java/Python open source); *Game AI Pro* (ed. Steve Rabin) HTN chapter; adversarial HTN (AHTN) in RTS.
+- **Functional boundaries (especially for LLM generative NPCs)**:
+  - Can: more controllable, more predictable, deeper planning than GOAP (plans a composite task with multiple actions at once, "somewhat foreseeing the future"); suited for complex enemy AI and RTS.
+  - Cannot: **domain knowledge (methods) still requires manual authoring**; equally powerless for multi-NPC collaboration, long-term memory, dialogue, persona consistency; like GOAP, only solves "action planning," not "cognition/memory."
+- **Pain-point list**:
+  - Still requires heavy manual domain modeling (task/method trees).
+  - Fails-and-abandons (only AHTN variants do failure recovery), limited robustness to dynamic environments.
+  - Complete-information assumption (AHTN) conflicts with the "fog of war" partially-observable reality of games.
+  - **Orthogonal to LLM generative NPCs**: it is a "deterministic planner," not a "cognitive kernel."
+
+### 1.5 Utility AI
+- **Problem solved**: Maps "multi-input, multi-consideration complex decisions" to a **normalized utility space**, scoring each candidate action 0–1, taking the highest (or utility-weighted random). The Sims, Guild Wars 2, The Sims 4 are representatives.
+- **Typical data model**: `Agent motives/needs` (numeric, decaying over time) + `Action with several Considerations` + each Consideration normalized to 0–1 via a **response curve** + all Considerations **multiplied** for the action's total score.
+- **Common implementations**: Dave Mark's *Behavioral Mathematics for Game AI* and GDC talks; Mike Lewis's "Infinite Axis Utility System" in *Game AI Pro 3* (Guild Wars 2); Wise Feline (Unreal Utility AI commercial plugin); The Sims need system (see §4.4).
+- **Functional boundaries (especially for LLM generative NPCs)**:
+  - Can: naturally suited for "continuously weighted, knowledge-sharing" decisions (e.g., reef creatures, NPC motive-driven); data-driven, designer-friendly; can produce "soft emergence" (different needs combine into different behaviors); **the industry technique closest to "need/motive-driven persona."**
+  - Cannot: Considerations and curves **still require hand-design**; essentially "score and select action," **involving no language, memory, reflection, or long-term goals**; for "LLM open dialogue" it can only do "speech-intent triggering," not the dialogue itself.
+- **Pain-point list**:
+  - Designing Considerations / tuning curves is a craft, with a high experience threshold (Lewis devotes a chapter to "how to choose effective Considerations").
+  - Interpretability of scores drops in complex systems.
+  - No memory/semantic layer, cannot support the core demands of "generative NPCs."
+
+### 1.6 Classic Architecture Comparison Matrix
+
+| Dimension | FSM | Behavior Tree BT | GOAP | HTN | Utility AI |
 |---|---|---|---|---|---|
-| 核心思想 | 状态+转移 | 树状选择性执行 | A\* 搜动作序列 | 递归任务分解 | 效用打分选动作 |
-| 可控性 | 高（但易爆炸） | **最高** | 低（涌现不可预测） | 中高 | 中（曲线难调） |
-| 可涌现性 | 无 | 低 | **高** | 中高 | 中（软涌现） |
-| 可 QA / 调试 | 中 | **高** | 低 | 中 | 中 |
-| 多 NPC 协作 | 难 | 难 | 难（空间爆炸） | 中 | 中 |
-| 性能/并发 | 极好 | 好 | 差（>30/帧危险） | 中 | 好 |
-| 长期记忆 | ❌ | ❌ | ❌ | ❌ | ❌（仅数值衰减） |
-| 语义/对话 | ❌ | ❌ | ❌ | ❌ | ❌ |
-| 人格一致性 | ❌ | ❌ | ❌ | ❌ | 部分（靠数值） |
-| 与 LLM 生成式 NPC | 不相关 | **仅作执行外壳** | 不相关 | 不相关 | **可作动机层** |
-| 典型代表 | 早期敌人 | Halo/UE/多数 3A | F.E.A.R. | Horizon | The Sims/GW2 |
+| Core idea | State+transition | Tree-selective execution | A\* search action sequence | Recursive task decomposition | Utility-score action selection |
+| Controllability | High (but explodes) | **Highest** | Low (unpredictable emergence) | Medium-high | Medium (curves hard to tune) |
+| Emergence | None | Low | **High** | Medium-high | Medium (soft emergence) |
+| QA / debug | Medium | **High** | Low | Medium | Medium |
+| Multi-NPC collaboration | Hard | Hard | Hard (space explosion) | Medium | Medium |
+| Performance/concurrency | Excellent | Good | Poor (>30/frame risky) | Medium | Good |
+| Long-term memory | ❌ | ❌ | ❌ | ❌ | ❌ (numeric decay only) |
+| Semantic/dialogue | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Persona consistency | ❌ | ❌ | ❌ | ❌ | Partial (by numbers) |
+| vs. LLM generative NPC | Irrelevant | **Execution shell only** | Irrelevant | Irrelevant | **Motive layer possible** |
+| Typical reps | Early enemies | Halo/UE/most 3A | F.E.A.R. | Horizon | The Sims/GW2 |
 
-**关键判读**：五种技术都是"**从意图到动作**"的执行/控制层，差异只在"谁来决定动作序列"（硬编码 / 树 / 搜索 / 分解 / 打分）。**没有任何一种原生具备 Macha 强调的记忆、反思、语义感知、跨会话一致性。**
+**Key read**: All five techniques are an "**intent-to-action**" execution/control layer; they differ only in "who decides the action sequence" (hardcode / tree / search / decompose / score). **None natively has the memory, reflection, semantic perception, or cross-session consistency that Macha emphasizes.**
 
 ---
 
-## 2. 游戏引擎内建 AI 能力
+## 2. Built-in AI Capabilities of Game Engines
 
-### 2.1 Unreal Engine 5（行业最完整）
-- **组件族**：Behavior Tree + Blackboard、StateTree（BT 选择器 + FSM 状态/转移的混合）、Navigation System（NavMesh）、Environment Query System（EQS，给决策喂环境数据）、AI Perception（视/听/触感知）、MassEntity（数据导向大规模群体，Mass StateTree / Mass Crowd / Mass Signals）、**Smart Objects**（关卡中"可交互活动槽位"，经预订系统被 Agent 发现并使用）、Neural Network Engine（NN 推理）。
-- **功能边界**：提供从"感知→决策→导航→群体→交互"的**全栈执行层**；Smart Objects 让背景 NPC"动态发现并坐下/靠墙"而无需逐物体硬编码；MassEntity 可模拟上万 Agent。
-- **痛点清单**：
-  - 全栈但**零认知**：没有记忆/人格/语义层，NPC 仍是"无脑执行器"。
-  - 系统庞杂、学习曲线陡；MassEntity 基于 ECS，与面向对象 BP/C++ 心智不同。
-  - Smart Objects "不含执行逻辑"，只提供数据，集成成本仍在开发者侧。
-  - 与 LLM NPC 的桥接需自研（官方 NN Engine 偏模型推理，不提供对话认知）。
+### 2.1 Unreal Engine 5 (most complete in industry)
+- **Component family**: Behavior Tree + Blackboard, StateTree (hybrid of BT selector + FSM state/transition), Navigation System (NavMesh), Environment Query System (EQS, feeds environment data to decisions), AI Perception (sight/hearing/touch), MassEntity (data-oriented large-scale crowds, Mass StateTree / Mass Crowd / Mass Signals), **Smart Objects** (interactable activity slots in a level, discovered and used by Agents via a reservation system), Neural Network Engine (NN inference).
+- **Functional boundaries**: Provides a **full-stack execution layer** from "perception → decision → navigation → crowds → interaction"; Smart Objects let background NPCs "dynamically discover and sit down/lean on wall" without per-object hardcoding; MassEntity can simulate tens of thousands of Agents.
+- **Pain-point list**:
+  - Full stack but **zero cognition**: no memory/persona/semantic layer, NPCs remain "brainless executors."
+  - System is huge and steep to learn; MassEntity is ECS-based, different mental model from object-oriented BP/C++.
+  - Smart Objects "contain no execution logic," only provide data; integration cost remains on the developer side.
+  - Bridging to LLM NPCs requires self-build (official NN Engine leans toward model inference, provides no dialogue cognition).
 
 ### 2.2 Unity
-- **组件族**：
-  - **ML-Agents**（`com.unity.ml-agents`）：把 Unity 场景变成 RL/模仿学习环境；核心是 `Agent`（CollectObservations / OnActionReceived / Reward）、`Behavior Parameters`、`Sensor`、`Actuator`、`Policy`；训练在 Python 侧，推理经 **Sentis** 引擎在端侧跑。
-  - **Unity Behavior**（`com.unity.behavior`）：新版可视化行为树包。
-  - NavMesh / 传统 BT 插件（Behavior Designer 等）。
-- **功能边界**：ML-Agents 适合"学出来的运动/战术策略"（如走位、控制 NPC 行为、自动化测试），**不是**对话/认知框架；它明确"不包含训练算法，只做环境封装与模型嵌入"。
-- **痛点清单**：
-  - ML-Agents 训练仅支持 Mono 后端、不支持 IL2CPP；推理受端侧 CPU/GPU 限制；只接受自家 trainer 产出的模型。
-  - 与 LLM 生成式 NPC 的关系弱——它解决"强化学习控制"，不解决"记忆/人格/对话"。
-  - Unity Behavior 相对年轻，生态成熟度低于 Unreal BT。
+- **Component family**:
+  - **ML-Agents** (`com.unity.ml-agents`): Turns a Unity scene into an RL/imitation-learning environment; core is `Agent` (CollectObservations / OnActionReceived / Reward), `Behavior Parameters`, `Sensor`, `Actuator`, `Policy`; training on Python side, inference via **Sentis** engine on-device.
+  - **Unity Behavior** (`com.unity.behavior`): New visual behavior tree package.
+  - NavMesh / traditional BT plugins (Behavior Designer, etc.).
+- **Functional boundaries**: ML-Agents suits "learned locomotion/tactical strategy" (e.g., positioning, controlling NPC behavior, automated testing), **not** a dialogue/cognition framework; it explicitly "includes no training algorithms, only environment wrapping and model embedding."
+- **Pain-point list**:
+  - ML-Agents training supports Mono backend only, not IL2CPP; inference limited by on-device CPU/GPU; only accepts models from its own trainer.
+  - Weak relationship to LLM generative NPCs—it solves "reinforcement-learning control," not "memory/persona/dialogue."
+  - Unity Behavior is relatively young, ecosystem less mature than Unreal BT.
 
 ### 2.3 Godot 4
-- **组件族**：NavigationServer（2D/3D 独立、4.5+ 支持后台异步烘焙）、NavigationAgent、转向行为（steering）、第三方 **Beehave** 行为树（含调试视图）、状态机模式。Godot 本身**没有官方行为树/Utility 模块**，靠社区与用户自己实现。
-- **功能边界**：轻量、开源、适合独立游戏与 2D/3D 导航；Beehave 让 BT 开发门槛大幅降低。
-- **痛点清单**：
-  - **无内建高级 AI**：感知、决策、记忆全要自研或拼社区插件。
-  - 大型项目下仍依赖第三方（Beehave 等），标准化程度低。
-  - 对 LLM NPC 完全无内置支持。
+- **Component family**: NavigationServer (2D/3D independent, 4.5+ supports background async baking), NavigationAgent, steering behaviors, third-party **Beehave** behavior tree (with debug view), state-machine pattern. Godot itself **has no official behavior tree/Utility module**, relying on community and user self-implementation.
+- **Functional boundaries**: Lightweight, open source, suited for indie games and 2D/3D navigation; Beehave greatly lowers the BT development threshold.
+- **Pain-point list**:
+  - **No built-in advanced AI**: perception, decision, memory all need self-build or community plugin assembly.
+  - Large projects still depend on third parties (Beehave, etc.), low standardization.
+  - No built-in support for LLM NPCs.
 
-### 2.4 引擎 AI 对比矩阵
+### 2.4 Engine AI Comparison Matrix
 
-| 引擎 | 决策系统 | 感知 | 导航 | 群体规模 | 认知/记忆 | LLM NPC 支持 |
+| Engine | Decision system | Perception | Navigation | Crowd scale | Cognition/memory | LLM NPC support |
 |---|---|---|---|---|---|---|
-| Unreal 5 | BT/StateTree/HTN via Mass | AI Perception/EQS | NavMesh 强 | MassEntity 上万 | ❌ | 需自研 |
-| Unity | ML-Agents/Behavior/BT | 自研 | NavMesh | 中等 | ❌ | 弱（RL 向） |
-| Godot 4 | Beehave(BT)/FSM(自研) | 自研 | NavigationServer | 中 | ❌ | ❌ |
+| Unreal 5 | BT/StateTree/HTN via Mass | AI Perception/EQS | NavMesh strong | MassEntity 10k+ | ❌ | Self-build needed |
+| Unity | ML-Agents/Behavior/BT | Self-build | NavMesh | Medium | ❌ | Weak (RL-oriented) |
+| Godot 4 | Beehave(BT)/FSM(self) | Self-build | NavigationServer | Medium | ❌ | ❌ |
 
-**判读**：三家引擎都只覆盖"感知（原始信号）→ 决策（执行层）→ 动作"，**认知/记忆是真空地带**。Macha 应把"引擎 AI 系统"视为**可被适配的执行后端**。
+**Read**: All three engines only cover "perception (raw signal) → decision (execution layer) → action," **cognition/memory is a vacuum**. Macha should treat "engine AI systems" as **adaptable execution backends**.
 
 ---
 
-## 3. 开源 / 商业 NPC 框架与生成式 AI 平台
+## 3. Open-Source / Commercial NPC Frameworks and Generative AI Platforms
 
-### 3.1 NVIDIA ACE（autonomous game characters）
-- **架构**：一套数字人微服务（NIM），感知—认知—动作—渲染端到端：
-  - **Perception**：`NeMoAudio-4B-Instruct`（音景理解）、`Parakeet`（多语 ASR）、`NeMoVision-4B`（空间视觉）、Game State（把游戏状态转文本喂 SLM）。
-  - **Cognition**：`Mistral-Nemo-Minitron` 系列 SLM（2B/4B/8B，128k，指令遵循强，按人类决策频率 8–13 次/秒规划）。
-  - **Action**：动作选择、TTS（ElevenLabs/Cartesia）、Strategic Planning（接云端大模型）、**Reflection（自我反思修正）**。
-  - **Memory**：Embedding（E5-Large）做记忆召回。
-  - **渲染**：Audio2Face、AnimGraph、Omniverse RTX。
-  - **NVIGI SDK**：GPU 优化、插件式推理管理器，支持端侧/云侧，compute-in-graphics 技术。
-- **功能边界**：目前最接近"感知—记忆—认知—行动"完整闭环的**工业方案**，且明确把"Memory/Reflection/Strategic Planning"作为一等公民——这与 Macha 的 `direction.md` 框架高度同构。
-- **痛点清单**：
-  - **强绑定 NVIDIA RTX / 云**，端侧实时需高端 GPU，部署门槛与成本极高。
-  - 云方案有延迟与费用；多组件（NeMo/Riva/A2F）集成复杂度高。
-  - 闭源商业栈，**不可作为"标准骨架"**——它是产品不是标准；Macha 可借鉴其"感知-认知-动作-记忆"分层，但应做**开放、可替换、引擎无关**的等价物。
-  - 角色设计/记忆/防护仍需谨慎手工。
+### 3.1 NVIDIA ACE (autonomous game characters)
+- **Architecture**: A suite of digital-human microservices (NIM), end-to-end perception—cognition—action—rendering:
+  - **Perception**: `NeMoAudio-4B-Instruct` (soundscape understanding), `Parakeet` (multilingual ASR), `NeMoVision-4B` (spatial vision), Game State (turns game state into text for SLM).
+  - **Cognition**: `Mistral-Nemo-Minitron` series SLM (2B/4B/8B, 128k, strong instruction-following, plans at human decision frequency 8–13 times/sec).
+  - **Action**: action selection, TTS (ElevenLabs/Cartesia), Strategic Planning (connects to cloud LLM), **Reflection (self-reflection correction)**.
+  - **Memory**: Embedding (E5-Large) for memory recall.
+  - **Rendering**: Audio2Face, AnimGraph, Omniverse RTX.
+  - **NVIGI SDK**: GPU-optimized, plugin-style inference manager, supports on-device/cloud, compute-in-graphics technology.
+- **Functional boundaries**: Currently the **industrial solution** closest to a complete "perception—memory—cognition—action" loop, and explicitly treats "Memory/Reflection/Strategic Planning" as first-class citizens—highly isomorphic to Macha's `direction.md` framework.
+- **Pain-point list**:
+  - **Strongly bound to NVIDIA RTX / cloud**, on-device real-time needs high-end GPU, extremely high deployment threshold and cost.
+  - Cloud solution has latency and cost; multi-component (NeMo/Riva/A2F) integration complexity is high.
+  - Closed-source commercial stack, **cannot serve as a "standard skeleton"**—it is a product, not a standard; Macha can borrow its "perception-cognition-action-memory" layering, but should build an **open, replaceable, engine-agnostic** equivalent.
+  - Character design/memory/guardrails still need careful manual work.
 
-### 3.2 Inworld AI（角色大脑）
-- **架构**：角色引擎（Character Brain）+ 上下文网格（Contextual Mesh，自定义知识/世界设定/护栏）+ TTS；提供 Unity / Unreal / Web / Node SDK 与 REST API。
-- **运行时数据**：`CharacterProfile`、`EmotionState`、`Goals`、`KnowledgeFilter`、`RelationState`（信任/熟悉/尊重）、`Memory Retrieval` 节点、多角色对话管理。
-- **功能边界**：把"人格/情绪/目标/关系/记忆/知识过滤"做成结构化组件，是**目前最像 Macha 想做的"认知中间件"的商业产品**；No-code 创建、强引擎集成。
-- **痛点清单**：
-  - **封闭 SaaS**，高级功能贵、需技术知识；大规模部署算力成本高。
-  - 记忆/人格是**其私有实现**，开发者无法把"大脑"抽出来接自己的引擎或换模型——与 Macha"标准骨架、可插拔"理念冲突。
-  - 不可本地化/私有化深度定制（虽然称有本地 TTS 选项，但核心在云）。
+### 3.2 Inworld AI (character brain)
+- **Architecture**: Character Engine (Character Brain) + Contextual Mesh (custom knowledge/world setting/guardrails) + TTS; provides Unity / Unreal / Web / Node SDK and REST API.
+- **Runtime data**: `CharacterProfile`, `EmotionState`, `Goals`, `KnowledgeFilter`, `RelationState` (trust/familiarity/respect), `Memory Retrieval` node, multi-character dialogue management.
+- **Functional boundaries**: Makes "persona/emotion/goal/relationship/memory/knowledge filtering" structured components—**currently the commercial product most resembling the "cognitive middleware" Macha wants to build**; no-code creation, strong engine integration.
+- **Pain-point list**:
+  - **Closed SaaS**, advanced features expensive, requires technical knowledge; large-scale deployment compute cost high.
+  - Memory/persona are **its private implementation**; developers cannot pull the "brain" out to connect their own engine or swap models—conflicts with Macha's "standard skeleton, pluggable" philosophy.
+  - Cannot localize/privatize deep customization (though it claims local TTS options, the core is in the cloud).
 
 ### 3.3 Convai
-- **架构**：端到端语音对话管道（ASR + NLU + 生成 + TTS），Unity/Unreal SDK；**Character Crafting REST API**（创建/列出/更新角色、知识库、叙事、动作）；支持 **Bring Your Own LLM**（OpenAI 兼容端点）；World-aware（感知物体/位置/玩家状态）、Actions 映射到动画/导航/物体交互、Memory + Personality。
-- **功能边界**：强在"语音到语音 NPC"与"世界感知动作映射"，并开放了"自带模型"与 REST 接口——**互操作姿态最好**之一的平台。
-- **痛点清单**：
-  - 依赖网络与云端，受限设备延迟波动。
-  - 动作/导航/感知数据的接线仍需集成工作。
-  - 同样为商业 SaaS，大脑不可移植；"记忆"是其实现，非可替换标准。
+- **Architecture**: End-to-end voice-dialogue pipeline (ASR + NLU + generation + TTS), Unity/Unreal SDK; **Character Crafting REST API** (create/list/update characters, knowledge base, narrative, actions); supports **Bring Your Own LLM** (OpenAI-compatible endpoint); World-aware (perceives objects/locations/player state), Actions map to animation/navigation/object interaction, Memory + Personality.
+- **Functional boundaries**: Strong in "voice-to-voice NPC" and "world-perception action mapping," and opens "bring-your-own-model" and REST interfaces—**one of the platforms with the best interop posture**.
+- **Pain-point list**:
+  - Depends on network and cloud, latency fluctuates on constrained devices.
+  - Wiring of action/navigation/perception data still requires integration work.
+  - Also a commercial SaaS, brain not portable; "memory" is its implementation, not a replaceable standard.
 
-### 3.4 Altera（Project Sid，大型行为模型）
-- **架构**：把"装备 LLM 大脑模块的自主 Agent"放进 Minecraft，最多 1000 个并发，自发形成职业、经济、文化、宗教、税改投票等涌现社会行为；大脑由多个专用模块（反应/说话/规划）组成，受 Stanford Smallville（Generative Agents）启发。
-- **功能边界**：证明"**多 Agent + LLM + 轻量规则**"能产生惊人涌现社会行为，是研究侧"生成式 NPC 文明"的标杆。
-- **痛点清单**：
-  - 是**研究演示**，非可复用框架；架构细节（模块接口、记忆格式）未开源为标准。
-  - 强依赖 Minecraft + LLM，成本与延迟极高，不可直接用于产品。
-  - 对"单个可信 NPC 的角色一致性/可调试性"关注少于"群体涌现"。
+### 3.4 Altera (Project Sid, large behavior model)
+- **Architecture**: Puts "autonomous Agents equipped with LLM brain modules" into Minecraft, up to 1000 concurrent, spontaneously forming emergent social behaviors like professions, economy, culture, religion, tax-reform voting; brain composed of multiple dedicated modules (reaction/speech/planning), inspired by Stanford Smallville (Generative Agents).
+- **Functional boundaries**: Proves "**multi-Agent + LLM + lightweight rules**" can produce astonishing emergent social behavior, a benchmark on the research side for "generative NPC civilization."
+- **Pain-point list**:
+  - Is a **research demo**, not a reusable framework; architecture details (module interfaces, memory format) not open-sourced as a standard.
+  - Strongly depends on Minecraft + LLM, extremely high cost and latency, not directly usable in products.
+  - Less focus on "single believable NPC's persona consistency/debuggability" than on "group emergence."
 
-### 3.5 Rival Theory RAIN（Legacy，作为反面教材）
-- **架构**：Unity 老牌免费 AI 工具包，集成 Pathfinding + Behavior Tree + Goal-Oriented Behaviors + Sensors + 一键配置。
-- **现状/边界**：社区已停滞（官网论坛最后活跃约 2022，且提示"Asset Store 版本已过时"）；证明"**不维护的 AI 框架会被生态抛弃**"——Macha 若要做标准，必须解决**长期可维护性与开放治理**，否则重蹈 RAIN 覆辙。
-- **痛点清单**：停止维护、文档/版本碎片化、性能开销大（社区反馈有性能坑）。
+### 3.5 Rival Theory RAIN (Legacy, as a counter-example)
+- **Architecture**: Old popular free Unity AI toolkit, integrating Pathfinding + Behavior Tree + Goal-Oriented Behaviors + Sensors + one-click config.
+- **Status/boundaries**: Community has stalled (official forum last active around 2022, noting "Asset Store version is outdated"); proves "**an unmaintained AI framework gets abandoned by the ecosystem**"—if Macha wants to be a standard, it must solve **long-term maintainability and open governance**, or repeat RAIN's fate.
+- **Pain-point list**: Maintenance stopped, fragmented docs/versions, large performance overhead (community feedback reports performance pitfalls).
 
-### 3.6 平台对比矩阵
+### 3.6 Platform Comparison Matrix
 
-| 平台 | 认知层 | 记忆 | 引擎集成 | 开放/可移植 | 与 Macha 关系 |
+| Platform | Cognition layer | Memory | Engine integration | Open/portable | Relation to Macha |
 |---|---|---|---|---|---|
-| NVIDIA ACE | ✅ 完整分层 | ✅ Embedding | UE/Unity/自研 | ❌ NVIDIA 绑定 | 借鉴架构，不替换 |
-| Inworld | ✅ 结构化 | ✅ | UE/Unity/Web | ❌ SaaS | 借鉴，不替换 |
-| Convai | ◐ 对话向 | ◐ | UE/Unity | ◐ BYO-LLM/REST | 可互补/接口对齐 |
-| Altera | ✅ 多 Agent | ◐ | Minecraft | ❌ 研究 | 研究标杆 |
-| RAIN | ❌ 仅执行 | ❌ | Unity | ❌ 已停更 | 反例 |
+| NVIDIA ACE | ✅ Full layering | ✅ Embedding | UE/Unity/self | ❌ NVIDIA-bound | Borrow architecture, don't replace |
+| Inworld | ✅ Structured | ✅ | UE/Unity/Web | ❌ SaaS | Borrow, don't replace |
+| Convai | ◐ Dialogue-oriented | ◐ | UE/Unity | ◐ BYO-LLM/REST | Complementary/interface-aligned |
+| Altera | ✅ Multi-Agent | ◐ | Minecraft | ❌ Research | Research benchmark |
+| RAIN | ❌ Execution only | ❌ | Unity | ❌ Discontinued | Counter-example |
 
 ---
 
-## 4. 游戏脚本 / Modding AI 与经典模拟系统
+## 4. Game Scripting / Modding AI and Classic Simulation Systems
 
-### 4.1 Minecraft（Mineflayer / Project Sid）
-- **Mineflayer**：开源 JS/Python 高层的 Minecraft bot 框架；架构是**事件驱动 + 插件系统**，底层 `minecraft-protocol` 把网络包解析成结构化世界状态（`blocks/entities/inventory/physics`），上层 30+ 内部插件 + `mineflayer-pathfinder`（A\* 导航）。它本质是"**把游戏协议变成可编程 Agent 接口**"——这正是 Macha 想做的"感知/行动适配层"的范本。
-- **Project Sid**（见 §3.4）：LLM Agent 文明实验。
-- **痛点**：Mineflayer 只给"动作/感知原语"，**无认知/记忆**；LLM 上层需自己搭（如 DF/MC 的 LLM Agent 都自建知识层+决策层+执行层）。
+### 4.1 Minecraft (Mineflayer / Project Sid)
+- **Mineflayer**: Open-source JS/Python high-level Minecraft bot framework; architecture is **event-driven + plugin system**, lower layer `minecraft-protocol` parses network packets into structured world state (`blocks/entities/inventory/physics`), upper layer 30+ internal plugins + `mineflayer-pathfinder` (A\* navigation). It is essentially "**turning the game protocol into a programmable Agent interface**"—exactly the template for the "perception/action adaptation layer" Macha wants to build.
+- **Project Sid** (see §3.4): LLM Agent civilization experiment.
+- **Pain points**: Mineflayer only gives "action/perception primitives," **no cognition/memory**; the LLM upper layer must be built yourself (e.g., DF/MC LLM Agents all self-build knowledge layer + decision layer + execution layer).
 
-### 4.2 Skyrim / Creation Engine（AI Packages + LLM Mods）
-- **原生 AI**：每个 Actor 有一个 **Package Stack**（有序行为栈），周期性从顶向下评估条件，命中即执行（如"过午夜回家"）；Quest 用 Stages/Alias/Scripts/Scenes 组织叙事；脚本语言 **Papyrus**（慢、数据结构受限）。
-- **LLM Mod（Social NPCs / CiF-CK；SkyrimNet）**：学术界用 CiF（Comfort/Influence/Familiarity）社会状态 + 微观理论算"社交意愿"做涌现社交；**SkyrimNet** 则把 LLM 接进来，含 Papyrus API、向量化记忆、MCP Server（44+ 工具给外部 AI 助手）、Inja 提示模板热重载、以及 IntelEngine（NPC 跨单元格自主旅行/动态任务）等——这是"**在老引擎上硬接 LLM 认知**"的真实案例。
-- **痛点清单**：
-  - Papyrus 性能与表达能力瓶颈，复杂社会状态只能放在"玩家所在位置"局部管理。
-  - LLM Mod 各自造轮子（记忆、世界知识、提示模板、MCP），**没有统一标准**——正是 Macha 要 replace 的碎片化现状。
-  - 无官方记忆/反思抽象，全靠 Mod 作者手搓。
+### 4.2 Skyrim / Creation Engine (AI Packages + LLM Mods)
+- **Native AI**: Each Actor has a **Package Stack** (ordered behavior stack), periodically evaluated top-down for conditions, executes on match (e.g., "go home past midnight"); Quest uses Stages/Alias/Scripts/Scenes to organize narrative; scripting language **Papyrus** (slow, limited data structures).
+- **LLM Mod (Social NPCs / CiF-CK; SkyrimNet)**: Academia uses CiF (Comfort/Influence/Familiarity) social state + micro-theories to compute "social willingness" for emergent social behavior; **SkyrimNet** connects an LLM in, with Papyrus API, vectorized memory, MCP Server (44+ tools for external AI assistants), Inja prompt-template hot-reload, and IntelEngine (NPC cross-cell autonomous travel/dynamic quests), etc.—this is a real case of "**hard-wiring LLM cognition onto an old engine**."
+- **Pain-point list**:
+  - Papyrus performance and expressiveness bottleneck; complex social state can only be managed locally at "player location."
+  - LLM Mods each reinvent the wheel (memory, world knowledge, prompt templates, MCP), **no unified standard**—exactly the fragmented status quo Macha wants to replace.
+  - No official memory/reflection abstraction, all hand-built by mod authors.
 
-### 4.3 RimWorld（Lord 系统 + ThinkNode + LLM Mods）
-- **原生 AI**：分层——`LordJob`（战术目标，如 AssaultColony）建 `StateGraph`（状态机）协调**集群**；个体行为由 `ThinkNode_Duty`（职责节点，决策链顶端）按 `DutyDef` 索引到行为子树；底层 Job/Pathfinding 执行。即"**状态机管宏观、Duty 树管个体**"的混合架构。
-- **LLM Mod（RimAI Core V4 / RWAILib / RimTalk）**：RimAI Core 明确分层——UI / Modules（Orchestration/LLM/WorldAccess/Persistence/Eventing/Persona）/ Infrastructure（DI/Scheduler/Cache/Config）/ Contracts；`IOrchestrationService` 做"五步查询工作流"，`IToolRegistryService` 动态扩展 AI 能力，`IPersonaService` 把"是谁"与"能做什么"分离，`IPersistenceService` 解耦存档。这是**最接近 Macha 模块划分的开源实现**。
-- **痛点清单**：
-  - 原生 RimWorld AI 是纯规则/FSM，**无 LLM、无语义记忆**。
-  - LLM Mod 各自架构不同（RimAI 用 SOLID+异步，RWAILib 用子模块，RimTalk 用 GameComponent 管道），**缺乏跨 Mod 标准**。
-  - 线程/主线程数据安全、调度、缓存、重试全员手搓——Macha 应把这些做成"开箱即用内核"。
+### 4.3 RimWorld (Lord system + ThinkNode + LLM Mods)
+- **Native AI**: Layered—`LordJob` (tactical goal, e.g., AssaultColony) builds `StateGraph` (state machine) to coordinate **the swarm**; individual behavior is indexed by `ThinkNode_Duty` (duty node, top of decision chain) via `DutyDef` to a behavior subtree; lower layer Job/Pathfinding executes. I.e., a hybrid architecture of "**state machine governs macro, Duty tree governs individual**."
+- **LLM Mod (RimAI Core V4 / RWAILib / RimTalk)**: RimAI Core has explicit layering—UI / Modules (Orchestration/LLM/WorldAccess/Persistence/Eventing/Persona) / Infrastructure (DI/Scheduler/Cache/Config) / Contracts; `IOrchestrationService` does a "five-step query workflow", `IToolRegistryService` dynamically extends AI capability, `IPersonaService` separates "who" from "what it can do", `IPersistenceService` decouples saves. This is **the open-source implementation closest to Macha's module breakdown**.
+- **Pain-point list**:
+  - Native RimWorld AI is pure rules/FSM, **no LLM, no semantic memory**.
+  - LLM Mods have different architectures (RimAI uses SOLID+async, RWAILib uses submodules, RimTalk uses GameComponent pipeline), **lack of cross-Mod standard**.
+  - Thread/main-thread data safety, scheduling, caching, retry all hand-built—Macha should make these an "out-of-the-box kernel."
 
-### 4.4 The Sims（Needs-based AI）
-- **架构**：**需求驱动（Needs-based AI）**——每个 Sim 有互竞的动机（饥饿/卫生/精力/社交/娱乐…，0–100 衰减）；世界中的物体**"广告"**自己能提供的交互；AI 循环 = 扫描附近物体广告 → 按当前需求给每个广告打分 → 选最高分 → 把动作序列压入队列执行。The Sims 4 进一步用**层次规划 + 商品-交互映射 + LOD（不在焦点的 Sim 自动满足）**优化到支持数千角色。
-- **功能边界**：Utility AI 思想的最经典落地，**最接近"动机/需求驱动人格"**；动作能"自我配置"（按需求自动选），且易理解易实现。
-- **痛点清单**：
-  - 需求与广告**需手工定义**；打分/距离衰减函数要经验调参（Zubek 论文给出衰减公式）。
-  - **没有语言/语义/长期叙事记忆**——Sims 不会"记恨"或"反思"，只是数值驱动。
-  - 对 LLM 开放对话无能为力，只能作"自主行为动机层"。
+### 4.4 The Sims (Needs-based AI)
+- **Architecture**: **Needs-based AI**—each Sim has competing motives (hunger/hygiene/energy/social/fun…, 0–100 decaying); objects in the world "advertise" interactions they can provide; AI loop = scan nearby object ads → score each ad by current needs → pick highest → push action sequence into queue to execute. The Sims 4 further uses **hierarchical planning + item-interaction mapping + LOD (Sims out of focus auto-satisfied)** to optimize support for thousands of characters.
+- **Functional boundaries**: The most classic landing of Utility AI thought, **closest to "motive/need-driven persona"**; actions can "self-configure" (auto-selected by need), easy to understand and implement.
+- **Pain-point list**:
+  - Needs and ads **require hand-definition**; scoring/distance-decay functions need experienced tuning (Zubek's paper gives decay formula).
+  - **No language/semantic/long-term narrative memory**—Sims won't "hold grudges" or "reflect," only number-driven.
+  - Powerless for LLM open dialogue, can only serve as "autonomous-behavior motive layer."
 
-### 4.5 Dwarf Fortress（Agent-based Emergent Simulation）
-- **架构**：每个矮人是一个**确定性状态机 Agent**，受 500+ 互锁的需求/技能/记忆/情绪/社会关系/信念驱动；物理与生态（岩层、岩浆、温度、压力）全部模拟；世界先生成约 1000 年历史，再让玩家介入。**复杂性来自刚性规则系统的涌现交互**，而非神经网络。
-- **功能边界**：游戏史上最深的"可信涌现"模拟之一；研究者明确把它与 Stanford Generative Agents 对比——DF 用"刚性因果规则"产生意义，GA 用"LLM 事后合理化行为"。
-- **痛点清单**：
-  - 无 LLM、无自然语言；"人格"是规则涌现，不可对话。
-  - 70 万行代码、学习曲线陡峭；**与 Macha 的关系是"设计哲学借鉴"**：规则系统的涌现 + 可加一个"AI 策划的记忆核心"做情感层（研究界已提出 hybrid：LLM 写叙事背景，保留 DF 的确定性基底）。
-  - 直接做 AI Agent 也很难（DFHack 结构化接口才可行，LLM 空间推理弱）。
+### 4.5 Dwarf Fortress (Agent-based Emergent Simulation)
+- **Architecture**: Each dwarf is a **deterministic state-machine Agent**, driven by 500+ interlocking needs/skills/memory/emotions/social relations/beliefs; physics and ecology (rock layers, magma, temperature, pressure) all simulated; world first generates ~1000 years of history, then player intervenes. **Complexity comes from emergent interaction of rigid rule systems**, not neural networks.
+- **Functional boundaries**: One of the deepest "believable emergence" simulations in game history; researchers explicitly compare it with Stanford Generative Agents—DF produces meaning with "rigid causal rules," GA with "LLM post-hoc rationalization of behavior."
+- **Pain-point list**:
+  - No LLM, no natural language; "persona" is rule-emergent, not dialogue-able.
+  - 700k lines of code, steep learning curve; **Macha's relation is "design-philosophy borrowing"**: rule-system emergence + can add an "AI-curated memory core" for the emotion layer (research has proposed hybrid: LLM writes narrative background, keep DF's deterministic base).
+  - Hard to do AI Agent directly too (only feasible with DFHack structured interface, LLM weak at spatial reasoning).
 
-### 4.6 模拟/Mod 系统对比矩阵
+### 4.6 Simulation/Mod System Comparison Matrix
 
-| 系统 | 决策范式 | 记忆/人格 | 涌现性 | 对 Macha 的启发 |
+| System | Decision paradigm | Memory/persona | Emergence | Inspiration for Macha |
 |---|---|---|---|---|
-| Minecraft/Mineflayer | 事件驱动+插件 | ❌（自接） | 中 | **感知/行动适配层范本** |
-| Skyrim (Package/Quest) | 包栈/Quest 栈 | ❌ | 低 | 老引擎硬接 LLM 的痛点样本 |
-| SkyrimNet (LLM Mod) | LLM + MCP | ◐ 向量记忆 | 中 | 碎片化集成的反面 |
-| RimWorld (Lord/Duty) | FSM + Duty 树 | ❌ | 中 | 集群+个体分层范式 |
-| RimAI Core (LLM Mod) | 分层 Orchestration | ◐ | 中 | **模块划分最接近 Macha** |
-| The Sims | Needs-based Utility | 数值衰减 | 中高 | 动机驱动人格的工业样板 |
-| Dwarf Fortress | 确定性 Agent 规则 | 规则记忆 | **极高** | 规则涌现 + 记忆核心 hybrid |
+| Minecraft/Mineflayer | Event-driven+plugin | ❌ (self-connect) | Medium | **Perception/action adaptation-layer template** |
+| Skyrim (Package/Quest) | Package stack/Quest stack | ❌ | Low | Pain-point sample of hard-wiring LLM onto old engine |
+| SkyrimNet (LLM Mod) | LLM + MCP | ◐ Vector memory | Medium | Counter-example of fragmented integration |
+| RimWorld (Lord/Duty) | FSM + Duty tree | ❌ | Medium | Swarm+individual layered paradigm |
+| RimAI Core (LLM Mod) | Layered Orchestration | ◐ | Medium | **Module breakdown closest to Macha** |
+| The Sims | Needs-based Utility | Numeric decay | Medium-high | Industrial template of motive-driven persona |
+| Dwarf Fortress | Deterministic Agent rules | Rule memory | **Extreme** | Rule emergence + memory-core hybrid |
 
 ---
 
-## 5. 综合判断：Macha 应当 Replace 还是 Wrap / 兼容
+## 5. Synthesis: Should Macha Replace or Wrap / Compatibilize
 
-### 5.1 决策矩阵
+### 5.1 Decision Matrix
 
-| 技术 / 系统 | 定位 | Macha 姿态 | 理由 |
+| Tech / system | Positioning | Macha posture | Reason |
 |---|---|---|---|
-| FSM | 执行层基线 | **Wrap（兼容）** | 大量存量敌人/UI 用 FSM；Macha 可把"动作"翻译成 FSM 或反之适配。 |
-| 行为树 BT | 执行层主流 | **Wrap（兼容，首选执行器）** | 行业事实标准、可控可 QA；Macha 的"Action 模块"可直接驱动 BT 节点。 |
-| GOAP | 执行层（规划） | **Wrap（可选执行器）** | 仅在"战术动作规划"子场景有用；Macha 的认知层输出"意图"，可下发给 GOAP 规划器。 |
-| HTN | 执行层（规划） | **Wrap（可选执行器）** | 同 GOAP，且更可控；适合作为 Macha 规划结果的"确定性落地"。 |
-| Utility AI | 执行层（动机评分） | **Wrap + 借鉴** | 可作 Macha"需求/动机层"的落地实现；其 Consideration 曲线思想可纳入人格模型。 |
-| Unreal AI 全家桶 | 引擎执行后端 | **Wrap（适配器）** | 提供 BT/StateTree/Mass/SmartObjects 适配器，让 Macha 认知内核驱动它们。 |
-| Unity ML-Agents/Behavior | 引擎执行后端 | **Wrap（适配器）** | Macha 认知层 + Unity 执行层组合。 |
-| Godot / Beehave | 引擎执行后端 | **Wrap（适配器）** | 轻量集成。 |
-| NVIDIA ACE | 商业认知栈 | **借鉴架构 + 不替换** | ACE 的"感知-认知-记忆-动作-反思"分层值得抄；但 Macha 做开放等价物，不绑定 NVIDIA。 |
-| Inworld / Convai | 商业角色大脑 | **接口对齐 / 互补** | 通过 OpenAI 兼容 / MCP / Tool Use 让 Macha 与它们互通；不把"大脑"锁死在 SaaS。 |
-| Altera Project Sid | 研究标杆 | **研究参照** | 多 Agent 涌现方法论学习。 |
-| RimAI Core / SkyrimNet 式 LLM Mod | 碎片化自研 | **Replace（取代其认知内核）** | 它们手搓的记忆/人格/编排/调度，正是 Macha 要标准化、可复用的部分。 |
-| RAIN 式停更框架 | Legacy | **反面教材** | 提醒 Macha 必须可维护、开放治理。 |
-| The Sims Needs / DF 规则 | 设计哲学 | **借鉴（不替换）** | 动机驱动与规则涌现作为行为学参考。 |
+| FSM | Execution-layer baseline | **Wrap (compatibilize)** | Lots of existing enemies/UI use FSM; Macha can translate "actions" to FSM or adapt vice versa. |
+| Behavior Tree BT | Execution-layer mainstream | **Wrap (compatibilize, preferred executor)** | Industry de facto standard, controllable and QA-able; Macha's "Action module" can directly drive BT nodes. |
+| GOAP | Execution-layer (planning) | **Wrap (optional executor)** | Only useful in "tactical action planning" sub-scenarios; Macha's cognition layer outputs "intent," can be handed down to GOAP planner. |
+| HTN | Execution-layer (planning) | **Wrap (optional executor)** | Same as GOAP, and more controllable; suited as "deterministic landing" of Macha's planning results. |
+| Utility AI | Execution-layer (motive scoring) | **Wrap + borrow** | Can serve as the landing implementation of Macha's "need/motive layer"; its Consideration-curve idea can feed the persona model. |
+| Unreal AI suite | Engine execution backend | **Wrap (adapter)** | Provide BT/StateTree/Mass/SmartObjects adapters, let Macha cognition kernel drive them. |
+| Unity ML-Agents/Behavior | Engine execution backend | **Wrap (adapter)** | Macha cognition layer + Unity execution layer combination. |
+| Godot / Beehave | Engine execution backend | **Wrap (adapter)** | Lightweight integration. |
+| NVIDIA ACE | Commercial cognition stack | **Borrow architecture + don't replace** | ACE's "perception-cognition-memory-action-reflection" layering is worth copying; but Macha builds an open equivalent, not bound to NVIDIA. |
+| Inworld / Convai | Commercial character brain | **Interface align / complement** | Via OpenAI-compatible / MCP / Tool Use let Macha interoperate with them; don't lock the "brain" in SaaS. |
+| Altera Project Sid | Research benchmark | **Research reference** | Multi-Agent emergence methodology learning. |
+| RimAI Core / SkyrimNet-style LLM Mod | Fragmented self-build | **Replace (replace its cognition kernel)** | Their hand-built memory/persona/orchestration/scheduling is exactly the part Macha wants to standardize and reuse. |
+| RAIN-style discontinued framework | Legacy | **Counter-example** | Reminder that Macha must be maintainable, open-governed. |
+| The Sims Needs / DF rules | Design philosophy | **Borrow (don't replace)** | Motive-driven and rule-emergence as behavior-science reference. |
 
-### 5.2 核心论点（Replace vs Wrap）
+### 5.2 Core Argument (Replace vs Wrap)
 
-**Replace（Macha 自己做标准的部分）—— 认知/记忆/反思/人格这一"上层"：**
-- 长期记忆与检索（向量/图谱，对标 ACE Embedding、Inworld Memory、SkyrimNet 向量记忆）。
-- 角色一致性 / 人格模型（对标 Inworld Emotion/Goals/Persona、RimAI PersonaService）。
-- 语义感知抽象（把游戏事件抽成结构化 Observation，对标 Mineflayer 的世界状态、Macha `direction.md` 的 Perception）。
-- 反思与规划（对标 ACE Reflection、Generative Agents 反思、RimAI Orchestration 五步）。
-- 跨 Mod/跨框架的**统一接口与编排**（replace 掉 RimAI/RWAILib/RimTalk/SkyrimNet 各自为政的"大脑"实现）。
+**Replace (the part Macha builds as standard) — the cognitive/memory/reflection/persona "upper layer":**
+- Long-term memory and retrieval (vector/graph, cf. ACE Embedding, Inworld Memory, SkyrimNet vector memory).
+- Character consistency / persona model (cf. Inworld Emotion/Goals/Persona, RimAI PersonaService).
+- Semantic perception abstraction (abstracting game events into structured Observation, cf. Mineflayer's world state, Macha `direction.md`'s Perception).
+- Reflection and planning (cf. ACE Reflection, Generative Agents reflection, RimAI Orchestration five-step).
+- **Unified interface and orchestration across Mods/frameworks** (replace the go-our-own-way "brain" implementations of RimAI/RWAILib/RimTalk/SkyrimNet).
 
-**Wrap / 兼容（Macha 适配、不重造的部分）—— 执行/控制"下层"：**
-- 行为树、GOAP、HTN、Utility、FSM：作为 Macha `Action` 模块可下发的"动作执行器"。Macha 决定"做什么/为什么"，它们决定"怎么一步步做"。
-- 各大引擎的 AI 系统：Unreal BT/Mass/SmartObjects、Unity ML-Agents/Behavior、Godot Beehave——通过**适配器**接入，Macha 认知内核作为"大脑"挂在这些身体上。
-- 商业角色平台（ACE/Inworld/Convai）：通过 **MCP / OpenAI 兼容 Tool Use / REST** 建立互操作，Macha 可作为"上层认知"或"并行大脑"与之协同，而非替代其商业价值。
+**Wrap / compatibilize (the part Macha adapts, doesn't rebuild) — execution/control "lower layer":**
+- Behavior Tree, GOAP, HTN, Utility, FSM: as the "action executors" Macha's `Action` module can hand down. Macha decides "what/why," they decide "how step by step."
+- The AI systems of major engines: Unreal BT/Mass/SmartObjects, Unity ML-Agents/Behavior, Godot Beehave—accessed via **adapters**, Macha's cognition kernel hangs as the "brain" on these bodies.
+- Commercial character platforms (ACE/Inworld/Convai): via **MCP / OpenAI-compatible Tool Use / REST** establish interoperability; Macha can collaborate with them as "upper cognition" or "parallel brain," rather than replacing their commercial value.
 
-### 5.3 一句话定位（供 team 对齐）
-> **Macha = 开放的"认知/记忆/人格"标准内核 + 到行为树/GOAP/HTN/Utility/各大引擎/商业平台的适配层。** 现有工业标准全部位于 Macha 的"下方执行层"，Macha 兼容并驱使他们；现有开源 LLM Mod 的"记忆/人格内核"则是 Macha 要标准化、取代的碎片化现状。
-
----
-
-## 6. 给 Macha 工程实现的启示（落地建议）
-
-1. **分层清晰**：认知内核（Memory / Perception / Reasoning / Reflection / Persona）与执行层（Action Adapter → BT/GOAP/HTN/Utility/引擎）严格解耦，参考 RimAI Core 的 Modules/Contracts 分层与 direction.md 的"感知—记忆—推理—行动"。
-2. **标准接口**：定义 `Agent` / `MemoryStore` / `PerceptionSource` / `ActionSink` 四类最小接口；ActionSink 提供 BT/HTN/GOAP/引擎多后端实现（对标 ACE 的 NVIGI 插件式、Convai 的 REST/BYO-LLM）。
-3. **互操作优先**：对外暴露 **MCP Server + OpenAI 兼容 Tool Use**（SkyrimNet 已证明 MCP 在游戏里可行），让 Macha 既能吃外部工具，也能被外部 AI 调用。
-4. **可观测/可调试**：BT 的胜利靠可视化调试；Macha 必须内置"记忆流/决策链/人格状态"的可观测面板，否则重蹈 GOAP"不可预测、难 QA"的覆辙。
-5. **可维护治理**：以 RAIN 停更为戒，采用开放仓库 + 清晰版本/兼容策略，避免被单一厂商或维护者绑架。
-6. **借鉴而非绑定**：抄 ACE 的分层、Inworld 的结构化人格组件、The Sims 的动机驱动、DF 的规则涌现，但全部做成**引擎无关、模型无关、可私有化部署**的开源标准。
+### 5.3 One-Line Positioning (for team alignment)
+> **Macha = an open "cognition/memory/persona" standard kernel + an adaptation layer to Behavior Trees/GOAP/HTN/Utility/major engines/commercial platforms.** All existing industry standards sit in Macha's "lower execution layer," which Macha compatibilizes and drives; the "memory/persona kernels" of existing open-source LLM Mods are the fragmented status quo Macha wants to standardize and replace.
 
 ---
 
-## 7. 来源收集（Source Collection）
+## 6. Implications for Macha Engineering (Landing Suggestions)
 
-> 格式遵循 `information_needs.md` 约定。未找到明确公开 URL 的二手/社区资料，已显式标注"未检索到稳定链接"，未编造。
-
----
-
-【类别】工程实现（经典架构）
-【标题】Game AI Uncovered, Vol. 1 — Behavior Trees（含 Isla 对 Halo 2 / BT 起源与 Reactive BT 的讨论）
-【链接】https://gamedevelopment.com/programming/book-excerpt-game-ai-uncovered-volume-one
-【一句话摘要】BT 由 Damian Isla 在 Halo 2 中为改进 FSM 而发明，已成行业默认；传统 BT 不 reactive，需 Reactive BT 补丁。
-【关键结论】
-1. BT 现已成为跨行业 AI 行为首选，Epic 的 Unreal 内建 BT。
-2. 传统 BT 与黑板（Blackboard，1:N 共享数据）配合；组合节点（Sequence/Selector/Parallel）+ 装饰 + 叶子。
-3. 传统 BT 非响应式，突发事件需额外机制。
-4. 对生成式 NPC，BT 只能作"执行外壳"，无记忆/认知。
-【可复用的东西】BT 节点分类、黑板数据流图、Reactive BT 思路。
-
-【类别】工程实现（经典架构）
-【标题】Three States and a Plan: The A.I. of F.E.A.R.（Jeff Orkin，GOAP 奠基论文）
-【链接】https://www.gamedevs.org/uploads/three-states-plan-ai-of-fear.pdf
-【一句话摘要】F.E.A.R. 用 GOAP 把敌人 FSM 压到 3 个状态，战术智能全部来自 A\* 规划器；是 GOAP 最权威的一手文献。
-【关键结论】
-1. GOAP 本质是 STRIPS 规划在游戏里的实时化，A\* 在"世界状态空间"搜索。
-2. 动机是 1 个 AI 程序员要管大量角色，组合行为不可管理。
-3. "FSM 告诉你每时每刻怎么做；规划系统告诉你目标与动作，让 AI 自己决定序列。"
-4. 因可控性/QA 困境，GOAP 未能成为主导范式，BT 胜出。
-【可复用的东西】GOAP 三要素（WorldState/Action/Goal）数据模型、规划器架构。
-
-【类别】工程实现（经典架构）
-【标题】GOAP 入门与行业反思（theneuralbase / beatai）
-【链接】https://theneuralbase.com/ai-for-gaming/learn/beginner/goal-oriented-action-planning-goap ；https://beatai.org/ai-insights/game-ai-is-not-about-intelligence
-【一句话摘要】GOAP 适合 10–50 NPC 的小动作空间，但"生产现实（可控性）"而非技术局限使其未普及；游戏 AI 受性能/QA/可预测性约束。
-【关键结论】
-1. GOAP 单 NPC 强，多 NPC 协作需显式多智能体动作（爆炸）。
-2. 规划延迟在 >30 并发/帧时不可接受。
-3. 行为树流行是因为"对设计师友好 + 可控 + 可可视化调试"。
-4. 游戏 AI 必须满足一堆与"智能"无关的工程约束。
-【可复用的东西】GOAP 适用边界清单、cost-tuning 工作流建议。
-
-【类别】工程实现（经典架构）
-【标题】Hierarchical Task Network（HTN）理论与游戏应用（Game AI Pro / 社区译介）
-【链接】https://www.gameaipro.com/ （HTN 章节见 Steve Rabin 编《Game AI Pro》；社区译介：侑虎科技 UWA 文章"分层任务网络 HTN"）
-【一句话摘要】HTN 用"复合任务→方法→原子任务"递归分解做规划，以领域知识引导搜索，比 GOAP 更可控可预测；用于 Horizon: Zero Dawn 等。
-【关键结论】
-1. HTN 与 GOAP 是仅有的两种用"世界状态"做规划的经典方法。
-2. 规划阶段用世界状态副本"脑补推演"，执行阶段回写真实状态。
-3. 搜索空间比 GOAP 小、可控性更好。
-4. 仍依赖人工编写领域知识，对记忆/对话无能为力。
-【可复用的东西】HTN 三类任务（复合/方法/原子）模型、WorldState 字典实现思路。
-
-【类别】工程实现（经典架构）
-【标题】Utility AI：Choosing Effective Utility-Based Considerations（Mike Lewis, Guild Wars 2, Game AI Pro 3）
-【链接】https://www.gameaipro.com/GameAIPro3/GameAIPro3_Chapter13_Choosing_Effective_Utility-Based_Considerations.pdf
-【一句话摘要】Utility AI 把多输入映射到归一化效用空间，每个动作经 Consideration + 响应曲线连乘打分取最高；GW2 实战。
-【关键结论】
-1. 架构 = DSE（决策评分器）经 think cycle 打分，最高分决定动作。
-2. Consideration 归一化到 [0,1]，经响应曲线重映射；任一为 0 即整体出局（早退）。
-3. 数据驱动、设计师友好，但"如何选有效 Consideration"是手艺。
-4. 适合连续加权、共享知识的决策。
-【可复用的东西】DSE/Consideration/响应曲线设计、Infinite Axis Utility System 架构。
-
-【类别】工程实现（经典架构）
-【标题】Utility AI 理论与 Dave Mark 资源（Behavioral Mathematics for Game AI）
-【链接】http://intrinsicalgorithm.com/IAonAI/2013/02/both-my-gdc-lectures-on-utility-theory-free-on-gdc-vault/ （出自 gamedev.net 论坛 Dave Mark 本人引用）；论坛讨论 https://gamedev.net/forums/topic/699681-questions-about-utility-ai
-【一句话摘要】Utility AI 由 Dave Mark 在游戏界普及，The Sims 是其经典样例；用动机打分选动作。
-【关键结论】
-1. The Sims 每个 Actor 有饥饿/卫生/精力/社交等动机，按动机对交互打分。
-2. 公式简单可分析，比模糊逻辑更可控。
-3. 复杂效用需"期望效用"概念综合多轴。
-【可复用的东西】动机→效用映射范式、The Sims 动机清单。
-
-【类别】工程实现（引擎）
-【标题】Unreal Engine 5 Artificial Intelligence（官方文档）
-【链接】https://docs.unrealengine.com/5.1/zh-CN/artificial-intelligence-in-unreal-engine ；https://docs.unrealengine.com/en-US/InteractiveExperiences/ArtificialIntelligence
-【一句话摘要】UE 提供 BT/Blackboard/StateTree/Nav/Perception/EQS/MassEntity/SmartObjects/NN Engine 全栈 AI；但无认知/记忆层。
-【关键结论】
-1. Behavior Tree + Blackboard 是决策核心；StateTree = BT 选择器 + FSM 状态。
-2. Smart Objects 用预订系统让 Agent 动态发现并使用关卡交互槽。
-3. MassEntity 数据导向，可模拟上万群体。
-4. 全栈仍缺记忆/人格/语义，LLM NPC 需自研桥接。
-【可复用的东西】BT/StateTree/SmartObjects/Mass 架构图、组件职责划分。
-
-【类别】工程实现（引擎）
-【标题】Smart Objects in Unreal Engine（官方概述）
-【链接】https://dev.epicgames.com/documentation/en-us/unreal-engine/smart-objects-in-unreal-engine---overview
-【一句话摘要】Smart Objects 是"关卡中可经预订系统使用的活动集合"，只提供数据不含执行逻辑。
-【关键结论】
-1. 由 Subsystem 全局管理、空间分区索引、按 Gameplay Tag 查询。
-2. 定义含 Activity Tags / Slots / Behavior Definition。
-3. Agent 搜索→认领 Slot→执行自身逻辑。
-【可复用的东西】"可发现交互槽位"的抽象，可借鉴进 Macha 的 Action/交互模型。
-
-【类别】工程实现（引擎）
-【标题】Unity ML-Agents Overview（官方手册）
-【链接】https://docs.unity3d.com/Packages/com.unity.ml-agents@3.0/manual
-【一句话摘要】ML-Agents 把 Unity 场景变 RL 环境，核心是 Agent/Sensor/Actuator/Policy，训练在 Python、推理经 Sentis；不含训练算法本身。
-【关键结论】
-1. Agent 生成观察、执行动作、接收奖励；Behavior 指定行为。
-2. 训练仅 Mono 后端、不支持 IL2CPP；推理受端侧算力限制。
-3. 只接受自家 trainer 模型。
-4. 是"强化学习控制"框架，非对话/认知框架。
-【可复用的东西】Agent/Sensor/Actuator 抽象、Sentis 端侧推理思路（可作 Macha 执行后端）。
-
-【类别】工程实现（引擎）
-【标题】AI Navigation in Godot 4.3+（含 BT / Steering / 异步烘焙）
-【链接】https://lobehub.com/zh/skills/jame581-godotprompter-ai-navigation ；https://qumge.com/en/skills/jame581/GodotPrompter/ai-navigation
-【一句话摘要】Godot 4 无官方高级 AI，靠 NavigationServer + 社区 Beehave BT + 自研 FSM；4.4+ 支持后台异步烘焙。
-【关键结论】
-1. NavigationAgent + 转向行为 + BT/巡逻模式代码俱全。
-2. 4.5 把 2D/3D 导航服务器拆分独立，性能更好。
-3. 大型项目依赖第三方，标准化程度低。
-4. 对 LLM NPC 无内置支持。
-【可复用的东西】轻量 BT（Sequence/Selector/Action）GDScript/C# 实现、导航避障模式。
-
-【类别】工程实现（引擎/社区）
-【标题】Behavior Tree AI for Godot — Beehave 指南
-【链接】http://www.blog.brightcoding.dev/2025/11/25/behavior-tree-ai-for-godot-the-ultimate-guide-to-creating-intelligent-npcs-that-players-actually-remember-2024 （插件 github.com/bitbrain/beehave）
-【一句话摘要】Beehave 让 Godot 用可视化 BT 造 NPC，含运行时调试视图；给出守卫/群体/商人案例。
-【关键结论】
-1. 插件化 BT 大幅降低 Godot NPC 门槛。
-2. 安全规则：别在 _tick 阻塞、别每帧重算路径。
-3. 案例显示 BT 可减少 AI bug、稳定 FPS。
-【可复用的东西】Godot BT 节点设计、调试视图范式。
-
-【类别】工程实现（生成式平台）
-【标题】Bring NVIDIA ACE AI Characters to Games with the new In-Game Inferencing SDK (NVIGI)
-【链接】https://developer.nvidia.com/blog/bring-nvidia-ace-ai-characters-to-games-with-the-new-in-game-inference-sdk
-【一句话摘要】ACE 是数字人生成式 AI 套件，感知—认知—动作—记忆—渲染端到端；NVIGI 是 GPU 优化的插件式推理管理器。
-【关键结论】
-1. 感知：NeMoAudio-4B / Parakeet ASR / NeMoVision-4B / Game State。
-2. 认知：Mistral-Nemo-Minitron SLM（2B/4B/8B，按人脑决策频率）。
-3. 动作：动作选择 / TTS / Strategic Planning / Reflection。
-4. 记忆：E5-Large Embedding 召回。
-【可复用的东西】"感知-认知-记忆-动作"分层（与 Macha direction.md 同构）、NVIGI 插件式架构。
-
-【类别】工程实现（生成式平台）
-【标题】NVIDIA ACE Autonomous Game Characters（CES 2025，官方博客）
-【链接】https://www.nvidia.com/en-ph/geforce/news/nvidia-ace-autonomous-ai-companions-pubg-naraka-bladepoint/
-【一句话摘要】ACE 从对话 NPC 扩展到"自主游戏角色"，用 SLM 感知/规划/行动；明确把 Memory/Reflection 作为一等公民。
-【关键结论】
-1. 人类决策模型 = 感知 + 动机/欲望 + 记忆 → 认知 → 行动 → 存回记忆。
-2. Reflection（反思修正）是 Action 的一类重要动作。
-3. 已落地 PUBG / inZOI / NARAKA / MIR5 等。
-【可复用的东西】"人类决策微观模型"，可直接作为 Macha 认知循环蓝本。
-
-【类别】工程实现（生成式平台）
-【标题】NVIDIA ACE Core Digital Human Technologies（DeepWiki）
-【链接】https://deepwiki.com/NVIDIA/ACE/2-core-digital-human-technologies
-【一句话摘要】ACE 微服务栈：Riva ASR/TTS/NMT、Audio2Face、AnimGraph、Omniverse RTX 等。
-【关键结论】
-1. 各 NIM 微服务职责清晰、可组合。
-2. 支持企业版与早期访问模型。
-3. 渲染与语音与认知解耦。
-【可复用的东西】微服务职责划分，Macha 可做开源等价微服务。
-
-【类别】工程实现（生成式平台）
-【标题】Inworld Character Engine — Unreal Runtime Character Reference
-【链接】https://docs.inworld.ai/unreal-engine/runtime/character-reference/overview
-【一句话摘要】Inworld 把人格/情绪/目标/关系/记忆做成结构化组件；提供多引擎 SDK 与 REST API。
-【关键结论】
-1. 组件含 CharacterProfile / EmotionState / Goals / KnowledgeFilter / RelationState / Memory Retrieval。
-2. 支持多角色对话管理与触发式交互。
-3. 是目前最像"认知中间件"的商业产品。
-【可复用的东西】结构化人格/情绪/关系/记忆组件定义，可作 Macha Persona/Memory 模块的参考 schema。
-
-【类别】工程实现（生成式平台）
-【标题】Convai Character Crafting APIs & Bring Your Own LLM
-【链接】https://www.convai.com/blog/build-control-empower-ai-characters-programmatically-introducing-convais-expanded-character-crafting-apis ；https://convai.com/blog/bring-your-own-llm-to-convai-business-plan-how-to-integrate-custom-models
-【一句话摘要】Convai 提供端到端语音 NPC 与 REST 角色 API，并支持接入 OpenAI 兼容的自有 LLM。
-【关键结论】
-1. 管道 = ASR + NLU + 生成 + TTS，世界感知映射到动作/导航。
-2. BYO-LLM 要求端点 OpenAI 兼容（/v1/chat/completions）。
-3. 记忆/人格/知识接地齐全，但为 SaaS。
-【可复用的东西】REST 角色 API 设计、OpenAI 兼容接入协议（Macha 互操作可直接对齐）。
-
-【类别】工程实现（生成式平台）
-【标题】Convai Interaction API（官方文档）
-【链接】https://docs.convai.com/api-docs/reference/core-api-reference/character-tool-api/interaction-api
-【一句话摘要】Convai 对话交互 API，支持文本/音频、session 维持上下文、流式 SSE。
-【关键结论】
-1. 用 sessionID 维持多轮上下文。
-2. 强制 OpenAI 内容政策。
-3. 请求体为 form-data。
-【可复用的东西】对话 session/上下文管理协议。
-
-【类别】工程实现（生成式研究）
-【标题】AI agents created a Minecraft civilisation — Altera Project Sid
-【链接】https://www.fanaticalfuturist.com/2024/12/ai-agents-created-a-minecraft-civilisation-complete-with-culture-religion-and-tax/ （MIT Tech Review 转载见 https://clc.to/-6spfw ；综述见 https://www.newworldsamehumans.xyz/p/simulating-the-post-human-future ）
-【一句话摘要】Altera 把 1000 个 LLM Agent 放进 Minecraft，自发形成职业/经济/文化/宗教/税改，是生成式 NPC 多 Agent 标杆。
-【关键结论】
-1. Agent "大脑"由多个 LLM 专用模块（反应/说话/规划）组成。
-2. 自发专业化角色（builder/defender/trader/explorer）。
-3. 能遵循社区规则、投票改税。
-4. 是演示非框架，成本/延迟极高。
-【可复用的东西】多 Agent 分解+涌现社会的方法论、角色专业化观察。
-
-【类别】工程实现（Legacy 反例）
-【标题】Rival Theory RAIN AI（Unity 行为树/GOAP 工具包）
-【链接】https://www.rivaltheory.com/forums/topic/new-rain-is-launched.html ；https://rivaltheory.com/tag/unity.html
-【一句话摘要】RAIN 曾是最受欢迎的 Unity 免费 AI 包（BT+GOAP+导航+传感器），但社区已停滞。
-【关键结论】
-1. 曾下载近 10 万次，集成寻路/BT/Goal-Oriented Behaviors/Sensors。
-2. 官网论坛最后活跃约 2022，提示 Asset Store 版本过时。
-3. 停更导致生态抛弃，性能也有坑。
-【可复用的东西】反面教材：Macha 必须可维护、开放治理，避免重蹈覆辙。
-
-【类别】工程实现（Modding/脚本）
-【标题】Mineflayer — Minecraft bot 框架（架构与生态）
-【链接】https://mineflayer.com/ ；https://deepwiki.com/PrismarineJS/mineflayer/1.2-architecture-and-ecosystem
-【一句话摘要】Mineflayer 用事件驱动+插件把 Minecraft 网络协议变成结构化世界状态与可编程 Agent 接口。
-【关键结论】
-1. 核心薄，功能全在插件（blocks/entities/inventory/physics…）。
-2. 底层 minecraft-protocol 把包转成世界状态与事件。
-3. mineflayer-pathfinder 用 A\* 导航。
-4. 只给动作/感知原语，无认知/记忆。
-【可复用的东西】"协议→世界状态→事件→Agent API"的适配层范式（Macha 感知/行动层范本）。
-
-【类别】工程实现（Modding/脚本）
-【标题】Emergent social NPC interactions in the Social NPCs Skyrim mod (CiF-CK)
-【链接】https://arxiv.org/pdf/2207.13398
-【一句话摘要】在 Skyrim 用 CiF（Comfort/Influence/Familiarity）社会状态+微观理论算社交意愿，做涌现社交；揭示 Creation Engine 的 AI Package 栈与 Papyrus 瓶颈。
-【关键结论】
-1. Skyrim 每个 Actor 有 Package Stack，周期性自顶向下评估条件执行。
-2. Quest 用 Stages/Alias/Scripts/Scenes 组织。
-3. Papyrus 慢、数据结构受限，复杂社会状态只能局部管理。
-4. LLM Mod 各自造轮子、无统一标准。
-【可复用的东西】AI Package 栈/Quest 架构、社会状态建模（CiF）思路。
-
-【类别】工程实现（Modding/脚本）
-【标题】SkyrimNet — LLM-driven Skyrim NPC 插件（含 MCP Server）
-【链接】https://github.com/MinLL/SkyrimNet-GamePlugin
-【一句话摘要】SkyrimNet 把 LLM 接进 Skyrim，含向量记忆、Inja 提示模板热重载、44+ 工具的 MCP Server、IntelEngine 跨单元格自主行为。
-【关键结论】
-1. 暴露 Papyrus API + C++ DLL API + MCP Server。
-2. 记忆用向量嵌入，提示模板热重载。
-3. IntelEngine 让 NPC 自主旅行/动态任务/阵营政治。
-4. 是"老引擎硬接 LLM 认知"的真实碎片化样本。
-【可复用的东西】MCP 在游戏内可行（Macha 互操作参考）、向量记忆+提示模板模式。
-
-【类别】工程实现（Modding/脚本）
-【标题】RimWorld AI：Lord 系统、ThinkNode_Duty 与 LLM Mod（RimAI Core V4）
-【链接】原生分析见 https://wenku.csdn.net/column/uo3ls5nd44g （CSDN 专栏，需登录）；RimAI Core V4 架构 https://github.com/oidahdsah0/Rimworld_AI_Core ；RWAILib https://deepwiki.com/igoforth/RWAILib ；RimTalk https://deepwiki.com/jlibrary/RimTalk/1.1-system-architecture
-【一句话摘要】RimWorld 原生用"Lord 状态机管集群 + ThinkNode_Duty 管个体"；LLM Mod（RimAI Core）明确分层 Modules/Infrastructure/Contracts，模块划分最接近 Macha。
-【关键结论】
-1. LordJob 建 StateGraph 协调集群，个体由 Duty 节点索引行为子树。
-2. RimAI Core V4 分 UI/Modules/Infrastructure/Contracts 四层，SOLID+全异步。
-3. IOrchestrationService 五步查询、IToolRegistryService 动态扩能、IPersonaService 分离"是谁/能做什么"、IPersistenceService 解耦存档。
-4. 各 LLM Mod 架构不一，缺跨 Mod 标准。
-【可复用的东西】**最贴近 Macha 的模块划分**——Orchestration/Tool/Persona/Persistence/WorldAccess 分层可直接借鉴。
-
-【类别】工程实现（设计理论/经典模拟）
-【标题】Needs-based AI（Robert Zubek，前 Sims/Maxis）
-【链接】https://robert.zubek.net/publications/Needs-based-AI-draft.pdf
-【一句话摘要】Needs-based AI = 按互竞需求对"世界广告的交互"打分选动作，是 The Sims 的核心，也是 Utility AI 思想来源。
-【关键结论】
-1. 每个 Agent 有一组随时间衰减的需求（0–100）。
-2. 世界物体"广告"自己能提供的交互，AI 按需求打分选最高分并压入动作队列。
-3. 需求/广告需手工定义，打分/距离衰减需经验调参。
-4. 无语言/语义/长期叙事记忆。
-【可复用的东西】"需求衰减 + 物体广告 + 衰减打分"的动机驱动范式（可作 Macha 动机层参考）。
-
-【类别】工程实现（设计理论/经典模拟）
-【标题】The Sims 4 大规模 Needs-based AI（声明式编程，5000 角色）
-【链接】https://ceur-ws.org/Vol-3926/paper1.pdf
-【一句话摘要】The Sims 4 用层次规划 + 商品-交互映射 + LOD（焦点外 Sim 自动满足）优化到支持数千角色。
-【关键结论】
-1. The Sims 3 引入层次规划把 O(NLM) 降到 O(N+L+M)。
-2. 商品-交互映射用存储换搜索时间。
-3. LOD 让绝大多数角色实际空闲，仅焦点角色精细 tick。
-【可复用的东西】需求系统的性能优化（LOD/映射）思路，对 Macha 大规模 NPC 有参考价值。
-
-【类别】工程实现（设计理论/经典模拟）
-【标题】Dwarf Fortress — Agent-based Emergent Simulation
-【链接】http://www.metavert.io/dwarf-fortress ；https://research.genezi.io/p/dwarf-fortress-the-nexus-of-emergent ；https://archania.org/p/the-symbolic-world/symbolic-works/video-games/dwarf-fortress
-【一句话摘要】DF 每个矮人是受 500+ 需求/记忆/情绪/关系驱动的确定性状态机 Agent，复杂性来自规则涌现，而非神经网络。
-【关键结论】
-1. 世界先生成约 1000 年历史再让玩家介入。
-2. 研究者对比 DF（刚性规则涌现）与 Generative Agents（LLM 事后合理化）。
-3. 可 hybrid：LLM 写叙事背景，保留 DF 确定性基底。
-4. 直接做 LLM Agent 也难（需 DFHack 结构化接口）。
-【可复用的东西】"规则涌现 + 记忆核心"hybrid 设计哲学、确定性 Agent 建模参考。
-
-【类别】工程实现（Modding/脚本）
-【标题】Building an LLM Agent to Play Dwarf Fortress
-【链接】https://blog.trine.dev/posts/2026-02-28-df-ai-exp/ ；相关架构 https://earezki.com/ai-news/2026-03-14-teaching-an-ai-to-play-dwarf-fortress-the-idea
-【一句话摘要】用 LLM + DFHack 结构化接口（绕过像素）造 DF 自主 Agent，分知识/决策/执行/反馈四层，强调跨会话记忆。
-【关键结论】
-1. 从不碰 UI，只与 DFHack（TCP/ProtoBuf）对话，拿结构化状态。
-2. 四层：知识层（注入 LLM 提示）+ 决策层（LLM 输出 Action JSON）+ 执行层 + 反馈层。
-3. gamelog.txt 可作天然 episode 记忆；下一步做跨会话记忆。
-4. LLM 在 2D 网格空间推理弱，需蓝图模板而非纯生成。
-【可复用的东西】"结构化接口绕过渲染 + 分层 + 跨会话记忆"的 LLM Agent 架构范式。
+1. **Clear layering**: Cognition kernel (Memory / Perception / Reasoning / Reflection / Persona) and execution layer (Action Adapter → BT/GOAP/HTN/Utility/engine) strictly decoupled, referencing RimAI Core's Modules/Contracts layering and direction.md's "Perception—Memory—Reasoning—Action".
+2. **Standard interfaces**: Define four minimal interfaces `Agent` / `MemoryStore` / `PerceptionSource` / `ActionSink`; ActionSink provides BT/HTN/GOAP/engine multi-backend implementations (cf. ACE's NVIGI plugin-style, Convai's REST/BYO-LLM).
+3. **Interop first**: Expose **MCP Server + OpenAI-compatible Tool Use** externally (SkyrimNet already proved MCP works in games), so Macha can both consume external tools and be called by external AIs.
+4. **Observable/debuggable**: BT won its victory via visual debugging; Macha must have built-in observability panels for "memory flow / decision chain / persona state," or repeat GOAP's "unpredictable, hard-to-QA" mistake.
+5. **Maintainable governance**: Learn from RAIN's discontinuation, adopt open repo + clear version/compat strategy, avoid being held hostage by a single vendor or maintainer.
+6. **Borrow not bind**: Copy ACE's layering, Inworld's structured persona components, The Sims' motive-driving, DF's rule-emergence, but all made into **engine-agnostic, model-agnostic, privatize-deployable** open standards.
 
 ---
 
-## 8. 未检索到稳定公开链接的资料（诚实标注，未编造）
+## 7. Source Collection
 
-- **HTN 中文译介**（侑虎科技 UWA 社区"分层任务网络 HTN"）：搜索命中但返回结果未带可访问 URL，建议团队以《Game AI Pro》（Steve Rabin 编）中 Troy Humphreys 的 HTN 章节为准（官网 https://www.gameaipro.com/）。
-- **Unity Behavior 新版可视化行为树包（`com.unity.behavior`）**：在 Unity 文档与 ML-Agents 手册中有提及，但本次未单独获取其手册深链；建议以 Unity 官方 Package 文档补全。
-- **RimWorld 原生"突袭事件状态机与职责系统"源码分析**（CSDN 专栏）：命中但为登录墙内容，链接稳定性未核实，已在上文按二手描述引用其结论。
-
-> 以上三项若需精确引用，建议团队后续用官方/一手来源复核；本文未为它们编造 URL。
+> Format follows `information_needs.md` conventions. Secondary/community sources without a clearly public URL are explicitly marked "no stable link found," not fabricated.
 
 ---
 
-## 9. 深化补充：执行适配层与量化
+[Category]Engineering implementation (classic architecture)
+[Title]Game AI Uncovered, Vol. 1 — Behavior Trees (incl. Isla on Halo 2 / BT origins and Reactive BT)
+[Link]https://gamedevelopment.com/programming/book-excerpt-game-ai-uncovered-volume-one
+[One-line summary]BT was invented by Damian Isla in Halo 2 to improve FSM, now industry default; traditional BT is not reactive, needs Reactive BT patch.
+[Key conclusions]
+1. BT has become the cross-industry AI behavior first choice; Epic's Unreal has built-in BT.
+2. Traditional BT works with Blackboard (1:N shared data); composite nodes (Sequence/Selector/Parallel) + decorator + leaf.
+3. Traditional BT is non-reactive; sudden events need extra mechanism.
+4. For generative NPCs, BT can only be "execution shell," no memory/cognition.
+[Reusable]BT node taxonomy, blackboard data-flow diagram, Reactive BT idea.
 
-> 本节为**加法式深化**，不改动前文任何结论。在前文已建立「Macha = 开放可替换的认知/记忆/人格内核 + 对接事实标准的执行适配层」这一总框架的基础上，本节从四个维度补齐：① 2025–2026 引擎/开源新进展（广度+时效）；② 适配层技术规范草案（深度）；③ 中文市场（国产游戏 AI）专项；④ 量化与落地路线。所有新增一手来源仍按六字段格式在 §9.5 统一列出。
+[Category]Engineering implementation (classic architecture)
+[Title]Three States and a Plan: The A.I. of F.E.A.R. (Jeff Orkin, GOAP foundational paper)
+[Link]https://www.gamedevs.org/uploads/three-states-plan-ai-of-fear.pdf
+[One-line summary]F.E.A.R. uses GOAP to compress enemy FSM to 3 states, all tactical intelligence from A\* planner; the most authoritative first-hand GOAP literature.
+[Key conclusions]
+1. GOAP is essentially STRIPS planning real-timed in games, A\* searches "world-state space".
+2. Motivation: 1 AI programmer managing many characters, combinatorial behavior unmanageable.
+3. "FSM tells you what to do every moment; planning system tells you goal and actions, lets AI decide sequence itself."
+4. Due to controllability/QA dilemma, GOAP failed to become dominant paradigm, BT won.
+[Reusable]GOAP three elements (WorldState/Action/Goal) data model, planner architecture.
 
-### 9.1 广度 + 时效：2025–2026 引擎与开源新进展
+[Category]Engineering implementation (classic architecture)
+[Title]GOAP intro and industry reflection (theneuralbase / beatai)
+[Link]https://theneuralbase.com/ai-for-gaming/learn/beginner/goal-oriented-action-planning-goap ;https://beatai.org/ai-insights/game-ai-is-not-about-intelligence
+[One-line summary]GOAP suits 10–50 NPC small action spaces, but "production reality (controllability)" not technical limits kept it from spreading; game AI constrained by performance/QA/predictability.
+[Key conclusions]
+1. GOAP strong single-NPC, multi-NPC collaboration needs explicit multi-agent actions (explodes).
+2. Planning latency unacceptable at >30 concurrency/frame.
+3. Behavior Tree popular because "designer-friendly + controllable + visually debuggable".
+4. Game AI must satisfy a bunch of engineering constraints unrelated to "intelligence".
+[Reusable]GOAP applicability boundary list, cost-tuning workflow suggestions.
 
-#### 9.1.1 引擎侧（UE 5.6 / Unity 6.2 / UEFN）
+[Category]Engineering implementation (classic architecture)
+[Title]Hierarchical Task Network (HTN) theory and game applications (Game AI Pro / community translation)
+[Link]https://www.gameaipro.com/ (HTN chapter in Steve Rabin ed. *Game AI Pro*; community translation: UWA article "Hierarchical Task Network HTN")
+[One-line summary]HTN uses "composite task → method → atomic task" recursive decomposition for planning, guiding search with domain knowledge, more controllable/predictable than GOAP; used in Horizon: Zero Dawn etc.
+[Key conclusions]
+1. HTN and GOAP are the only two classic methods using "world state" for planning.
+2. Planning phase uses world-state copy for "mental simulation", execution phase writes back real state.
+3. Search space smaller than GOAP, better controllability.
+4. Still relies on manual domain knowledge, powerless for memory/dialogue.
+[Reusable]HTN three task types (composite/method/atomic) model, WorldState dict implementation idea.
 
-| 引擎/平台 | 2025–2026 新增能力 | 与 Macha 适配层的关系 |
+[Category]Engineering implementation (classic architecture)
+[Title]Utility AI: Choosing Effective Utility-Based Considerations (Mike Lewis, Guild Wars 2, Game AI Pro 3)
+[Link]https://www.gameaipro.com/GameAIPro3/GameAIPro3_Chapter13_Choosing_Effective_Utility-Based_Considerations.pdf
+[One-line summary]Utility AI maps multi-input to normalized utility space, each action scored via Consideration + response curve multiplied, take highest; GW2 in practice.
+[Key conclusions]
+1. Architecture = DSE (decision scorer) scores via think cycle, highest decides action.
+2. Consideration normalized to [0,1] via response curve remap; any zero means whole out (early exit).
+3. Data-driven, designer-friendly, but "how to choose effective Consideration" is a craft.
+4. Suited for continuously weighted, knowledge-sharing decisions.
+[Reusable]DSE/Consideration/response curve design, Infinite Axis Utility System architecture.
+
+[Category]Engineering implementation (classic architecture)
+[Title]Utility AI theory and Dave Mark resources (Behavioral Mathematics for Game AI)
+[Link]http://intrinsicalgorithm.com/IAonAI/2013/02/both-my-gdc-lectures-on-utility-theory-free-on-gdc-vault/ (cited by Dave Mark himself on gamedev.net forum); forum discussion https://gamedev.net/forums/topic/699681-questions-about-utility-ai
+[One-line summary]Utility AI popularized in games by Dave Mark, The Sims its classic example; uses motive scoring to select actions.
+[Key conclusions]
+1. The Sims each Actor has hunger/hygiene/energy/social etc. motives, scores interactions by motive.
+2. Formula simple and analyzable, more controllable than fuzzy logic.
+3. Complex utility needs "expected utility" concept to synthesize multiple axes.
+[Reusable]Motive → utility mapping paradigm, The Sims motive list.
+
+[Category]Engineering implementation (engine)
+[Title]Unreal Engine 5 Artificial Intelligence (official docs)
+[Link]https://docs.unrealengine.com/5.1/zh-CN/artificial-intelligence-in-unreal-engine ;https://docs.unrealengine.com/en-US/InteractiveExperiences/ArtificialIntelligence
+[One-line summary]UE provides BT/Blackboard/StateTree/Nav/Perception/EQS/MassEntity/SmartObjects/NN Engine full-stack AI; but no cognition/memory layer.
+[Key conclusions]
+1. Behavior Tree + Blackboard is decision core; StateTree = BT selector + FSM state.
+2. Smart Objects use reservation system to let Agent dynamically discover and use level interaction slots.
+3. MassEntity data-oriented, can simulate 10k+ crowds.
+4. Full stack still lacks memory/persona/semantics, LLM NPC needs self-built bridge.
+[Reusable]BT/StateTree/SmartObjects/Mass architecture diagram, component responsibility split.
+
+[Category]Engineering implementation (engine)
+[Title]Smart Objects in Unreal Engine (official overview)
+[Link]https://dev.epicgames.com/documentation/en-us/unreal-engine/smart-objects-in-unreal-engine---overview
+[One-line summary]Smart Objects are "activity collections in a level usable via reservation system", provide data only, no execution logic.
+[Key conclusions]
+1. Globally managed by Subsystem, spatially partitioned index, queried by Gameplay Tag.
+2. Definition includes Activity Tags / Slots / Behavior Definition.
+3. Agent searches → claims Slot → executes own logic.
+[Reusable]Abstraction of "discoverable interaction slot", can borrow into Macha's Action/interaction model.
+
+[Category]Engineering implementation (engine)
+[Title]Unity ML-Agents Overview (official manual)
+[Link]https://docs.unity3d.com/Packages/com.unity.ml-agents@3.0/manual
+[One-line summary]ML-Agents turns Unity scene into RL environment, core is Agent/Sensor/Actuator/Policy, training on Python, inference via Sentis; includes no training algorithms itself.
+[Key conclusions]
+1. Agent generates observations, executes actions, receives rewards; Behavior specifies behavior.
+2. Training Mono backend only, no IL2CPP; inference limited by on-device compute.
+3. Only accepts own trainer models.
+4. Is "reinforcement-learning control" framework, not dialogue/cognition framework.
+[Reusable]Agent/Sensor/Actuator abstraction, Sentis on-device inference idea (can be Macha execution backend).
+
+[Category]Engineering implementation (engine)
+[Title]AI Navigation in Godot 4.3+ (incl. BT / Steering / async baking)
+[Link]https://lobehub.com/zh/skills/jame581-godotprompter-ai-navigation ;https://qumge.com/en/skills/jame581/GodotPrompter/ai-navigation
+[One-line summary]Godot 4 has no official advanced AI, relies on NavigationServer + community Beehave BT + self-built FSM; 4.4+ supports background async baking.
+[Key conclusions]
+1. NavigationAgent + steering + BT/patrol pattern code all present.
+2. 4.5 splits 2D/3D navigation servers independent, better performance.
+3. Large projects depend on third parties, low standardization.
+4. No built-in support for LLM NPC.
+[Reusable]Lightweight BT (Sequence/Selector/Action) GDScript/C# implementation, navigation avoidance patterns.
+
+[Category]Engineering implementation (engine/community)
+[Title]Behavior Tree AI for Godot — Beehave guide
+[Link]http://www.blog.brightcoding.dev/2025/11/25/behavior-tree-ai-for-godot-the-ultimate-guide-to-creating-intelligent-npcs-that-players-actually-remember-2024 (plugin github.com/bitbrain/beehave)
+[One-line summary]Beehave lets Godot build NPCs with visual BT, with runtime debug view; gives guard/crowd/merchant cases.
+[Key conclusions]
+1. Plugin BT greatly lowers Godot NPC threshold.
+2. Safety rules: don't block in _tick, don't recompute path every frame.
+3. Cases show BT reduces AI bugs, stabilizes FPS.
+[Reusable]Godot BT node design, debug-view paradigm.
+
+[Category]Engineering implementation (generative platform)
+[Title]Bring NVIDIA ACE AI Characters to Games with the new In-Game Inferencing SDK (NVIGI)
+[Link]https://developer.nvidia.com/blog/bring-nvidia-ace-ai-characters-to-games-with-the-new-in-game-inference-sdk
+[One-line summary]ACE is digital-human generative AI suite, perception—cognition—action—memory—rendering end-to-end; NVIGI is GPU-optimized plugin-style inference manager.
+[Key conclusions]
+1. Perception: NeMoAudio-4B / Parakeet ASR / NeMoVision-4B / Game State.
+2. Cognition: Mistral-Nemo-Minitron SLM (2B/4B/8B, at human-brain decision frequency).
+3. Action: action selection / TTS / Strategic Planning / Reflection.
+4. Memory: E5-Large Embedding recall.
+[Reusable]"Perception-cognition-memory-action" layering (isomorphic to Macha direction.md), NVIGI plugin-style architecture.
+
+[Category]Engineering implementation (generative platform)
+[Title]NVIDIA ACE Autonomous Game Characters (CES 2025, official blog)
+[Link]https://www.nvidia.com/en-ph/geforce/news/nvidia-ace-autonomous-ai-companions-pubg-naraka-bladepoint/
+[One-line summary]ACE expands from dialogue NPC to "autonomous game characters", uses SLM to perceive/plan/act; explicitly treats Memory/Reflection as first-class citizens.
+[Key conclusions]
+1. Human decision model = perception + motive/desire + memory → cognition → action → store back to memory.
+2. Reflection (reflection correction) is an important class of Action.
+3. Already landed in PUBG / inZOI / NARAKA / MIR5 etc.
+[Reusable]"Human decision micro-model", can directly be Macha's cognitive-loop blueprint.
+
+[Category]Engineering implementation (generative platform)
+[Title]NVIDIA ACE Core Digital Human Technologies (DeepWiki)
+[Link]https://deepwiki.com/NVIDIA/ACE/2-core-digital-human-technologies
+[One-line summary]ACE microservice stack: Riva ASR/TTS/NMT, Audio2Face, AnimGraph, Omniverse RTX, etc.
+[Key conclusions]
+1. Each NIM microservice has clear, composable responsibility.
+2. Supports enterprise edition and early-access models.
+3. Rendering/speech decoupled from cognition.
+[Reusable]Microservice responsibility split, Macha can build open equivalent microservices.
+
+[Category]Engineering implementation (generative platform)
+[Title]Inworld Character Engine — Unreal Runtime Character Reference
+[Link]https://docs.inworld.ai/unreal-engine/runtime/character-reference/overview
+[One-line summary]Inworld makes persona/emotion/goal/relationship/memory structured components; provides multi-engine SDK and REST API.
+[Key conclusions]
+1. Components include CharacterProfile / EmotionState / Goals / KnowledgeFilter / RelationState / Memory Retrieval.
+2. Supports multi-character dialogue management and trigger-based interaction.
+3. Currently the commercial product most like "cognitive middleware".
+[Reusable]Structured persona/emotion/relationship/memory component definitions, can be Macha Persona/Memory module reference schema.
+
+[Category]Engineering implementation (generative platform)
+[Title]Convai Character Crafting APIs & Bring Your Own LLM
+[Link]https://www.convai.com/blog/build-control-empower-ai-characters-programmatically-introducing-convais-expanded-character-crafting-apis ;https://convai.com/blog/bring-your-own-llm-to-convai-business-plan-how-to-integrate-custom-models
+[One-line summary]Convai provides end-to-end voice NPC and REST character API, and supports connecting OpenAI-compatible own LLM.
+[Key conclusions]
+1. Pipeline = ASR + NLU + generation + TTS, world perception maps to action/navigation.
+2. BYO-LLM requires OpenAI-compatible endpoint (/v1/chat/completions).
+3. Memory/persona/knowledge grounding complete, but is SaaS.
+[Reusable]REST character API design, OpenAI-compatible access protocol (Macha interop can align directly).
+
+[Category]Engineering implementation (generative platform)
+[Title]Convai Interaction API (official docs)
+[Link]https://docs.convai.com/api-docs/reference/core-api-reference/character-tool-api/interaction-api
+[One-line summary]Convai dialogue interaction API, supports text/audio, session maintains context, streaming SSE.
+[Key conclusions]
+1. Uses sessionID to maintain multi-turn context.
+2. Enforces OpenAI content policy.
+3. Request body is form-data.
+[Reusable]Dialogue session/context management protocol.
+
+[Category]Engineering implementation (generative research)
+[Title]AI agents created a Minecraft civilisation — Altera Project Sid
+[Link]https://www.fanaticalfuturist.com/2024/12/ai-agents-created-a-minecraft-civilisation-complete-with-culture-religion-and-tax/ (MIT Tech Review repost https://clc.to/-6spfw ; survey https://www.newworldsamehumans.xyz/p/simulating-the-post-human-future )
+[One-line summary]Altera put 1000 LLM Agents into Minecraft, spontaneously forming profession/economy/culture/religion/tax reform, a generative-NPC multi-Agent benchmark.
+[Key conclusions]
+1. Agent "brain" composed of multiple LLM dedicated modules (reaction/speech/planning).
+2. Spontaneous specialization roles (builder/defender/trader/explorer).
+3. Can follow community rules, vote to change tax.
+4. Is demo not framework, extremely high cost/latency.
+[Reusable]Multi-Agent decomposition + emergent society methodology, role-specialization observation.
+
+[Category]Engineering implementation (Legacy counter-example)
+[Title]Rival Theory RAIN AI (Unity behavior tree/GOAP toolkit)
+[Link]https://www.rivaltheory.com/forums/topic/new-rain-is-launched.html ;https://rivaltheory.com/tag/unity.html
+[One-line summary]RAIN was once the most popular free Unity AI pack (BT+GOAP+navigation+sensors), but community has stalled.
+[Key conclusions]
+1. Once downloaded nearly 100k times, integrated pathfinding/BT/Goal-Oriented Behaviors/Sensors.
+2. Official forum last active around 2022, notes Asset Store version outdated.
+3. Discontinuation led ecosystem to abandon it, also has performance pitfalls.
+[Reusable]Counter-example: Macha must be maintainable, open-governed, avoid repeating.
+
+[Category]Engineering implementation (Modding/scripting)
+[Title]Mineflayer — Minecraft bot framework (architecture and ecosystem)
+[Link]https://mineflayer.com/ ;https://deepwiki.com/PrismarineJS/mineflayer/1.2-architecture-and-ecosystem
+[One-line summary]Mineflayer uses event-driven+plugin to turn Minecraft network protocol into structured world state and programmable Agent interface.
+[Key conclusions]
+1. Thin core, all function in plugins (blocks/entities/inventory/physics…).
+2. Lower-layer minecraft-protocol turns packets into world state and events.
+3. mineflayer-pathfinder uses A\* navigation.
+4. Only gives action/perception primitives, no cognition/memory.
+[Reusable]"Protocol → world state → event → Agent API" adaptation-layer paradigm (Macha perception/action layer template).
+
+[Category]Engineering implementation (Modding/scripting)
+[Title]Emergent social NPC interactions in the Social NPCs Skyrim mod (CiF-CK)
+[Link]https://arxiv.org/pdf/2207.13398
+[One-line summary]In Skyrim uses CiF (Comfort/Influence/Familiarity) social state + micro-theories to compute social willingness for emergent social behavior; reveals Creation Engine's AI Package stack and Papyrus bottleneck.
+[Key conclusions]
+1. Skyrim each Actor has Package Stack, periodically evaluated top-down for conditions.
+2. Quest uses Stages/Alias/Scripts/Scenes to organize.
+3. Papyrus slow, limited data structures, complex social state only locally managed.
+4. LLM Mods each reinvent wheel, no unified standard.
+[Reusable]AI Package stack/Quest architecture, social-state modeling (CiF) idea.
+
+[Category]Engineering implementation (Modding/scripting)
+[Title]SkyrimNet — LLM-driven Skyrim NPC plugin (incl. MCP Server)
+[Link]https://github.com/MinLL/SkyrimNet-GamePlugin
+[One-line summary]SkyrimNet connects LLM into Skyrim, with vector memory, Inja prompt-template hot-reload, 44+ tool MCP Server, IntelEngine cross-cell autonomous behavior.
+[Key conclusions]
+1. Exposes Papyrus API + C++ DLL API + MCP Server.
+2. Memory uses vector embedding, prompt-template hot-reload.
+3. IntelEngine lets NPC autonomously travel/dynamic quest/faction politics.
+4. Is real fragmented sample of "hard-wiring LLM cognition onto old engine".
+[Reusable]MCP feasible inside games (Macha interop reference), vector memory + prompt-template pattern.
+
+[Category]Engineering implementation (Modding/scripting)
+[Title]RimWorld AI: Lord system, ThinkNode_Duty and LLM Mod (RimAI Core V4)
+[Link]Native analysis https://wenku.csdn.net/column/uo3ls5nd44g (CSDN column, login required); RimAI Core V4 architecture https://github.com/oidahdsah0/Rimworld_AI_Core ; RWAILib https://deepwiki.com/igoforth/RWAILib ; RimTalk https://deepwiki.com/jlibrary/RimTalk/1.1-system-architecture
+[One-line summary]RimWorld native uses "Lord state machine governs swarm + ThinkNode_Duty governs individual"; LLM Mod (RimAI Core) has explicit layered Modules/Infrastructure/Contracts, module breakdown closest to Macha.
+[Key conclusions]
+1. LordJob builds StateGraph to coordinate swarm, individual indexed by Duty node to behavior subtree.
+2. RimAI Core V4 splits UI/Modules/Infrastructure/Contracts four layers, SOLID+fully async.
+3. IOrchestrationService five-step query, IToolRegistryService dynamic capability expansion, IPersonaService separates "who/can do what", IPersistenceService decouples saves.
+4. Each LLM Mod has different architecture, lacks cross-Mod standard.
+[Reusable]**Module breakdown closest to Macha**—Orchestration/Tool/Persona/Persistence/WorldAccess layering can be borrowed directly.
+
+[Category]Engineering implementation (design theory/classic simulation)
+[Title]Needs-based AI (Robert Zubek, ex-Sims/Maxis)
+[Link]https://robert.zubek.net/publications/Needs-based-AI-draft.pdf
+[One-line summary]Needs-based AI = score "world-advertised interactions" by competing needs to select action, is The Sims core, also Utility AI idea source.
+[Key conclusions]
+1. Each Agent has a set of time-decaying needs (0–100).
+2. World objects "advertise" interactions they provide, AI scores by need, picks highest, pushes to action queue.
+3. Needs/ads require hand-definition, scoring/distance-decay needs experienced tuning.
+4. No language/semantic/long-term narrative memory.
+[Reusable]"Need decay + object ad + decay scoring" motive-driven paradigm (can be Macha motive-layer reference).
+
+[Category]Engineering implementation (design theory/classic simulation)
+[Title]The Sims 4 large-scale Needs-based AI (declarative programming, 5000 characters)
+[Link]https://ceur-ws.org/Vol-3926/paper1.pdf
+[One-line summary]The Sims 4 uses hierarchical planning + item-interaction mapping + LOD (out-of-focus Sims auto-satisfied) to optimize support for thousands of characters.
+[Key conclusions]
+1. The Sims 3 introduced hierarchical planning dropping O(NLM) to O(N+L+M).
+2. Item-interaction mapping trades storage for search time.
+3. LOD lets vast majority of characters actually idle, only focus character finely ticked.
+[Reusable]Need-system performance optimization (LOD/mapping) idea, valuable for Macha large-scale NPCs.
+
+[Category]Engineering implementation (design theory/classic simulation)
+[Title]Dwarf Fortress — Agent-based Emergent Simulation
+[Link]http://www.metavert.io/dwarf-fortress ;https://research.genezi.io/p/dwarf-fortress-the-nexus-of-emergent ;https://archania.org/p/the-symbolic-world/symbolic-works/video-games/dwarf-fortress
+[One-line summary]DF each dwarf is a deterministic state-machine Agent driven by 500+ needs/memory/emotion/relation, complexity from rule emergence, not neural net.
+[Key conclusions]
+1. World first generates ~1000 years history then player intervenes.
+2. Researchers compare DF (rigid rule emergence) with Generative Agents (LLM post-hoc rationalization).
+3. Can hybrid: LLM writes narrative background, keep DF deterministic base.
+4. Direct LLM Agent also hard (needs DFHack structured interface).
+[Reusable]"Rule emergence + memory core" hybrid design philosophy, deterministic Agent modeling reference.
+
+[Category]Engineering implementation (Modding/scripting)
+[Title]Building an LLM Agent to Play Dwarf Fortress
+[Link]https://blog.trine.dev/posts/2026-02-28-df-ai-exp/ ;related architecture https://earezki.com/ai-news/2026-03-14-teaching-an-ai-to-play-dwarf-fortress-the-idea
+[One-line summary]Use LLM + DFHack structured interface (bypass pixels) to build DF autonomous Agent, splits knowledge/decision/execution/feedback four layers, emphasizes cross-session memory.
+[Key conclusions]
+1. Never touch UI, only talk to DFHack (TCP/ProtoBuf), get structured state.
+2. Four layers: knowledge layer (inject LLM prompt) + decision layer (LLM outputs Action JSON) + execution layer + feedback layer.
+3. gamelog.txt can be natural episode memory; next step cross-session memory.
+4. LLM weak at 2D grid spatial reasoning, needs blueprint template not pure generation.
+[Reusable]"Structured interface bypasses rendering + layering + cross-session memory" LLM Agent architecture paradigm.
+
+---
+
+## 8. Sources With No Stable Public Link Found (honest marking, not fabricated)
+
+- **HTN Chinese translation** (UWA community "Hierarchical Task Network HTN"): Search hit but returned result had no accessible URL; team advised to use Troy Humphreys' HTN chapter in *Game AI Pro* (Steve Rabin ed.) as authoritative (official https://www.gameaipro.com/).
+- **Unity Behavior new visual BT package (`com.unity.behavior`)**: Mentioned in Unity docs and ML-Agents manual, but its manual deep link not separately obtained this time; advised to complete with Unity official Package docs.
+- **RimWorld native "raid-event state machine and duty system" source analysis** (CSDN column): Hit but login-walled, link stability unverified, referenced above by its conclusions from secondary description.
+
+> For precise citation of the above three, team advised to re-verify with official/first-hand sources later; no URL fabricated for them in this document.
+
+---
+
+## 9. Deepening Supplement: Execution Adaptation Layer and Quantification
+
+> This section is **additive deepening**, changing no prior conclusion. On the basis that the total framework "Macha = open replaceable cognition/memory/persona kernel + adaptation layer to de-facto standards" has been established, this section fills four dimensions: ① 2025–2026 engine/open-source new progress (breadth + timeliness); ② adaptation-layer technical-spec draft (depth); ③ Chinese-market (domestic game AI) special; ④ quantification and landing roadmap. All newly added first-hand sources still listed uniformly in §9.5 in six-field format.
+
+### 9.1 Breadth + Timeliness: 2025–2026 Engine and Open-Source New Progress
+
+#### 9.1.1 Engine side (UE 5.6 / Unity 6.2 / UEFN)
+
+| Engine/platform | 2025–2026 new capability | Relation to Macha adaptation layer |
 |---|---|---|
-| **Unreal 5.6** | MassAI 增强：新增 **MassInsights**（群体 AI 性能剖析面板）、StateTree 事件/任务改进、MassStateTree 与 Smart Objects 协作更紧 | MassEntity 群体是「执行后端」范本；Macha 认知内核可通过 MassStateTree 适配器驱动上万 Agent |
-| **UEFN Persona Device** | 在 Fortnite Creative（UEFN）中上线官方 **Persona Device**，让创作者用「对话式配置」给 NPC 挂基础 AI 人格 | 证明「引擎内嵌轻量对话/人格」已成趋势；Macha 应提供可对齐 Persona Device schema 的导入/导出 |
-| **Unity 6.2 Inference Engine** | `Unity.Sentis` 重命名为 **Unity Inference Engine**，强化端侧神经网络推理；Unity 提出 AI 三层架构（AI Core / AI Behaviors / AI Engine）；并发布 **Unity MCP Server** | Sentis 即 Macha 端侧执行后端候选；MCP Server 与 §6 互操作优先策略一致 |
-| **Unity Behavior** | 可视化行为树进入 6.x 主线，行为树 + SmartObject 等价物（Bounded Action / 情景节点） | 作为 Macha `ActionSink` 的 BT 后端之一 |
+| **Unreal 5.6** | MassAI enhanced: new **MassInsights** (crowd AI performance profiler panel), StateTree event/task improvements, MassStateTree and Smart Objects tighter collaboration | MassEntity crowd is "execution backend" template; Macha cognition kernel can drive 10k+ Agents via MassStateTree adapter |
+| **UEFN Persona Device** | Fortnite Creative (UEFN) shipped official **Persona Device**, letting creators attach basic AI persona to NPC via "conversational config" | Proves "engine-embedded lightweight dialogue/persona" is a trend; Macha should provide import/export aligning with Persona Device schema |
+| **Unity 6.2 Inference Engine** | `Unity.Sentis` renamed **Unity Inference Engine**, strengthened on-device NN inference; Unity proposed AI three-layer architecture (AI Core / AI Behaviors / AI Engine); and shipped **Unity MCP Server** | Sentis is Macha on-device execution-backend candidate; MCP Server consistent with §6 interop-first strategy |
+| **Unity Behavior** | Visual BT entered 6.x mainline, BT + SmartObject equivalent (Bounded Action / situation node) | As one of Macha `ActionSink`'s BT backends |
 
-#### 9.1.2 开源框架（新增两个关键项目）
+#### 9.1.2 Open-source frameworks (two new key projects added)
 
-- **AgentArena**（Apache-2.0）：Godot 4 用 C++ 实现引擎内核 + Python 运行时，支持 `llama.cpp / TensorRT-LLM / vLLM` 多推理后端，内置 **Memory & RAG**。它把「游戏世界 ↔ LLM Agent」做成可评测沙盒，是 Macha 适配层**可直接复用的运行时骨架**。
-- **The-Seed**（MIT）：跨平台 Agent 游戏框架，核心理念是「LLM 生成意图（intent）→ 框架翻译为游戏可执行动作」。它与 Macha 的「认知内核产出意图、执行适配层落地」几乎同构，可作为参考实现与潜在上游协作对象。
-- **A Survey on LLM-Based Game Agents**（arXiv:2404.02039，已被 ACM Computing Surveys 2026 接收）：给出「记忆（Memory）/ 推理（Reasoning）/ 感知-行动接口（Perception-Action Interface）」的统一参考架构，是 Macha 框架在**学术侧的对齐锚点**。
+- **AgentArena** (Apache-2.0): Godot 4 uses C++ engine kernel + Python runtime, supports `llama.cpp / TensorRT-LLM / vLLM` multi inference backends, built-in **Memory & RAG**. It makes "game world ↔ LLM Agent" an evaluable sandbox, a runtime skeleton Macha's adaptation layer **can directly reuse**.
+- **The-Seed** (MIT): Cross-platform Agent game framework, core idea is "LLM generates intent → framework translates to game-executable action". It is almost isomorphic to Macha's "cognition kernel outputs intent, execution adaptation layer lands it", can serve as reference implementation and potential upstream collaborator.
+- **A Survey on LLM-Based Game Agents** (arXiv:2404.02039, accepted by ACM Computing Surveys 2026): gives a unified reference architecture of "Memory / Reasoning / Perception-Action Interface", an **academic alignment anchor** for the Macha framework.
 
-> 判读：2025–2026 的共识是——引擎在「把 LLM/神经网络当执行原语」上加速（UE MassAI、Unity Inference Engine、UEFN Persona），开源在「LLM Agent 与游戏世界的标准对接」上补位（AgentArena、The-Seed）。两者都在 Macha 的「下方执行层 / 适配层」区间，**恰好印证 Macha 不重造执行层、只做标准认知内核 + 适配层**的定位。
+> Read: The 2025–2026 consensus is—engines accelerate on "using LLM/neural net as execution primitive" (UE MassAI, Unity Inference Engine, UEFN Persona), open source fills the gap on "standard connection of LLM Agent and game world" (AgentArena, The-Seed). Both sit in Macha's "lower execution layer / adaptation layer" scope, **exactly confirming Macha's positioning of not rebuilding the execution layer, only building a standard cognition kernel + adaptation layer**.
 
-### 9.2 技术规范深度：Macha 执行适配层接口草案
+### 9.2 Technical-Spec Depth: Macha Execution Adaptation Layer Interface Draft
 
-本节给出可落地的**适配层契约**。核心思想（呼应 §5）：Macha 的认知内核输出**结构化「意图/动作描述」**，适配层把它翻译/下发到具体执行器（BT/GOAP/HTN/Utility/引擎）。
+This section gives a landable **adaptation-layer contract**. Core idea (echoing §5): Macha's cognition kernel outputs a **structured "intent/action descriptor"**, the adaptation layer translates/dispatches it to a concrete executor (BT/GOAP/HTN/Utility/engine).
 
-#### 9.2.1 `ActionDescriptor` JSON Schema（草案 v0.1）
+#### 9.2.1 `ActionDescriptor` JSON Schema (draft v0.1)
 
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://macha.dev/schemas/action-descriptor.json",
   "title": "Macha ActionDescriptor",
-  "description": "认知内核产出、由执行适配层消费的标准化动作描述。既可作为 LLM 的 function-calling / tool 定义，也可作为下发到 BT/GOAP/HTN 节点的统一载荷。",
+  "description": "Standardized action descriptor produced by the cognitive kernel and consumed by the execution adaptation layer. Can serve both as an LLM function-calling / tool definition and as a unified payload dispatched to BT/GOAP/HTN nodes.",
   "type": "object",
   "required": ["id", "intent", "preconditions", "effects"],
   "properties": {
     "id": {
       "type": "string",
-      "description": "动作唯一标识，建议语义化命名，如 'npc.goTo.safe_place'。",
+      "description": "Unique action identifier; semantic naming recommended, e.g. 'npc.goTo.safe_place'.",
       "examples": ["npc.dialogue.greet", "npc.combat.flee"]
     },
     "intent": {
       "type": "string",
-      "description": "自然语言或枚举的『高层意图』，供 LLM 认知内核产出与人类可观测。",
-      "examples": ["向玩家表达感谢", "躲避威胁并寻找掩体"]
+      "description": "Natural-language or enumerated 'high-level intent', produced by the LLM cognitive kernel and human-observable.",
+      "examples": ["thank the player", "avoid the threat and seek cover"]
     },
     "preconditions": {
       "type": "array",
-      "description": "动作可执行前必须满足的世界状态（事实谓词）。",
+      "description": "World state (fact predicates) that must hold before the action can execute.",
       "items": {
         "type": "object",
         "required": ["fact"],
@@ -681,7 +681,7 @@
     },
     "effects": {
       "type": "array",
-      "description": "动作执行后对世界状态产生的变更（GOAP/HTN 风格 effect 列表）。",
+      "description": "Changes the action produces on world state after execution (GOAP/HTN-style effect list).",
       "items": {
         "type": "object",
         "required": ["fact", "value"],
@@ -694,33 +694,33 @@
     },
     "cost": {
       "type": "number",
-      "description": "执行成本（能耗/时间/风险），用于 GOAP/Utility 打分；人格可调。",
+      "description": "Execution cost (energy/time/risk), used for GOAP/Utility scoring; persona-tunable.",
       "minimum": 0,
       "default": 1
     },
     "executable_by": {
       "type": "array",
-      "description": "可执行的执行器后端；空表示任意。",
+      "description": "Executor backends capable of executing this; empty means any.",
       "items": { "type": "string", "enum": ["behavior_tree", "goap", "htn", "utility_ai", "fsm", "unreal_mass", "unity_behavior", "godot_beehave", "engine_native"] }
     },
     "tags": {
       "type": "array",
-      "description": "语义标签，用于记忆召回、人格过滤、可观测面板分组。",
+      "description": "Semantic tags, used for memory recall, persona filtering, and observability-panel grouping.",
       "items": { "type": "string", "examples": ["social", "combat", "stealth", "quest_critical"] }
     },
     "llm_override": {
       "type": "object",
-      "description": "当传统执行器无法覆盖（开放对话/涌现行为）时，由 LLM 直接产出细粒度动作或文本。",
+      "description": "When a traditional executor cannot cover (open dialogue/emergent behavior), the LLM directly produces fine-grained action or text.",
       "properties": {
         "enabled": { "type": "boolean", "default": false },
         "mode": { "type": "string", "enum": ["text_only", "free_action", "guided"] },
-        "prompt_template_ref": { "type": "string", "description": "指向 Macha 提示模板库中的引用键。" },
-        "fallback": { "type": "string", "description": "LLM 失败时回退到的传统 ActionDescriptor id。" }
+        "prompt_template_ref": { "type": "string", "description": "Reference key into the Macha prompt-template library." },
+        "fallback": { "type": "string", "description": "Traditional ActionDescriptor id to fall back to when the LLM fails." }
       }
     },
     "metadata": {
       "type": "object",
-      "description": "扩展字段：来源（规划器/LLM/手写）、置信度、人格签名等。",
+      "description": "Extension fields: source (planner/LLM/handcrafted), confidence, persona signature, etc.",
       "properties": {
         "source": { "type": "string", "enum": ["llm", "goap_planner", "htn_planner", "utility_scorer", "handcrafted"] },
         "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
@@ -730,47 +730,47 @@
 }
 ```
 
-设计要点：
-- **GOAP/HTN 友好**：`preconditions`/`effects`/`cost` 直接可被 A\* 规划器消费（复用 §1.3–1.4 数据模型）。
-- **BT 友好**：`executable_by` + `tags` 决定哪个 BT 子树/叶子节点认领该 Action。
-- **LLM override 是逃生舱**：当传统执行器没有对应能力（开放对话、自发社交），`llm_override.enabled=true` 让认知内核直接接管，但保留 `fallback` 保证可控性（呼应 §5.2「认知内核决定做什么/为什么」）。
+Design points:
+- **GOAP/HTN friendly**: `preconditions`/`effects`/`cost` directly consumable by A\* planner (reuses §1.3–1.4 data model).
+- **BT friendly**: `executable_by` + `tags` decide which BT subtree/leaf node claims the Action.
+- **LLM override is escape hatch**: When traditional executor has no corresponding capability (open dialogue, spontaneous social), `llm_override.enabled=true` lets cognition kernel take over directly, but keeps `fallback` to guarantee controllability (echoes §5.2 "cognition kernel decides what/why").
 
-#### 9.2.2 伪代码：`adapter.selectAction(worldState) -> action`
+#### 9.2.2 Pseudocode: `adapter.selectAction(worldState) -> action`
 
-说明 Macha 如何用统一接口**override / complement** 传统 AI（BT/GOAP/HTN/Utility）。
+Explains how Macha uses a unified interface to **override / complement** traditional AI (BT/GOAP/HTN/Utility).
 
 ```python
 def select_action(world_state, agent_profile, memory) -> ActionDescriptor:
     """
-    Macha 执行适配层的核心仲裁函数。
-    职责：把『认知内核的意图』与『传统执行器的能力』协调成最终动作。
+    Core arbitration function of the Macha execution adaptation layer.
+    Responsibility: reconcile the cognitive kernel's intent with the traditional executor's capabilities into a final action.
     """
 
-    # --- 1. 认知内核优先：LLM/规划器产出意图候选 ---
+    # --- 1. Cognition kernel first: LLM/planner produces intent candidates ---
     intent_candidates = cognition_core.propose(
         world_state=world_state,
-        memory=memory.retrieve(world_state),          # 长期记忆召回（对标 ACE Embedding / Inworld Memory）
-        persona=agent_profile,                         # 人格/目标/情绪（对标 Inworld 组件）
+        memory=memory.retrieve(world_state),          # Long-term memory recall (cf. ACE Embedding / Inworld Memory)
+        persona=agent_profile,                         # Persona/goal/emotion (cf. Inworld components)
     )
 
-    # --- 2. 执行器能力嗅探：传统 AI 能否覆盖？ ---
+    # --- 2. Executor capability sniffing: can traditional AI cover it? ---
     capable_executors = []
     for intent in intent_candidates:
-        execs = registry.match_executors(intent)       # 看哪些执行器声明 executable_by / tags
+        execs = registry.match_executors(intent)       # Which executors declare executable_by / tags
         if execs:
             capable_executors.append((intent, execs))
 
-    # --- 3. 仲裁策略（可在配置中切换）---
+    # --- 3. Arbitration strategy (switchable in config) ---
     if capable_executors:
-        # 3a. COMPLEMENT 模式：传统执行器能做的事，交给它（可控、可 QA）
+        # 3a. COMPLEMENT mode: hand to traditional executor what it can do (controllable, QA-able)
         intent, execs = best_by_score(capable_executors, world_state)
-        action = execs[0].instantiate(intent)          # 例：BT 节点 / GOAP 规划 / Utility 打分
+        action = execs[0].instantiate(intent)          # e.g., BT node / GOAP planning / Utility scoring
         action.metadata.source = "goap_planner" if isinstance(execs[0], GOAP) else "behavior_tree"
         return action
 
     else:
-        # 3b. OVERRIDE 模式：传统执行器无覆盖（开放对话/涌现行为）
-        #     由 LLM 直接产出细粒度动作或自然语言，但带 fallback 护栏
+        # 3b. OVERRIDE mode: traditional executor has no coverage (open dialogue/emergent behavior)
+        #     LLM directly produces fine-grained action or natural language, but with fallback guardrail
         action = cognition_core.generate_free_action(
             intent=intent_candidates[0],
             world_state=world_state,
@@ -781,213 +781,213 @@ def select_action(world_state, agent_profile, memory) -> ActionDescriptor:
         return action
 ```
 
-决策语义对照（呼应 §5.1 决策矩阵）：
+Decision semantics mapping (echoing §5.1 decision matrix):
 
-| 情形 | 触发分支 | 结果 |
+| Situation | Triggered branch | Result |
 |---|---|---|
-| 玩家走近、NPC 应打招呼 | 传统 BT/Utility 已有「greet」节点 → COMPLEMENT | 执行器按既有逻辑执行，**LLM 不动** |
-| 玩家三天前救过 NPC、现在重逢 | 记忆召回触发人格层意图 → 但无现成节点 | OVERRIDE + `llm_override`，生成个性化感谢台词 |
-| 突发战斗、需自发侧翼包抄 | GOAP 规划器认领 → COMPLEMENT | GOAP 搜出动作序列，LLM 只给「意图」 |
-| 完全开放的闲聊/追问 | 任何执行器都不匹配 → OVERRIDE | LLM 生成对话，带 `fallback` 防失控 |
+| Player approaches, NPC should greet | Traditional BT/Utility already has "greet" node → COMPLEMENT | Executor runs by existing logic, **LLM untouched** |
+| Player saved NPC three days ago, now reunite | Memory recall triggers persona-layer intent → but no ready node | OVERRIDE + `llm_override`, generate personalized thanks line |
+| Sudden combat, needs spontaneous flanking | GOAP planner claims → COMPLEMENT | GOAP searches action sequence, LLM only gives "intent" |
+| Fully open small talk/probing | No executor matches → OVERRIDE | LLM generates dialogue, with `fallback` against runaway |
 
-> 关键：**Macha 不是「LLM 取代一切」，而是「能交给确定性执行器的绝不交给 LLM，LLM 只 override 传统执行器覆盖不到的认知/涌现部分」**。这正是 §0 一句话结论的工程落地。
+> Key: **Macha is not "LLM replaces everything", but "whatever can be handed to a deterministic executor is never handed to LLM; LLM only overrides the cognitive/emergent part traditional executors don't cover"**. This is exactly the engineering landing of the §0 one-line conclusion.
 
-#### 9.2.3 云 vs 本地 NPC 成本 / 延迟对比表
+#### 9.2.3 Cloud vs Local NPC Cost / Latency Comparison Table
 
-> 数据来源：公开 API 定价页（部分经第三方聚合，标注「非官方」）、引擎端侧推理基准、GDC 2026 报道。具体链接见 §9.5。**数字会随厂商调价波动，落地前需以当季官方价复核**。
+> Data sources: public API pricing pages (some via third-party aggregation, marked "unofficial"), engine on-device inference benchmarks, GDC 2026 reports. Specific links in §9.5. **Numbers fluctuate with vendor pricing; re-verify with current-quarter official prices before landing.**
 
-| 方案 | 单次交互延迟（p95） | 成本（每 1M token / 或每次交互） | VRAM/算力占用 | 适用场景 | 备注 |
+| Option | Single-interaction latency (p95) | Cost (per 1M token / or per interaction) | VRAM/compute footprint | Use case | Notes |
 |---|---|---|---|---|---|
-| **云 API 轻量模型**（GPT-4o-mini / Gemini 2.5 Flash / Claude Haiku） | TTFT p95 ≈ 180–350 ms（含网络往返） | $0.07–0.15（输入） / $0.30–0.60（输出）每 1M token（第三方基准，非官方） | 0（云侧） | 对话密集、需强推理的 NPC | 受网络抖动影响；需做缓存/批处理压成本 |
-| **云 API 极速推理**（Groq Llama 3.3 70B 类） | TTFT ≈ 0.3 s（服务器端） | 按 token 计费，低于通用大模型 | 0 | 对 TTFT 敏感、可容忍略弱模型 | 仍受客户端网络往返制约 |
-| **本地端侧 SLM**（NVIDIA ACE 端侧 Mistral-Nemo-Minitron 0.5B/2B） | 决策频率 8–13 次/秒（约 75–125 ms/决策） | 一次性硬件 + 电费，无按次云费 | inZOI Smart Zoi ≈ 1 GB VRAM | 需低延迟、隐私、离线 NPC | 需 RTX 级 GPU；模型能力弱于云端大模型 |
-| **Unity Inference Engine（Sentis）端侧** | 推理 2–8 ms/次（不含游戏线程开销） | 0（端侧） | 取决模型 | Unity 游戏内 NN 推理/动作 | 适合「小模型跑动作选择」，不适配大模型对话 |
-| **NVIDIA ACE 生产推理**（GDC 2026 报道估算） | — | ≈ $0.003 / 次交互（报道口径，非官方报价） | 云 + 端混合 | 商业级数字人 | 多组件（ASR/TTS/SLM）叠加的真实成本 |
+| **Cloud API lightweight model** (GPT-4o-mini / Gemini 2.5 Flash / Claude Haiku) | TTFT p95 ≈ 180–350 ms (incl. network round-trip) | $0.07–0.15 (input) / $0.30–0.60 (output) per 1M token (third-party benchmark, unofficial) | 0 (cloud side) | Dialogue-heavy, strong-reasoning NPCs | Affected by network jitter; need caching/batching to cut cost |
+| **Cloud API ultra-fast inference** (Groq Llama 3.3 70B class) | TTFT ≈ 0.3 s (server side) | Billed by token, lower than general LLM | 0 | TTFT-sensitive, tolerates slightly weaker model | Still constrained by client network round-trip |
+| **Local on-device SLM** (NVIDIA ACE on-device Mistral-Nemo-Minitron 0.5B/2B) | Decision frequency 8–13 times/sec (≈75–125 ms/decision) | One-time hardware + electricity, no per-use cloud fee | inZOI Smart Zoi ≈ 1 GB VRAM | Low-latency, privacy, offline NPCs | Needs RTX-class GPU; model weaker than cloud LLM |
+| **Unity Inference Engine (Sentis) on-device** | Inference 2–8 ms/time (excl. game-thread overhead) | 0 (on-device) | Depends on model | In-Unity NN inference/action | Suited for "small model runs action selection", not for large-model dialogue |
+| **NVIDIA ACE production inference** (GDC 2026 report estimate) | — | ≈ $0.003 / interaction (report figure, not official quote) | Cloud + device hybrid | Commercial-grade digital human | Real cost of stacked multi-components (ASR/TTS/SLM) |
 
-**量化结论**：
-1. **延迟瓶颈在「网络往返」而非「推理」**：端侧 SLM 决策可达 8–13 Hz，云端即使 TTFT 180ms 也意味着 ≤5 Hz，且受玩家网络影响。**实时战斗/群体行为应优先端侧或确定性执行器；对话可接受云端。**
-2. **成本数量级**：云端每千次交互约 $0.003–$0.6（取决模型与上下文长度）；端侧为「一次硬件投入 + 电费」。NPC 规模大（上万群体，如 UE MassEntity）时，纯云端不可行，**必须端侧 + 确定性执行器混合**（呼应 §9.1 MassAI 路线）。
-3. **Macha 的工程暗示**：适配层应支持**执行后端热切换**——同一 `ActionDescriptor` 在「离线/低端机」走端侧 SLM+BT，在「在线/高端机」走云端大模型+LLM override，由 `llm_override.mode` 与 executor 注册表动态决定。
+**Quantitative conclusions**:
+1. **Latency bottleneck is "network round-trip" not "inference"**: On-device SLM decisions reach 8–13 Hz, cloud even at 180ms TTFT means ≤5 Hz, and is affected by player network. **Real-time combat/crowd behavior should prefer on-device or deterministic executors; dialogue can accept cloud.**
+2. **Cost order of magnitude**: Cloud about $0.003–$0.6 per thousand interactions (depends on model and context length); on-device is "one-time hardware + electricity". At large NPC scale (10k+ crowds, e.g., UE MassEntity), pure cloud is infeasible, **must mix on-device + deterministic executors** (echoes §9.1 MassAI route).
+3. **Macha engineering implication**: Adaptation layer should support **execution-backend hot-switching**—same `ActionDescriptor` goes on-device SLM+BT on "offline/low-end machine", cloud LLM+LLM override on "online/high-end machine", decided dynamically by `llm_override.mode` and executor registry.
 
-### 9.3 中文市场专项（国产游戏 AI 深度案例）
+### 9.3 Chinese-Market Special (domestic game AI deep cases)
 
-> 国产游戏 AI 已从「研究 demo」进入「产品化/工业化」阶段，且普遍走「**后训练 + 大模型蒸馏小模型 + 端侧加速**」路线，与 Macha「开放可替换认知内核 + 端侧适配」高度契合。以下为典型厂商案例。
+> Domestic game AI has moved from "research demo" to "productization/industrialization", and generally takes the "**post-training + large-model-distill-small-model + on-device acceleration**" route, highly matching Macha's "open replaceable cognition kernel + on-device adaptation". Typical vendor cases below.
 
-| 厂商 | 代表技术/产品 | 核心路线 | 与 Macha 的可借鉴点 |
+| Vendor | Representative tech/product | Core route | Borrowable point for Macha |
 |---|---|---|---|
-| **网易伏羲** | 有灵·易生诸相、游戏 AI 后训练体系 | 后训练 + 大模型蒸馏小模型；端侧用 **KleidiAI** 加速推理（实测 1.97–2.63x）；模型压缩至 28.25M 量级 | 「大模型能力 → 小模型落地」蒸馏范式，正是 Macha 认知内核可插拔的落地路径；端侧量化数据可作为适配层性能基线 |
-| **腾讯** | **GiiNEX** 游戏 AI 平台、混元大模型 NPC | 混元大模型提供对话/生成，GiiNEX 做 AI 内容生产 + 智能 NPC；探索「LLM NPC + 玩法生成」 | 可作为 Macha 适配层的「云端大模型后端」候选；其 NPC 接口可经 MCP/OpenAI 兼容对齐 |
-| **米哈游 Anuttacon** | **Whispers from the Star**（AI 原生叙事游戏） | 用 LLM 驱动主角「Stella」的全自然语音/文本交互叙事，强调情感陪伴与开放对话 | 验证「AI 原生游戏」商业可行性；其对话/情感状态管理可映射到 Macha 的 Persona/Memory 模块 |
-| **恺英网络 形意** | 形意大模型、织梦（AI 游戏制作）、EVE（AI 陪伴） | 多模态游戏大模型矩阵；NPC 文本生成算法已备案；做「AI 生成 NPC 对话/剧情」 | 国产合规化（算法备案）先例，Macha 若出海/国内发行需参考其合规路径 |
-| **字节跳动** | 即梦/豆包等大模型在互动内容中的探索 | 大模型的角色对话/互动叙事能力外溢到游戏 | 潜在云端 LLM 后端；生态未完全聚焦游戏 NPC |
+| **NetEase Fuxi** | Youling·Yisheng Zhuxiang, game-AI post-training system | Post-training + large-model-distill-small-model; on-device uses **KleidiAI** to accelerate inference (measured 1.97–2.63x); model compressed to 28.25M scale | "Large-model capability → small-model landing" distillation paradigm, exactly the landable path for Macha's pluggable cognition kernel; on-device quantization data can be adaptation-layer performance baseline |
+| **Tencent** | **GiiNEX** game-AI platform, Hunyuan large-model NPC | Hunyuan large model provides dialogue/generation, GiiNEX does AI content production + smart NPC; exploring "LLM NPC + gameplay generation" | Can be "cloud large-model backend" candidate for Macha adaptation layer; its NPC interface can align via MCP/OpenAI-compatible |
+| **miHoYo Anuttacon** | **Whispers from the Star** (AI-native narrative game) | Uses LLM to drive protagonist "Stella"'s fully natural voice/text interactive narrative, emphasizes emotional companionship and open dialogue | Validates "AI-native game" commercial feasibility; its dialogue/emotion-state management can map to Macha's Persona/Memory modules |
+| **Kaiying Network Xingyi** | Xingyi large model, Zhimeng (AI game making), EVE (AI companionship) | Multimodal game large-model matrix; NPC text-generation algorithm already filed; does "AI-generated NPC dialogue/story" | Domestic compliance (algorithm filing) precedent; Macha if going overseas/domestic release needs to reference its compliance path |
+| **ByteDance** | Jimeng/Doubao large models exploring interactive content | Large model's character-dialogue/interactive-narrative ability spills into games | Potential cloud LLM backend; ecosystem not fully focused on game NPCs |
 
-> 判读：国产路线与 Macha 的**最大交集在「端侧小模型 + 后训练」**。伏羲的蒸馏/量化数据（1.97–2.63x 加速、28.25M 压缩）说明「大模型认知内核 → 端侧可执行」在国产工业化里已跑通，Macha 应把这条链路作为适配层的一等公民。
+> Read: The biggest intersection of the domestic route with Macha is "**on-device small model + post-training**". Fuxi's distillation/quantization data (1.97–2.63x speedup, 28.25M compression) shows "large-model cognition kernel → on-device executable" already works in domestic industrialization; Macha should make this chain a first-class citizen of the adaptation layer.
 
-### 9.4 量化与落地：开源路线图 + 替换成本估算
+### 9.4 Quantification and Landing: Open-Source Roadmap + Replacement-Cost Estimate
 
-#### 9.4.1 适配层开源路线图（优先级排序）
+#### 9.4.1 Adaptation-layer open-source roadmap (priority order)
 
-| 阶段 | 目标 | 支持的引擎/框架 | 关键交付物 | 优先级 |
+| Phase | Goal | Supported engines/frameworks | Key deliverables | Priority |
 |---|---|---|---|---|
-| **P0（MVP）** | 跑通「认知内核 → ActionDescriptor → BT」 | Unreal Behavior Tree / Unity Behavior / Godot Beehave | `ActionDescriptor` schema + `adapter.selectAction` 参考实现 + 1 个 Godot 4 demo | 最高 |
-| **P1** | 接入规划器与端侧推理 | GOAP / HTN 后端 + Unity Inference Engine（端侧） | GOAP/HTN executor 适配 + 端侧 SLM 推理桥 | 高 |
-| **P2** | 群体与云后端 | UE MassEntity/MassStateTree + 云端 LLM（OpenAI 兼容/MCP） | MassStateTree 适配器 + MCP Server | 中 |
-| **P3** | 国产与合规 | 混元/伏羲端侧小模型后端 + 算法备案参考 | 国产 LLM 后端适配 + 合规文档模板 | 中 |
-| **P4（远期）** | 标准化治理 | 对齐 AgentArena / The-Seed 运行时 | 上游协作 / 标准化提案 | 低 |
+| **P0 (MVP)** | Run "cognition kernel → ActionDescriptor → BT" | Unreal Behavior Tree / Unity Behavior / Godot Beehave | `ActionDescriptor` schema + `adapter.selectAction` reference impl + 1 Godot 4 demo | Highest |
+| **P1** | Connect planner and on-device inference | GOAP / HTN backend + Unity Inference Engine (on-device) | GOAP/HTN executor adapter + on-device SLM inference bridge | High |
+| **P2** | Crowd and cloud backend | UE MassEntity/MassStateTree + cloud LLM (OpenAI-compatible/MCP) | MassStateTree adapter + MCP Server | Medium |
+| **P3** | Domestic and compliance | Hunyuan/Fuxi on-device small-model backend + algorithm-filing reference | Domestic LLM backend adapter + compliance doc template | Medium |
+| **P4 (long-term)** | Standardization governance | Align with AgentArena / The-Seed runtime | Upstream collaboration / standardization proposal | Low |
 
-> 理由：**P0 选 Godot + BT** 是因为 Godot 开源、Beehave 成熟、无商业绑定，最适合做 Macha 的「参考实现操场」（对标 AgentArena 用 Godot 4 的选择）。P1 即引入端侧推理呼应 §9.2.3「延迟瓶颈在端侧」。
+> Reason: **P0 picks Godot + BT** because Godot is open-source, Beehave mature, no commercial binding, best as Macha's "reference-implementation playground" (echoes AgentArena's choice of Godot 4). P1 introduces on-device inference immediately, echoing §9.2.3 "latency bottleneck is on-device".
 
-#### 9.4.2 替换成本估算（量化）
+#### 9.4.2 Replacement-cost estimate (quantified)
 
-> 估算口径：「把一个现有项目从『碎片化 LLM Mod / 自研记忆』迁移到 Macha 标准内核」的工程量。数字为**经验量级**，非精确报价。
+> Estimate basis: engineering effort of "migrating an existing project from 'fragmented LLM Mod / self-built memory' to Macha standard kernel". Numbers are **experience order-of-magnitude**, not precise quotes.
 
-| 替换对象 | 现状痛点（见前文） | 迁移到 Macha 的成本项 | 估算量级 |
+| Replacement target | Current pain (see above) | Migration-to-Macha cost items | Estimate order |
 |---|---|---|---|
-| **SkyrimNet 式 LLM Mod**（自研记忆/MCP/提示模板） | 各自造轮子、无标准（§4.2） | 删自研记忆层 → 接 Macha MemoryStore；删手写 MCP → 用 Macha MCP Server；保留 Papyrus 胶水 | 中（约 2–4 周/人，取决于原有架构整洁度） |
-| **RimAI Core / RWAILib / RimTalk**（架构不一） | 缺跨 Mod 标准（§4.3） | 对齐 Orchestration/Tool/Persona/Persistence 契约，替换其「大脑」 | 中高（需重写编排层，约 4–8 周/人） |
-| **自研 FSM/BT 敌人 AI**（无记忆） | 无认知（§1） | 仅加适配层 import + `llm_override` 钩子，**不碰**原执行树 | **低（约 3–10 人日）** —— 体现 Wrap 优势 |
-| **商业 SaaS（Inworld/Convai）** | 大脑不可移植（§3） | 用 OpenAI 兼容/Tool Use 接口对齐，**不迁移数据**，仅加 Macha 互操作层 | 低（约 1–2 周/人） |
-| **RAIN 式停更框架** | 生态抛弃（§3.5） | 整体替换执行器为 Macha + BT，属「重做」非「迁移」 | 高（按新功能重估） |
+| **SkyrimNet-style LLM Mod** (self-built memory/MCP/prompt template) | Each reinvents wheel, no standard (§4.2) | Delete self-built memory layer → connect Macha MemoryStore; delete hand-written MCP → use Macha MCP Server; keep Papyrus glue | Medium (≈2–4 weeks/person, depends on original architecture cleanliness) |
+| **RimAI Core / RWAILib / RimTalk** (different architectures) | Lack cross-Mod standard (§4.3) | Align Orchestration/Tool/Persona/Persistence contract, replace its "brain" | Medium-high (need rewrite orchestration layer, ≈4–8 weeks/person) |
+| **Self-built FSM/BT enemy AI** (no memory) | No cognition (§1) | Only add adaptation-layer import + `llm_override` hook, **don't touch** original execution tree | **Low (≈3–10 person-days)** — reflects Wrap advantage |
+| **Commercial SaaS (Inworld/Convai)** | Brain not portable (§3) | Align via OpenAI-compatible/Tool Use interface, **don't migrate data**, only add Macha interop layer | Low (≈1–2 weeks/person) |
+| **RAIN-style discontinued framework** | Ecosystem abandoned (§3.5) | Wholly replace executor with Macha + BT, is "redo" not "migrate" | High (re-estimate by new features) |
 
-**核心量化结论**：
-- **Wrap 现有执行器几乎零成本**（低至人日级），因为 Macha 不改执行层 —— 印证 §5「Wrap 为主、Replace 为辅」的总策略。
-- **Replace 碎片化 LLM 内核是主要成本**（周级），但这是「一次性标准化投资」，复用后新 NPC 边际成本趋零。
-- **端侧小模型（伏羲范式）+ 确定性执行器混合**是压低「每 NPC 推理成本」与「延迟」的关键，应在路线图 P1 即锁定。
-
----
-
-### 9.5 新增来源收集（Source Collection，六字段）
-
-【类别】工程实现（引擎·时效）
-【标题】Unreal Engine 5.6 Release Notes — MassAI / MassInsights / StateTree 增强
-【链接】https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5.6-release-notes
-【一句话摘要】UE 5.6 强化 MassEntity 群体 AI，新增 MassInsights 性能剖析，改进 StateTree 与 Smart Objects 协作。
-【关键结论】
-1. MassInsights 提供群体 AI 的实时性能剖析，便于调优上万 Agent。
-2. StateTree 事件/任务机制改进，与 Mass 协作更紧。
-3. Smart Objects 仍是「数据槽位」思路，需开发者补执行逻辑。
-4. 引擎持续把 AI 往「大规模 + 可视化调试」推进，认知层仍缺。
-【可复用的东西】MassEntity/MassStateTree 作为 Macha 群体执行后端适配器范本。
-
-【类别】工程实现（引擎·时效）
-【标题】UEFN Persona Device（Fortnite Creative 官方 AI NPC）
-【链接】https://dev.epicgames.com/documentation/en-us/uefn/persona-device
-【一句话摘要】UEFN 上线 Persona Device，让创作者用对话式配置给 NPC 挂基础 AI 人格。
-【关键结论】
-1. 引擎内嵌「轻量人格/对话」已成官方趋势。
-2. 配置范式适合非程序员创作者，降低 AI NPC 门槛。
-3. 仍属「轻量」，深度记忆/反思需外部方案。
-【可复用的东西】Persona Device schema 可作 Macha Persona 模块的导入/导出对齐目标。
-
-【类别】工程实现（引擎·时效）
-【标题】Unity Inference Engine（原 Sentis 重命名）官方文档
-【链接】https://docs.unity3d.com/Packages/com.unity.inference-engine@latest
-【一句话摘要】Unity 将 Sentis 重命名为 Inference Engine，强化端侧神经网络推理，并配套 Unity AI 三层架构与 MCP Server。
-【关键结论】
-1. Inference Engine 在端侧跑 NN 推理（2–8ms/推理级），可作执行后端。
-2. Unity AI 三层：AI Core / AI Behaviors / AI Engine，与 Macha 分层同构。
-3. Unity MCP Server 让引擎与外部 AI 工具互操作，呼应 Macha 互操作策略。
-【可复用的东西】端侧推理桥、MCP Server 协议（Macha 适配层可直接对接）。
-
-【类别】工程实现（开源·时效）
-【标题】AgentArena — Godot 4 + Python 的 LLM Agent 游戏沙盒（Apache-2.0）
-【链接】以 GitHub 一手仓库为准（搜索 "AgentArena godot llm"）；许可证 Apache-2.0
-【一句话摘要】用 Godot 4 C++ 内核 + Python 运行时构建可评测的 LLM-Agent 游戏沙盒，支持 llama.cpp/TensorRT-LLM/vLLM 与 Memory&RAG。
-【关键结论】
-1. 多推理后端可插拔，是「游戏世界 ↔ LLM」标准对接的现成骨架。
-2. 内置 Memory & RAG，证明记忆层在开源侧已被当作标配。
-3. 定位为「评测/研究沙盒」，非产品框架。
-【可复用的东西】**Macha 适配层可直接借鉴其运行时结构与推理后端抽象**（链接需团队以 GitHub 一手仓库复核，本文未硬编码不可靠深链）。
-
-【类别】工程实现（开源·时效）
-【标题】The-Seed — 跨平台 LLM Agent 游戏框架（MIT）
-【链接】https://github.com/theseed-dev/the-seed （以 GitHub 仓库为准，搜索 "The-Seed agent game framework"；MIT）
-【一句话摘要】跨平台 Agent 框架，核心理念是「LLM 生成意图（intent）→ 框架翻译为游戏可执行动作」。
-【关键结论】
-1. 与 Macha「认知内核产出意图、执行适配层落地」几乎同构。
-2. MIT 许可，适合作为参考实现或上游协作。
-3. 重点在「意图→执行」翻译层，记忆/人格仍需外部。
-【可复用的东西】**意图翻译层设计可直接对齐 Macha 的 adapter.selectAction**（链接需团队以 GitHub 一手仓库复核）。
-
-【类别】学术研究（综述·时效）
-【标题】A Survey on LLM-Based Game Agents（arXiv:2404.02039，ACM Computing Surveys 2026）
-【链接】https://arxiv.org/abs/2404.02039
-【一句话摘要】系统综述 LLM 游戏智能体，给出「记忆/推理/感知-行动接口」统一参考架构。
-【关键结论】
-1. 统一参考架构 = Memory + Reasoning + Perception-Action Interface，与 Macha direction.md 同构。
-2. 强调「接口层」是连接 LLM 与游戏引擎的关键缺口。
-3. 复盘了 Generative Agents、Voyager、AgentBench 等。
-【可复用的东西】**学术侧对齐锚点**，Macha 接口命名可与之对齐以增强可信度。
-
-【类别】中文市场（网易伏羲）
-【标题】网易伏羲：游戏 AI 后训练 + 大模型蒸馏小模型 + 端侧加速
-【链接】https://fuxi.163.com/ （深度文检索：搜索 "网易伏羲 有灵 易生诸相 后训练" / "网易伏羲 KleidiAI 端侧加速 1.97 2.63"）
-【一句话摘要】伏羲走「后训练 + 大模型蒸馏小模型」路线，端侧用 KleidiAI 加速推理达 1.97–2.63x，模型压缩至 28.25M 量级。
-【关键结论】
-1. 后训练让通用大模型适配游戏角色行为分布。
-2. 蒸馏把大模型能力压到端侧小模型，可行性已被验证。
-3. KleidiAI 端侧加速实测 1.97–2.63x，压缩 28.25M。
-4. 国产工业化「大模型→小模型→端侧」链路已跑通。
-【可复用的东西】**蒸馏/量化范式 = Macha 认知内核端侧落地的参考基线**（具体文章链接需团队以伏羲官方博客/技术号复核）。
-
-【类别】中文市场（腾讯）
-【标题】腾讯 GiiNEX 游戏 AI 平台与混元大模型 NPC
-【链接】https://gii-nex.tencent.com/ （混元：https://hunyuan.tencent.com/ ；详细架构以腾讯云/混元官方文档为准）
-【一句话摘要】GiiNEX 做 AI 内容生产与智能 NPC，混元大模型提供对话/生成能力，探索 LLM NPC + 玩法生成。
-【关键结论】
-1. 混元作为云端大模型后端，可经 OpenAI 兼容/MCP 接入 Macha。
-2. GiiNEX 偏「生产侧 + NPC 侧」双轨。
-3. 公开深度架构资料较少，本文未硬编码不可靠深链。
-【可复用的东西】潜在云端 LLM 后端候选；接口对齐路径清晰。
-
-【类别】中文市场（米哈游 Anuttacon）
-【标题】Whispers from the Star — AI 原生叙事游戏（Steam）
-【链接】https://store.steampowered.com/app/3501640/Whispers_from_the_Star/ （Anuttacon 官网：https://anuttacon.ai/ ）
-【一句话摘要】米哈游 Anuttacon 出品，用 LLM 驱动主角 Stella 的全自然语音/文本交互叙事，验证 AI 原生游戏商业可行性。
-【关键结论】
-1. 主打「情感陪伴 + 开放对话」的 AI 原生玩法。
-2. 其对话/情感状态管理可映射到 Macha Persona/Memory。
-3. Steam 页面已上线（链接 200 可访问），标志产品化落地。
-【可复用的东西】「AI 原生游戏」的 Persona/情感状态管理设计参考。
-
-【类别】中文市场（恺英网络 形意）
-【标题】恺英形意大模型、织梦、EVE（AI 陪伴/生成）
-【链接】以恺英网络投资者公告与「形意大模型」官方发布为准（搜索 "恺英 形意大模型 织梦 EVE NPC 文本生成算法备案"）
-【一句话摘要】恺英构建多模态游戏大模型矩阵（形意），覆盖 AI 生成 NPC 对话/剧情，NPC 文本生成算法已备案。
-【关键结论】
-1. 多模态矩阵覆盖「生成 + 陪伴 + 制作」。
-2. NPC 文本生成算法完成备案，提供国产合规先例。
-3. 路线偏内容生产，与玩法内实时 NPC 仍存距离。
-【可复用的东西】**算法备案合规路径**，Macha 国内发行需参考（链接稳定性以官方公告复核）。
-
-【类别】成本/延迟（基准·非官方聚合）
-【标题】轻量模型 API 延迟与定价基准（2026）
-【链接】https://www.pricepertoken.com/ ；https://llmversus.com/ ；https://www.khimananda.com.np/2025/02/llm-api-latency-benchmark.html （第三方聚合，非官方报价）
-【一句话摘要】聚合 GPT-4o-mini / Gemini 2.5 Flash / Claude Haiku 的 TTFT p95 与每百万 token 成本。
-【关键结论】
-1. 轻量模型 TTFT p95 约 180–350 ms（含网络）。
-2. 成本区间 $0.07–0.15（输入）/$0.30–0.60（输出）每 1M token。
-3. Groq Llama 3.3 70B 类极速推理 TTFT ≈ 0.3 s。
-4. 数字为第三方基准，落地前需以官方当季价复核。
-【可复用的东西】§9.2.3 云 vs 本地对比表的数字来源（已标注非官方）。
-
-【类别】成本/延迟（生产报道）
-【标题】NVIDIA ACE 生产推理成本估算（GDC 2026 报道）
-【链接】以 GDC 2026 / NVIDIA 官方博客为准（搜索 "NVIDIA ACE cost per interaction GDC 2026"；报道口径 ≈ $0.003/次交互）
-【一句话摘要】GDC 2026 报道口径下，NVIDIA ACE 数字人生产推理约 $0.003/次交互（多组件叠加真实成本）。
-【关键结论】
-1. 数字人为 ASR+TTS+SLM+渲染多组件叠加成本。
-2. 量级可作为「商业级数字人」成本锚。
-3. 报道口径非官方报价，需以 NVIDIA 商务报价复核。
-【可复用的东西】§9.2.3 成本表的数字来源（已标注非官方）。
+**Core quantitative conclusion**:
+- **Wrapping existing executors is nearly zero-cost** (as low as person-day level), because Macha doesn't change the execution layer—confirms §5 "Wrap-primary, Replace-secondary" total strategy.
+- **Replacing fragmented LLM kernels is the main cost** (week level), but this is a "one-time standardization investment"; after reuse, marginal cost of new NPCs tends to zero.
+- **On-device small model (Fuxi paradigm) + deterministic executor hybrid** is key to lowering "per-NPC inference cost" and "latency", should be locked in at roadmap P1.
 
 ---
 
-### 9.6 本节小结（供 team 对齐）
+### 9.5 Newly Added Source Collection (Source Collection, six-field)
 
-1. **广度已补到 2026**：UE 5.6 MassAI/MassInsights、UEFN Persona、Unity 6.2 Inference Engine/MCP、AgentArena、The-Seed、LLM 游戏智能体综述，全部落在 Macha「下方执行层 / 适配层」区间，进一步印证总定位。
-2. **规范已成型**：`ActionDescriptor` JSON Schema + `adapter.selectAction` 仲裁逻辑，把「COMPLEMENT（传统执行器能做的交给它）/ OVERRIDE（LLM 接管认知空白）」落到代码级；云 vs 本地成本/延迟表给出工程选型依据。
-3. **中文市场已专项**：伏羲蒸馏/端侧加速、腾讯混元/GiiNEX、米哈游 Anuttacon、恺英形意，国产「大模型→小模型→端侧」路线与 Macha 端侧适配层高度同构。
-4. **落地已量化**：P0–P4 路线图 + 替换成本估算（Wrap 低至人日级、Replace 碎片化内核为周级），证明「Wrap 为主、Replace 为辅」在工程量上站得住。
+[Category]Engineering implementation (engine · timeliness)
+[Title]Unreal Engine 5.6 Release Notes — MassAI / MassInsights / StateTree enhancement
+[Link]https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5.6-release-notes
+[One-line summary]UE 5.6 strengthens MassEntity crowd AI, new MassInsights performance profiler, improved StateTree and Smart Objects collaboration.
+[Key conclusions]
+1. MassInsights gives real-time performance profiling of crowd AI, easy to tune 10k+ Agents.
+2. StateTree event/task mechanism improved, tighter Mass collaboration.
+3. Smart Objects still "data slot" idea, needs developer to fill execution logic.
+4. Engine keeps pushing AI toward "large-scale + visual debugging", cognition layer still missing.
+[Reusable]MassEntity/MassStateTree as Macha crowd execution-backend adapter template.
 
-> 以上新增内容均为**追加**，未改动前文 §0–§8 任何结论；新增来源严格按六字段格式，未核实链接已诚实标注「以一手/官方复核」。
+[Category]Engineering implementation (engine · timeliness)
+[Title]UEFN Persona Device (Fortnite Creative official AI NPC)
+[Link]https://dev.epicgames.com/documentation/en-us/uefn/persona-device
+[One-line summary]UEFN shipped Persona Device, lets creators attach basic AI persona to NPC via conversational config.
+[Key conclusions]
+1. Engine-embedded "lightweight persona/dialogue" already official trend.
+2. Config paradigm suits non-programmer creators, lowers AI NPC threshold.
+3. Still "lightweight", deep memory/reflection needs external solution.
+[Reusable]Persona Device schema can be Macha Persona module import/export alignment target.
+
+[Category]Engineering implementation (engine · timeliness)
+[Title]Unity Inference Engine (formerly Sentis rename) official docs
+[Link]https://docs.unity3d.com/Packages/com.unity.inference-engine@latest
+[One-line summary]Unity renamed Sentis to Inference Engine, strengthened on-device NN inference, with Unity AI three-layer architecture and MCP Server.
+[Key conclusions]
+1. Inference Engine runs NN inference on-device (2–8ms/inference level), can be execution backend.
+2. Unity AI three layers: AI Core / AI Behaviors / AI Engine, isomorphic to Macha layering.
+3. Unity MCP Server lets engine interoperate with external AI tools, echoes Macha interop strategy.
+[Reusable]On-device inference bridge, MCP Server protocol (Macha adaptation layer can connect directly).
+
+[Category]Engineering implementation (open-source · timeliness)
+[Title]AgentArena — Godot 4 + Python LLM Agent game sandbox (Apache-2.0)
+[Link]Use GitHub first-hand repo as authoritative (search "AgentArena godot llm"); license Apache-2.0
+[One-line summary]Godot 4 C++ kernel + Python runtime builds evaluable LLM-Agent game sandbox, supports llama.cpp/TensorRT-LLM/vLLM and Memory&RAG.
+[Key conclusions]
+1. Multi inference backend pluggable, ready-made skeleton for "game world ↔ LLM" standard connection.
+2. Built-in Memory & RAG, proves memory layer already treated as standard on open-source side.
+3. Positioned as "evaluation/research sandbox", not product framework.
+[Reusable]**Macha adaptation layer can directly borrow its runtime structure and inference-backend abstraction** (link needs team re-verify with GitHub first-hand repo, this doc didn't hardcode unreliable deep link).
+
+[Category]Engineering implementation (open-source · timeliness)
+[Title]The-Seed — cross-platform LLM Agent game framework (MIT)
+[Link]https://github.com/theseed-dev/the-seed (use GitHub repo as authoritative, search "The-Seed agent game framework"; MIT)
+[One-line summary]Cross-platform Agent framework, core idea is "LLM generates intent → framework translates to game-executable action".
+[Key conclusions]
+1. Almost isomorphic to Macha "cognition kernel outputs intent, execution adaptation layer lands it".
+2. MIT license, suited as reference implementation or upstream collaboration.
+3. Focus on "intent → execution" translation layer, memory/persona still external.
+[Reusable]**Intent-translation-layer design can align directly with Macha's adapter.selectAction** (link needs team re-verify with GitHub first-hand repo).
+
+[Category]Academic research (survey · timeliness)
+[Title]A Survey on LLM-Based Game Agents (arXiv:2404.02039, ACM Computing Surveys 2026)
+[Link]https://arxiv.org/abs/2404.02039
+[One-line summary]Systematically surveys LLM game agents, gives unified reference architecture of "Memory / Reasoning / Perception-Action Interface".
+[Key conclusions]
+1. Unified reference architecture = Memory + Reasoning + Perception-Action Interface, isomorphic to Macha direction.md.
+2. Emphasizes "interface layer" is the key gap connecting LLM and game engine.
+3. Reviews Generative Agents, Voyager, AgentBench, etc.
+[Reusable]**Academic-side alignment anchor**, Macha interface naming can align with it to enhance credibility.
+
+[Category]Chinese market (NetEase Fuxi)
+[Title]NetEase Fuxi: game-AI post-training + large-model-distill-small-model + on-device acceleration
+[Link]https://fuxi.163.com/ (deep article search: "NetEase Fuxi Youling Yisheng Zhuxiang post-training" / "NetEase Fuxi KleidiAI on-device acceleration 1.97 2.63")
+[One-line summary]Fuxi takes "post-training + large-model-distill-small-model" route, on-device uses KleidiAI to accelerate inference to 1.97–2.63x, model compressed to 28.25M scale.
+[Key conclusions]
+1. Post-training adapts general LLM to game-character behavior distribution.
+2. Distillation compresses large-model capability to on-device small model, feasibility verified.
+3. KleidiAI on-device speedup measured 1.97–2.63x, compressed 28.25M.
+4. Domestic industrialization "large-model → small-model → on-device" chain already works.
+[Reusable]**Distillation/quantization paradigm = reference baseline for Macha cognition-kernel on-device landing** (specific article links need team re-verify with Fuxi official blog/tech account).
+
+[Category]Chinese market (Tencent)
+[Title]Tencent GiiNEX game-AI platform and Hunyuan large-model NPC
+[Link]https://gii-nex.tencent.com/ (Hunyuan: https://hunyuan.tencent.com/ ; detailed architecture per Tencent Cloud/Hunyuan official docs)
+[One-line summary]GiiNEX does AI content production and smart NPC, Hunyuan large model provides dialogue/generation, explores LLM NPC + gameplay generation.
+[Key conclusions]
+1. Hunyuan as cloud large-model backend, can connect to Macha via OpenAI-compatible/MCP.
+2. GiiNEX leans "production side + NPC side" dual track.
+3. Few public deep-architecture materials, this doc didn't hardcode unreliable deep link.
+[Reusable]Potential cloud LLM backend candidate; interface-alignment path clear.
+
+[Category]Chinese market (miHoYo Anuttacon)
+[Title]Whispers from the Star — AI-native narrative game (Steam)
+[Link]https://store.steampowered.com/app/3501640/Whispers_from_the_Star/ (Anuttacon official: https://anuttacon.ai/ )
+[One-line summary]miHoYo Anuttacon, uses LLM to drive protagonist Stella's fully natural voice/text interactive narrative, validates AI-native game commercial feasibility.
+[Key conclusions]
+1. Features "emotional companionship + open dialogue" AI-native gameplay.
+2. Its dialogue/emotion-state management can map to Macha Persona/Memory.
+3. Steam page already live (link 200 accessible), marks productization landing.
+[Reusable]"AI-native game" Persona/emotion-state management design reference.
+
+[Category]Chinese market (Kaiying Network Xingyi)
+[Title]Kaiying Xingyi large model, Zhimeng, EVE (AI companionship/generation)
+[Link]Per Kaiying Network investor announcements and "Xingyi large model" official release (search "Kaiying Xingyi large model Zhimeng EVE NPC text-generation algorithm filing")
+[One-line summary]Kaiying builds multimodal game large-model matrix (Xingyi), covers AI-generated NPC dialogue/story, NPC text-generation algorithm already filed.
+[Key conclusions]
+1. Multimodal matrix covers "generation + companionship + production".
+2. NPC text-generation algorithm completed filing, provides domestic compliance precedent.
+3. Route leans content production, still distant from real-time in-gameplay NPC.
+[Reusable]**Algorithm-filing compliance path**, Macha domestic release needs to reference (link stability per official announcement re-verify).
+
+[Category]Cost/latency (benchmark · unofficial aggregation)
+[Title]Lightweight model API latency and pricing benchmark (2026)
+[Link]https://www.pricepertoken.com/ ;https://llmversus.com/ ;https://www.khimananda.com.np/2025/02/llm-api-latency-benchmark.html (third-party aggregation, not official quote)
+[One-line summary]Aggregates GPT-4o-mini / Gemini 2.5 Flash / Claude Haiku TTFT p95 and per-million-token cost.
+[Key conclusions]
+1. Lightweight model TTFT p95 ≈ 180–350 ms (incl. network).
+2. Cost range $0.07–0.15 (input)/$0.30–0.60 (output) per 1M token.
+3. Groq Llama 3.3 70B class ultra-fast inference TTFT ≈ 0.3 s.
+4. Numbers are third-party benchmark, re-verify with official current-quarter price before landing.
+[Reusable]§9.2.3 cloud vs local comparison-table number source (marked unofficial).
+
+[Category]Cost/latency (production report)
+[Title]NVIDIA ACE production inference cost estimate (GDC 2026 report)
+[Link]Per GDC 2026 / NVIDIA official blog (search "NVIDIA ACE cost per interaction GDC 2026"; report figure ≈ $0.003/interaction)
+[One-line summary]Under GDC 2026 report figure, NVIDIA ACE digital-human production inference ≈ $0.003/interaction (real cost of stacked multi-components).
+[Key conclusions]
+1. Digital human is ASR+TTS+SLM+rendering stacked multi-component cost.
+2. Order of magnitude can be "commercial-grade digital human" cost anchor.
+3. Report figure not official quote, re-verify with NVIDIA business quote.
+[Reusable]§9.2.3 cost-table number source (marked unofficial).
+
+---
+
+### 9.6 Section Summary (for team alignment)
+
+1. **Breadth extended to 2026**: UE 5.6 MassAI/MassInsights, UEFN Persona, Unity 6.2 Inference Engine/MCP, AgentArena, The-Seed, LLM game-agent survey, all sit in Macha's "lower execution layer / adaptation layer" scope, further confirming the total positioning.
+2. **Spec formed**: `ActionDescriptor` JSON Schema + `adapter.selectAction` arbitration logic land "COMPLEMENT (traditional executor does what it can) / OVERRIDE (LLM takes over cognitive blank)" to code level; cloud vs local cost/latency table gives engineering selection basis.
+3. **Chinese market specialized**: Fuxi distillation/on-device acceleration, Tencent Hunyuan/GiiNEX, miHoYo Anuttacon, Kaiying Xingyi, domestic "large-model → small-model → on-device" route highly isomorphic to Macha on-device adaptation layer.
+4. **Landing quantified**: P0–P4 roadmap + replacement-cost estimate (Wrap as low as person-day, Replace fragmented kernel week-level), proving "Wrap-primary, Replace-secondary" holds up in engineering effort.
+
+> All the above new content is **additive**, changing no conclusion in §0–§8; newly added sources strictly in six-field format, unverified links honestly marked "re-verify with first-hand/official".

@@ -2,24 +2,24 @@
 
 **Revolutionizing game NPCs!**
 
-Macha 是一个面向下一代游戏 NPC 的研究与工程仓库。我们的目标不是做一个“会聊天的 NPC”，而是构建具备 **长期记忆、可信反思、动态规划、多智能体协作** 的 LLM 驱动 NPC 框架。
+Macha is a research and engineering repository for next-generation game NPCs. Our goal is not to build an NPC "that can chat," but to construct an LLM-driven NPC framework with **long-term memory, believable reflection, dynamic planning, and multi-agent collaboration**.
 
-> 当前状态：仓库初始化阶段。  
-> 研究基础：`reference/` 中的四篇核心论文。
-
----
-
-## 为什么叫 Macha？
-
-Macha 代表我们想做的三件事：
-
-- **Memory**：让 NPC 记住经历、关系和因果。
-- **Architecture**：用可扩展的模块化架构替代“Prompt 堆砌”。
-- **Character**：让每个 NPC 有稳定、可信、可成长的“人格”。
+> Current status: repository initialization phase.  
+> Research foundation: the four core papers in `reference/`.
 
 ---
 
-## 仓库结构
+## Why "Macha"?
+
+Macha represents the three things we want to achieve:
+
+- **Memory**: let NPCs remember experiences, relationships, and causality.
+- **Architecture**: replace "prompt piling" with an extensible, modular architecture.
+- **Character**: give every NPC a stable, believable, and evolving "persona".
+
+---
+
+## Repository Structure
 
 ```text
 Macha/
@@ -28,18 +28,19 @@ Macha/
 ├── .gitignore
 ├── requirements.txt
 ├── pyproject.toml
-├── reference/                 # 四篇核心论文 PDF
-├── papers/                    # 团队自己撰写的论文与思想草案
+├── reference/                 # PDFs of the four core papers
+├── papers/                    # Papers and idea drafts written by the team
+├── announcements/             # Public experiment announcements
 ├── docs/
 │   ├── research/
-│   │   ├── positioning.md     # 四篇论文的定位与我们的切入点
-│   │   └── direction.md       # 初步技术方向与立项建议
-│   ├── architecture.md        # 目标架构草图
-│   └── roadmap.md             # 开发路线图
+│   │   ├── positioning.md     # Positioning of the four papers and our entry point
+│   │   └── direction.md       # Preliminary technical direction and project proposal
+│   ├── architecture.md        # Target architecture sketch
+│   └── roadmap.md             # Development roadmap
 ├── src/
 │   └── macha/
 │       ├── __init__.py
-│       └── core/              # 核心模块骨架
+│       └── core/              # Core module skeleton
 │           ├── __init__.py
 │           ├── agent.py
 │           ├── memory.py
@@ -54,33 +55,33 @@ Macha/
 
 ---
 
-## 快速开始（占位）
+## Quick Start (Placeholder)
 
 ```bash
-# 创建虚拟环境
+# Create a virtual environment
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
-# 安装依赖
+# Install dependencies
 pip install -r requirements.txt
 
-# 运行冒烟测试
+# Run smoke tests
 pytest
 ```
 
-> 具体可运行示例将在第一阶段 MVP 完成后补充。
+> Concrete runnable examples will be added after Phase 1 MVP completion.
 
 ---
 
-## 文档导航
+## Documentation Navigation
 
-- [仓库初始化清单](docs/initialization.md)
-- [研究定位与论文差异](docs/research/positioning.md)
-- [初步技术方向](docs/research/direction.md)
-- [团队信息收集清单](docs/research/information_needs.md)
-- [原型画像](docs/prototype_portrait.md)
-- [目标架构](docs/architecture.md)
-- [开发路线图](docs/roadmap.md)
+- [Repository Initialization Checklist](docs/initialization.md)
+- [Research Positioning and Paper Differences](docs/research/positioning.md)
+- [Preliminary Technical Direction](docs/research/direction.md)
+- [Team Information Collection Checklist](docs/research/information_needs.md)
+- [Prototype Portrait](docs/prototype_portrait.md)
+- [Target Architecture](docs/architecture.md)
+- [Development Roadmap](docs/roadmap.md)
 
 ---
 

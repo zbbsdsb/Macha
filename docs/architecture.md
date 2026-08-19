@@ -1,55 +1,55 @@
-# 目标架构（初稿）
+# Target Architecture (Draft)
 
-## 高层视图
+## High-Level View
 
 ```text
 Game Engine / Environment
         │
         ▼
 ┌─────────────────┐
-│  Perception     │  把环境状态、玩家输入转成结构化 Observation
+│  Perception     │  Convert environment state and player input into structured Observations
 └────────┬────────┘
          ▼
 ┌─────────────────┐
-│  Memory         │  短期上下文 + 长期经历 + 反思摘要
+│  Memory         │  Short-term context + long-term experiences + reflection summaries
 └────────┬────────┘
          ▼
 ┌─────────────────┐
-│  Reasoning      │  目标解析、规划、决策、反思
+│  Reasoning      │  Goal parsing, planning, decision-making, reflection
 └────────┬────────┘
          ▼
 ┌─────────────────┐
-│  Action         │  生成对话、游戏指令或 API 调用
+│  Action         │  Generate dialogue, game commands, or API calls
 └─────────────────┘
 ```
 
-## 核心模块职责
+## Core Module Responsibilities
 
-### Perception（感知）
+### Perception
 
-- 输入：游戏状态、玩家消息、事件。
-- 输出：`Observation`（结构化描述）。
-- 初期可用文本模板，后期可接视觉/API。
+- Input: game state, player messages, events.
+- Output: `Observation` (structured description).
+- Initially can use text templates; later can connect vision/APIs.
 
-### Memory（记忆）
+### Memory
 
-- 短期记忆：当前会话上下文。
-- 长期记忆：跨会话的重要事实、关系和反思。
-- 检索：按相关性、新近度、重要性排序。
-- 初期用 SQLite/JSON，后期可接向量检索。
+- Short-term memory: current session context.
+- Long-term memory: important facts, relationships, and reflections across sessions.
+- Retrieval: ranked by relevance, recency, and importance.
+- Initially use SQLite/JSON; later can connect vector retrieval.
 
-### Reasoning（推理）
+### Reasoning
 
-- 基于当前观察和记忆做决策。
-- 包含规划（目标分解）和反思（从失败/成功中学习）。
-- 初期可调用 LLM，也可用规则兜底。
+- Make decisions based on current observations and memory.
+- Includes planning (goal decomposition) and reflection (learning from failures/successes).
+- Initially can call the LLM, or fall back to rules.
 
-### Action（行动）
+### Action
 
-- 把决策转换为游戏内动作或自然语言回复。
-- 应支持“结构化输出”，方便游戏引擎解析。
+- Convert decisions into in-game actions or natural language replies.
+- Should support "structured output" for easy parsing by the game engine.
 
-## 接口约定（草案）
+## Interface Conventions (Draft)
 
 ```python
 @dataclass
@@ -71,4 +71,4 @@ class BaseAgent:
     def act(self) -> str: ...
 ```
 
-> 详细接口在 `src/macha/core/` 中逐步实现。
+> Detailed interfaces will be implemented incrementally in `src/macha/core/`.

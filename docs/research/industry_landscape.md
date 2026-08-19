@@ -1,792 +1,793 @@
-# 产业现状与竞争格局简报：游戏 AI NPC
+# Industry Status and Competitive Landscape Brief: Game AI NPCs
 
-> **文档定位**：Macha 项目「六层标准骨架」之第三层——产业现状（市场与产品调研）
-> **编制日期**：2026-08-16
-> **数据范围**：2023–2026，以 2025–2026 公开材料为主
-> **一句话结论**：产业需求已经真实存在（厂商 60%+ 已用生成式 AI、玩家对智能 NPC 的兴趣明确），但大规模落地被「成本 / 延迟 / 可控性 / 长期记忆 / 合规」五道卡点锁死。**这正是 Macha 作为「标准骨架」要解决的问题空间。**
-
----
-
-## 0. 执行摘要
-
-1. **需求侧已被验证**：a16z Games 调研显示 73% 的游戏工作室已在用 AI、88% 计划采用；Niko Partners 显示中国 60% 工作室已将生成式 AI 纳入开发流程，39.4% 玩家对游戏内生成式 AI 感兴趣、85.2% 已认知该技术。
-2. **市场处于高速早期**：多家机构给出 25–40% 量级的年复合增速。AI 原生 / AI 辅助游戏正从「降本增效」走向「玩法革新」的关键拐点。
-3. **竞争格局已分层**：头部是「NPC 大脑」（Inworld、Convai、网易伏羲、米哈游/Anuttacon）、「工具链」（NVIDIA ACE、Unity/Unreal、腾讯混元、Ubisoft Ghostwriter 等）、「平台」（Roblox、NVIDIA ACE Runtime、Inworld Runtime、a16z Game Fund）。
-4. **卡点高度集中**：成本随对话量指数爆炸、云端 1–3 秒延迟破坏沉浸、幻觉导致人设/世界观崩坏、长期记忆受上下文窗口限制、跨国数据合规（GDPR / 中国算法备案）难做。独立团队与中小厂商尤其无解。
-5. **Macha 的白空间**：现有玩家要么卖「云端托管大脑」（贵、有延迟、有合规风险），要么只做「单点 Demo」。**缺少一个开源、可插拔、引擎无关、自带记忆/反思/规划认知架构、且把成本/延迟/合规作为一等公民的标准骨架**——这正是 Macha 的定位。
+> **Document positioning**: Macha project "six-layer standard skeleton" — Layer 3, Industry Status (market and product research)
+> **Compiled**: 2026-08-16
+> **Data scope**: 2023–2026, weighted toward 2025–2026 public materials
+> **One-line conclusion**: Real demand already exists in the industry (60%+ of studios already use generative AI; player interest in intelligent NPCs is clear), yet large-scale deployment is locked down by five bottlenecks: **cost / latency / controllability / long-term memory / compliance**. **This is precisely the problem space Macha, as a "standard skeleton," aims to solve.**
 
 ---
 
-## 1. 市场信号总结
+## 0. Executive Summary
 
-### 1.1 需求侧：玩家与厂商"双向拥抱"
+1. **Demand side validated**: a16z Games research shows 73% of game studios already use AI and 88% plan to adopt it; Niko Partners shows 60% of Chinese studios have incorporated generative AI into their development pipeline, 39.4% of players are interested in in-game generative AI, and 85.2% are already aware of the technology.
+2. **Market is in high-speed early stage**: multiple institutions cite annual compound growth of 25–40%. AI-native / AI-assisted games are at a critical inflection point moving from "cost reduction and efficiency gains" to "gameplay innovation."
+3. **Competition has stratified**: the leaders are the "NPC Brain" (Inworld, Convai, NetEase Fuxi, miHoYo/Anuttacon), "Toolchain" (NVIDIA ACE, Unity/Unreal, Tencent Hunyuan, Ubisoft Ghostwriter, etc.), and "Platform" (Roblox, NVIDIA ACE Runtime, Inworld Runtime, a16z Game Fund).
+4. **Bottlenecks are highly concentrated**: cost explodes exponentially with conversation volume, 1–3 second cloud latency breaks immersion, hallucinations cause persona/worldview collapse, long-term memory is limited by context windows, and cross-border data compliance (GDPR / China algorithm filing) is hard to achieve. Indie teams and small-to-mid studios are especially stuck.
+5. **Macha's white space**: existing players either sell a "cloud-hosted brain" (expensive, has latency, has compliance risk) or only build "single-point demos." **What is missing is an open-source, pluggable, engine-agnostic standard skeleton with built-in memory/reflection/planning cognitive architecture that treats cost/latency/compliance as first-class citizens** — this is exactly Macha's positioning.
 
-| 信号 | 数据 | 来源 |
+---
+
+## 1. Market Signal Summary
+
+### 1.1 Demand Side: Players and Studios "Embrace Both Ways"
+
+| Signal | Data | Source |
 |---|---|---|
-| 全球游戏工作室 AI 使用率 | 73% 已在用，88% 计划采用；小团队（<20 人）84% 已用 | a16z Games 调研（gam3s.gg 转引） |
-| 中国工作室生成式 AI 渗透率 | 60% 已纳入开发流程 | Niko Partners《China Gamer Behaviour and Market Insights 2025》 |
-| 中国玩家对游戏内 GenAI 兴趣 | 39.4% 感兴趣，85.2% 已认知 | Niko Partners 2025-08-27 |
-| 开源模型真实用途 | 超 50% 的开源模型流量用于「角色扮演 + 叙事」而非编程 | a16z × OpenRouter 生产流量研究 |
-| 厂商投入重心迁移 | 从「辅助开发/测试」转向「玩法设计/剧情交互」核心体验 | 中金/券商综述（ima 知识库） |
+| Global game studio AI usage rate | 73% already using, 88% plan to adopt; small teams (<20 people) 84% already using | a16z Games research (via gam3s.gg) |
+| China studio generative AI penetration | 60% already in development pipeline | Niko Partners "China Gamer Behaviour and Market Insights 2025" |
+| China player interest in in-game GenAI | 39.4% interested, 85.2% already aware | Niko Partners 2025-08-27 |
+| Real use of open-source models | Over 50% of open-source model traffic is for "role-playing + narrative" rather than programming | a16z × OpenRouter production traffic study |
+| Shift in vendor investment focus | From "dev/test assistance" toward "gameplay design / narrative interaction" core experience | CICC / brokerage review (ima knowledge base) |
 
-**解读**：需求不是假设，而是已被使用率和玩家兴趣双重验证。a16z × OpenRouter 的研究尤其关键——说明"和虚拟角色聊天/共创故事"是真实且最大的消费级 LLM 用途之一，与 Macha「可信 NPC」方向高度契合。
+**Interpretation**: Demand is not a hypothesis — it is doubly validated by usage rates and player interest. The a16z × OpenRouter study is especially key: it shows that "chatting with / co-creating stories with virtual characters" is one of the real and largest consumer-grade LLM uses, closely aligned with Macha's "believable NPC" direction.
 
-### 1.2 规模与增速（注意口径差异）
+### 1.2 Scale and Growth (Note the Caliber Differences)
 
-> ⚠️ 说明：Newzoo 原始付费报告本次未能直接获取，下表均来自二级市场研究机构的转引或厂商（pmarketresearch）测算，**数字仅供量级参考，引用时建议回溯一手来源**。
+> ⚠️ Note: Newzoo's original paid report could not be obtained directly this time; the table below is all drawn from secondary-market research institutions' citations or vendor (pmarketresearch) estimates. **Numbers are for magnitude reference only; please trace back to primary sources when citing.**
 
-| 指标 | 数值 | 口径 |
+| Metric | Value | Caliber |
 |---|---|---|
-| 全球游戏市场（2024） | ≈2340 亿美元，同比 +9.8% | Newzoo / 头豹（CSDN 整理） |
-| 全球 AI 游戏市场（2024） | ≈350 亿美元，占游戏市场 15%，同比 +42.9% | Newzoo / 头豹（CSDN 整理） |
-| 全球 AI 游戏市场（2029 预测） | ≈1200 亿美元，2025–2029 CAGR 28.4% | Newzoo / 头豹（CSDN 整理） |
-| 中国 AI 游戏市场（2024） | ≈150 亿美元，同比 +47.1%，占全球 42.9% | 伽马数据 / 头豹（CSDN 整理） |
-| **游戏 AI NPC 细分市场** | 2025 ≈12.5 亿美元 → 2032 ≈51.9 亿美元，CAGR 22.58%；其中 LLM 对话系统占 59.7% | pmarketresearch（厂商测算，需谨慎） |
+| Global games market (2024) | ≈$234B, +9.8% YoY | Newzoo / Toulie (per CSDN) |
+| Global AI games market (2024) | ≈$35B, 15% of games market, +42.9% YoY | Newzoo / Toulie (per CSDN) |
+| Global AI games market (2029 forecast) | ≈$120B, 2025–2029 CAGR 28.4% | Newzoo / Toulie (per CSDN) |
+| China AI games market (2024) | ≈$15B, +47.1% YoY, 42.9% of global | CNG (Gama) data / Toulie (per CSDN) |
+| **Game AI NPC segment** | 2025 ≈$1.25B → 2032 ≈$5.19B, CAGR 22.58%; LLM dialogue systems account for 59.7% | pmarketresearch (vendor estimate, use with caution) |
 
-**解读**：整体游戏市场增速已放缓（个位数），但 **AI 游戏细分赛道维持 30% 上下高增长**，且 NPC 对话是其中占比最大的技术方向。需求结构性向上。
+**Interpretation**: Overall games market growth has slowed (single digits), but **the AI games segment maintains high growth around 30%**, and NPC dialogue is the largest technology direction within it. Demand is structurally upward.
 
-### 1.3 卡点（Bottleneck）汇总——这是 Macha 的机会清单
+### 1.3 Bottleneck Summary — This Is Macha's Opportunity List
 
-| # | 卡点 | 表现 | 典型证据 |
+| # | Bottleneck | Manifestation | Typical Evidence |
 |---|---|---|---|
-| B1 | **成本随对话量指数爆炸** | 每句 NPC 对话都是真金白银；"越成功越亏" | Latitude（AI Dungeon）早期因 GPT-3 API 成本濒临破产；Gladecore 称云端 LLM 按 token 计费"惩罚成功" |
-| B2 | **云端延迟破坏沉浸** | 云模型 1–3 秒延迟，把流畅对话变成尴尬等待 | Gladecore《5 studio-killing problems》；玩家称"railroading vs 太开放"两极 |
-| B3 | **可控性 / 一致性差** | LLM 幻觉导致人设漂移、世界观崩坏、剧情卡死 | Square Enix《港口镇》NPC 理解力差、好评率 8–12%；Vaudeville 角色"雷同、矛盾" |
-| B4 | **长期记忆受限** | 上下文窗口有限，跨会话记忆丢失、世界状态无法维持 | LinkedIn 技术分析；CSDN 脑洞系列"离线模拟"难题 |
-| B5 | **合规 / 隐私 / 本地化** | 跨国数据（GDPR）、中国算法备案；断网即失效 | Gladecore 指出云方案在 GDPR 区合规困难；Whispers from the Star 因国内模型未备案注销大陆社媒 |
-| B6 | **集成摩擦** | 臃肿 SDK、引擎版本冲突、构建报错 | Gladecore："本应即插即用，却变成数周调试" |
-| B7 | **玩家对"AI 缺乏灵魂"的抵触** | 社区抵制"无灵魂内容"，要求标注 AI 使用 | Nexaspecs 2025 综述：行业文化拉锯 |
-| B8 | **从 Demo 到生产的鸿沟** | POC 易、量产难；需要数年工程化 | LinkedIn 技术分析："打磨到生产级需数年" |
+| B1 | **Cost explodes exponentially with conversation volume** | Every NPC line of dialogue is real money; "the more successful, the more you lose" | Latitude (AI Dungeon) nearly went bankrupt early on due to GPT-3 API costs; Gladecore says cloud LLM token billing "punishes success" |
+| B2 | **Cloud latency breaks immersion** | Cloud models 1–3s latency turns smooth dialogue into awkward waiting | Gladecore "5 studio-killing problems"; players say "railroading vs. too open" polar extremes |
+| B3 | **Poor controllability / consistency** | LLM hallucinations cause persona drift, worldview collapse, plot dead-ends | Square Enix "Port Town" NPCs had poor comprehension, 8–12% positive rating; Vaudeville characters "cookie-cutter, contradictory" |
+| B4 | **Long-term memory limited** | Limited context window, cross-session memory loss, world state cannot be maintained | LinkedIn technical analysis; CSDN "brainstorm" series on "offline simulation" difficulty |
+| B5 | **Compliance / privacy / localization** | Cross-border data (GDPR), China algorithm filing; fails when offline | Gladecore notes cloud solutions struggle with GDPR compliance; Whispers from the Star deactivated its mainland social accounts because domestic models were unfiled |
+| B6 | **Integration friction** | Bloated SDKs, engine version conflicts, build errors | Gladecore: "should be plug-and-play, but becomes weeks of debugging" |
+| B7 | **Player resistance to "AI lacking a soul"** | Community resists "soulless content," demands AI-use labeling | Nexaspecs 2025 review: industry culture tug-of-war |
+| B8 | **Gap from Demo to production** | POC easy, mass production hard; needs years of engineering | LinkedIn technical analysis: "polishing to production grade takes years" |
 
 ---
 
-## 2. 竞争格局：三层分类地图
+## 2. Competitive Landscape: Three-Layer Classification Map
 
-### 2.1 NPC 大脑（NPC Brain）——卖"角色灵魂"
+### 2.1 NPC Brain — Sells the "Character Soul"
 
-| 公司/产品 | 技术路线 | 代表合作/客户 | 已知瓶颈 |
+| Company/Product | Technical approach | Representative partners/customers | Known bottlenecks |
 |---|---|---|---|
-| **Inworld AI** | Character Engine：多模型编排（30+ ML 模型，含音频/情绪/记忆）+ 无代码工作室；Runtime 解决原型→量产 gap | 微软 Xbox、NVIDIA、Epic/Unreal、Unity、Roblox、迪士尼、网易；累计融资 ≈1.2 亿美元，估值 5 亿 | 云端托管为主→成本(B1)/延迟(B2)/合规(B5)；深度绑定其生态 |
-| **Convai** | 具身对话 AI：多模态感知（视觉/语音/文本）+ 知识库 + 叙事设计图 + NPC2NPC；65+ 语言 500+ 语音；ISO 27001、支持本地部署 | Unreal、Unity、Three.js 插件；NVIDIA ACE 合作伙伴 | Unreal 插件仍 Beta；多代理叙事流需谨慎设计 |
-| **网易伏羲（智能 NPC / AOP）** | 面向智能体编程（AOP）：感知—认知—决策全链路闭环；《逆水寒》智能 NPC、《永劫无间》语音 AI 队友 | 网易全系（《逆水寒》《永劫无间》《蛋仔派对》《全明星街球》） | 强绑网易内部；对外未标准化输出 |
-| **米哈游 / Anuttacon（Glossa / Whispers）** | Glossa 大模型（台词/剧情生成）；Anuttacon 做 AI 原生游戏《Whispers from the Star》（全语音实时对话） | 《崩坏：星穹铁道》"永不重复对话" NPC；Anuttacon 独立发行 | 偏"造梦"、验证期；国内合规受限（算法备案） |
-| **Altera / 其他 Agent 派** | 以"数字人类/长期陪伴 Agent"切入，部分进入游戏 NPC | （公开资料有限，列入观察） | 工程化与游戏集成尚未跑通 |
+| **Inworld AI** | Character Engine: multi-model orchestration (30+ ML models incl. audio/emotion/memory) + no-code studio; Runtime bridges prototype→production gap | Microsoft Xbox, NVIDIA, Epic/Unreal, Unity, Roblox, Disney, NetEase; cumulative funding ≈$120M, $500M valuation | Cloud-hosted dominant → cost (B1)/latency (B2)/compliance (B5); tightly bound to its ecosystem |
+| **Convai** | Embodied conversational AI: multimodal perception (visual/voice/text) + knowledge base + narrative design graph + NPC2NPC; 65+ languages 500+ voices; ISO 27001, supports local deployment | Unreal, Unity, Three.js plugins; NVIDIA ACE partner | Unreal plugin still Beta; multi-agent narrative flow needs careful design |
+| **NetEase Fuxi (Smart NPC / AOP)** | Agent-Oriented Programming (AOP): perception—cognition—decision full-loop closed loop; Justice Online smart NPCs, Naraka: Bladepoint voice AI teammates | NetEase full lineup (Justice Online, Naraka: Bladepoint, Eggy Party, All-Star Street Ball) | Strongly bound to NetEase internally; not standardized for external output |
+| **miHoYo / Anuttacon (Glossa / Whispers)** | Glossa large model (lines/story generation); Anuttacon builds AI-native game Whispers from the Star (full-voice real-time dialogue) | Honkai: Star Rail "never-repeat dialogue" NPCs; Anuttacon self-published | Leans "dream-building," in validation phase; domestic compliance constrained (algorithm filing) |
+| **Altera / other Agent factions** | Enters via "digital humans / long-term companion agents," partly into game NPCs | (Limited public info, listed for observation) | Engineering and game integration not yet proven |
 
-### 2.2 工具链（Toolchain）——卖"生产流水线"
+### 2.2 Toolchain — Sells the "Production Line"
 
-| 公司/产品 | 技术路线 | 代表合作/客户 | 已知瓶颈 |
+| Company/Product | Technical approach | Representative partners/customers | Known bottlenecks |
 |---|---|---|---|
-| **NVIDIA ACE** | 数字人技术栈：Riva ASR + Audio2Face + Chatterbox TTS + ACE Game Agent SDK；支持云端/本地（IGI SDK、Qwen3-8B 本地部署） | Convai、Inworld、米哈游、网易、腾讯、育碧、掌趣、西山居（《解限机》号称首个 ACE 智能 NPC 游戏） | 深度依赖 NVIDIA GPU；本地的门槛高、生态锁定 |
-| **Unity（Muse / Behavior / ML-Agents）** | 引擎内 AI 创作与行为树工具 | 全球最大第三方引擎生态 | 原生 LLM NPC 能力弱，多靠第三方 |
-| **Unreal Engine** | 内置 AI（Behavior Tree、Perception、MassAI、Smart Objects）+ MetaHuman + NVIDIA ACE 插件 | 3A 标配 | 同上，NPC"大脑"靠外接 |
-| **腾讯（混元游戏 / Game AIR / GiiNEX）** | 混元视觉生成（角色分钟级）、GiiNEX 双引擎；VISVISE 骨骼/动画工作流、MagicDawn 跨引擎光照 | 《和平精英》"吉莉"接入 DeepSeek；自研《哈皮》AI 小游戏平台 | 偏资产/提效，玩法级 NPC 仍探索 |
-| **Ubisoft Ghostwriter** | 自动生成 NPC 支线对话/环境"barks"，降重复文本约 20% | 育碧内部 | 仅辅助编剧，非实时对话 |
-| **恺英"形意" / 盛趣 VRACE** | 国内首个贯穿游戏开发全流程 AI 工具链（动画/地图/数值/代码）；VRACE 集成美术/语音/文本 | 恺英、盛趣体系 | 主要对内，未成标准 |
+| **NVIDIA ACE** | Digital human tech stack: Riva ASR + Audio2Face + Chatterbox TTS + ACE Game Agent SDK; supports cloud/local (IGI SDK, Qwen3-8B local deployment) | Convai, Inworld, miHoYo, NetEase, Tencent, Ubisoft, ZenUnited, Seasun (Mecha BREAK claimed first ACE smart NPC game) | Deeply dependent on NVIDIA GPUs; high local barrier, ecosystem lock-in |
+| **Unity (Muse / Behavior / ML-Agents)** | In-engine AI creation and behavior tree tools | World's largest third-party engine ecosystem | Weak native LLM NPC capability, mostly relies on third parties |
+| **Unreal Engine** | Built-in AI (Behavior Tree, Perception, MassAI, Smart Objects) + MetaHuman + NVIDIA ACE plugin | 3A standard | Same as above, NPC "brain" relies on external connection |
+| **Tencent (Hunyuan Games / Game AIR / GiiNEX)** | Hunyuan visual generation (character in minutes), GiiNEX dual engine; VISVISE skeleton/animation workflow, MagicDawn cross-engine lighting | Peacekeeper Elite "Jili" connected to DeepSeek; self-developed Happy AI mini-game platform | Leans assets/efficiency; gameplay-level NPC still exploratory |
+| **Ubisoft Ghostwriter** | Auto-generates NPC side dialogue / environmental "barks," reduces repetitive text ~20% | Ubisoft internal | Only assists writers, not real-time dialogue |
+| **Kaiying "Xingyi" / Shengqu VRACE** | China's first AI toolchain spanning the full game dev process (animation/map/numerics/code); VRACE integrates art/voice/text | Kaiying, Shengqu systems | Mainly internal, not yet a standard |
 
-### 2.3 平台（Platform）——卖"生态与运行时"
+### 2.3 Platform — Sells "Ecosystem and Runtime"
 
-| 公司/产品 | 技术路线 | 代表合作/客户 | 已知瓶颈 |
+| Company/Product | Technical approach | Representative partners/customers | Known bottlenecks |
 |---|---|---|---|
-| **Roblox（生成式 AI 助手 + 3D 基础模型）** | 自然语言生成整个世界；全球最大多模态数据集（社区授权训练） | 7900 万 DAU 平台 | 封闭生态，外部不可移植 |
-| **NVIDIA ACE Runtime / IGI SDK** | 本地推理运行时，统一 API 跨 GPU/NPU/CPU | 同 ACE 生态 | 锁定 NVIDIA 硬件栈 |
-| **Inworld Runtime** | 消费级 AI 基础设施，"原型→量产"鸿沟方案 | 同 Inworld | 云端成本结构未根本改变 |
-| **a16z Game Fund ONE** | 资本平台，专为 AI 时代游戏 builders 设基金（行业报道约 6 亿美元，规模需回溯核实） | 投资 AI 游戏早期团队 | 非技术平台，纯资金/资源 |
-| **Mod 社区（Skyrim/Fallout 等）** | 玩家自发把 LLM 接入老游戏 NPC（如 Skyrim + ChatGPT） | 极客玩家 | 技术 Demo，"nightmarish"评价、非产品 |
+| **Roblox (generative AI assistant + 3D foundation model)** | Generate an entire world from natural language; world's largest multimodal dataset (community-authorized training) | 79M DAU platform | Closed ecosystem, not externally portable |
+| **NVIDIA ACE Runtime / IGI SDK** | Local inference runtime, unified API across GPU/NPU/CPU | Same ACE ecosystem | Locked to NVIDIA hardware stack |
+| **Inworld Runtime** | Consumer-grade AI infrastructure, prototype→production gap solution | Same as Inworld | Cloud cost structure not fundamentally changed |
+| **a16z Game Fund ONE** | Capital platform, fund specifically for AI-era game builders (~$600M per industry reports, scale needs verification) | Invests in early AI-game teams | Not a technical platform, pure capital/resources |
+| **Mod community (Skyrim/Fallout etc.)** | Players spontaneously connect LLMs to old-game NPCs (e.g., Skyrim + ChatGPT) | Geek players | Tech demo, "nightmarish" reviews, not a product |
 
-### 2.4 综合竞争地图（一图概览）
+### 2.4 Comprehensive Competitive Map (Overview)
 
 ```
-                  【NPC 大脑】            【工具链】              【平台/运行时】
-  创业/第三方   Inworld │ Convai │      NVIDIA ACE │         Roblox │ Inworld Runtime │
+                  [NPC Brain]            [Toolchain]              [Platform/Runtime]
+  Startup/3rd    Inworld │ Convai │      NVIDIA ACE │         Roblox │ Inworld Runtime │
                Altera                Ubisoft Ghostwriter   NVIDIA IGI SDK │ a16z Fund
-  大厂自研     网易伏羲(AOP) │          腾讯混元/Game AIR │
-              米哈游 Glossa/Anuttacon   Unity/Unreal 内置 │
-                                    恺英形意/盛趣VRACE │
-  社区/极客    (角色扮演开源模型)        Mod 社区(Skyrim+LLM) │
+  Big-co self    NetEase Fuxi(AOP) │     Tencent Hunyuan/Game AIR │
+              miHoYo Glossa/Anuttacon  Unity/Unreal built-in │
+                                    Kaiying Xingyi/Shengqu VRACE │
+  Community/     (role-playing open-source   Mod community(Skyrim+LLM) │
+  geek           models)
 ```
 
-**格局特征**：
-- **高度碎片化**：中间件/初创众多，引擎商与云商通过并购整合（pmarketresearch 原话："competitive landscape remained fragmented"）。
-- **"大脑"层被少数玩家占据**：Inworld（融资最充足）、Convai 领跑第三方；大厂各自自研不对外开放。
-- **"标准接口"缺位**：每家用自己的 SDK/API，跨引擎、跨模型、跨厂商无法互操作——这正是 Macha 要定义的层。
+**Landscape characteristics**:
+- **Highly fragmented**: many middleware/startups; engine and cloud vendors consolidate via M&A (pmarketresearch original: "competitive landscape remained fragmented").
+- **"Brain" layer occupied by a few players**: Inworld (best funded), Convai lead third-party; big companies each build their own, not open.
+- **"Standard interface" absent**: each uses its own SDK/API; cross-engine, cross-model, cross-vendor non-interoperable — this is exactly the layer Macha wants to define.
 
-### 2.5 产品案例：谁跑通了，谁翻车了
+### 2.5 Product Cases: Who Made It, Who Crashed
 
-| 案例 | 类型 | 结果 | 对 Macha 的启示 |
+| Case | Type | Result | Lesson for Macha |
 |---|---|---|---|
-| **AI Dungeon（Latitude）** | AI GM / 文字冒险鼻祖 | 2019 上线即爆，周破 10 万、半年 150 万用户；后因 GPT-3 API 成本濒临破产，引入低成本模型+上下文限制"止血"；2024 从 Steam 下架，但 2025 年仍以 12 人团队做到约 700 万美元年收入且盈利 | 验证了"开放式叙事"需求，也用血泪证明了 **B1 成本** 是生死线 |
-| **Suck Up!（Proxima）** | AI 原生派对游戏（吸血鬼敲门，每扇门后是 ChatGPT 驱动的 AI NPC） | 零营销预算，YouTube 播放破亿；2025-10 才上 Steam 1.0 | 关键不是"用了 AI"，而是找到了**可被观看/传播/复制的互动结构**——AI 只是让答案成立得更快 |
-| **Vaudeville** | AI 原生谋杀推理（开放对话审讯） | 概念惊艳但 AI 质量不稳：角色雷同、答非所问、自相矛盾 | 印证 **B3 可控性**——开放对话若无约束与记忆，撑不起复杂玩法 |
-| **Infinite Craft（Neal Agarwal）** | 浏览器沙盒，LLaMa 驱动"语义裁决"（组合物品） | 病毒式传播，日造 3 亿配方 | "语义裁决"是比"聊天 NPC"更稳的 AI-native 玩法范式（见 AI-Native 论文） |
-| **逆水寒（网易）** | 国内首个游戏内 AI NPC（200+ 智能 NPC→DeepSeek 驱动"沈秋索"→联动 5 大国产大模型组成 NPC 女团） | 持续迭代，UGC 内容占比高；门客系统 Agent 化获 2025 图象图形学学会科技进步一等奖 | 验证了"长期记忆+多模态+UGC"组合的可玩性，**但强绑网易内部** |
-| **永劫无间（网易）语音 AI 队友** | AOP 框架：ASR+指令理解+知识问答+人设对话+TTS | 社交媒体播放破 3 亿；寻路成功率 77%→99% | 证明"听得懂、会聊天、能战斗"的 AI 队友有强情绪价值 |
-| **Whispers from the Star（Anuttacon/蔡浩宇）** | AI 原生互动叙事，全语音实时对话救生宇航员 Stella | 2025-08 Steam 发布，好评率 82%；约 3 万份；后因国内模型未备案注销大陆社媒账号 | 先锋但暴露 **B5 合规** 与"缺游戏框架、像大号 C.AI 玩具"的争议 |
-| **Square Enix《港口镇连续杀人事件》AI 版** | 经典推理游戏 + NLP 自然语言理解 | **翻车**：Steam 好评率 8–12%，"特别差评"；NPC 理解力差、变猜词游戏；本地 NLP 占 10GB、吃 5GB 显存 | 反面教材：**B2 延迟/性能、B3 可控性、B1 成本** 三重失败；也说明"有 NLP"≠"好体验" |
+| **AI Dungeon (Latitude)** | AI GM / text adventure pioneer | Launched 2019, exploded; 100K in a week, 1.5M users in half a year; later nearly bankrupt from GPT-3 API costs, introduced low-cost models + context limits to "stop the bleeding"; delisted from Steam 2024, but 2025 still ~$7M annual revenue profitable with 12-person team | Validated "open narrative" demand; also blood-and-tears proof that **B1 cost** is a life-or-death line |
+| **Suck Up! (Proxima)** | AI-native party game (vampire knocks on doors, each door an AI NPC driven by ChatGPT) | Zero marketing budget, 100M+ YouTube views; only reached Steam 1.0 in 2025-10 | Key is not "used AI" but found an **interactive structure that can be watched/shared/copied** — AI just makes answers happen faster |
+| **Vaudeville** | AI-native murder mystery (open dialogue interrogation) | Stunning concept but unstable AI quality: cookie-cutter characters, non-sequiturs, self-contradictions | Confirms **B3 controllability** — open dialogue without constraints and memory cannot sustain complex gameplay |
+| **Infinite Craft (Neal Agarwal)** | Browser sandbox, LLaMa-driven "semantic adjudication" (combining items) | Viral spread, 300M recipes/day | "Semantic adjudication" is a more stable AI-native gameplay paradigm than "chat NPCs" (see AI-Native paper) |
+| **Justice Online (NetEase)** | China's first in-game AI NPC (200+ smart NPCs → DeepSeek-driven "Shen Qiusuo" → 5 domestic large models forming NPC girl group) | Continuous iteration, high UGC content ratio; retainer system Agent-ized won 2025 Image and Graphics Society Science and Technology Progress First Prize | Validated playability of "long-term memory + multimodal + UGC" combo, **but strongly bound to NetEase internally** |
+| **Naraka: Bladepoint (NetEase) voice AI teammate** | AOP framework: ASR + command understanding + knowledge Q&A + persona dialogue + TTS | 300M+ social media views; pathfinding success 77%→99% | Proves AI teammates that "understand, chat, fight" have strong emotional value |
+| **Whispers from the Star (Anuttacon/Cai Haoyu)** | AI-native interactive narrative, full-voice real-time dialogue with stranded astronaut Stella | Released Steam 2025-08, 82% positive; ~30K copies; later deactivated mainland social accounts because domestic models unfiled | Pioneer but exposed **B5 compliance** and the controversy of "lacking a game framework, like a big C.AI toy" |
+| **Square Enix "Port Town Serial Murder" AI version** | Classic mystery game + NLP natural language understanding | **Crashed**: Steam 8–12% positive, "Overwhelmingly Negative"; NPCs poor comprehension, became a word-guessing game; local NLP took 10GB, 5GB VRAM | Negative example: **B2 latency/performance, B3 controllability, B1 cost** triple failure; also shows "has NLP" ≠ "good experience" |
 
 ---
 
-## 3. 对 Macha 的启示：白空间在哪里
+## 3. Implications for Macha: Where Is the White Space
 
-基于以上证据，Macha 应避开"再做一个人云亦云的云端 NPC 大脑"，而切入**现有玩家共同缺失的"标准骨架"层**：
+Based on the above evidence, Macha should avoid "building yet another me-too cloud NPC brain" and instead cut into the **"standard skeleton" layer that all existing players jointly lack**:
 
-1. **空白一：开源、引擎无关的认知架构标准**
-   现有大脑（Inworld/Convai/伏羲）都绑定自家生态。Macha 应定义一套「感知—记忆—反思—规划—行动」的可插拔认知架构（与 direction.md 的 MVP 一致），让任何游戏引擎、任何 LLM 都能接入。**这是"标准"而非"又一个产品"。**
+1. **Gap One: Open-source, engine-agnostic cognitive architecture standard**
+   Existing brains (Inworld/Convai/Fuxi) all bind to their own ecosystems. Macha should define a pluggable cognitive architecture of "perception—memory—reflection—planning—action" (consistent with direction.md's MVP) so any game engine and any LLM can connect. **This is a "standard," not "yet another product."**
 
-2. **空白二：把成本/延迟作为一等公民**
-   B1/B2 是产业最大痛点。Macha 应在架构层内置：本地小模型优先、云端大模型兜底的分级路由、请求缓存、批处理、降级策略（参考字节"异步动态叙事服务层"思路）。标准骨架若默认解决成本，将直接击中中小团队死穴。
+2. **Gap Two: Treat cost/latency as first-class citizens**
+   B1/B2 are the industry's biggest pain points. Macha should build in at the architecture layer: local small-model-first, cloud large-model-fallback tiered routing, request caching, batching, degradation strategy (referencing ByteDance's "async dynamic narrative service layer" idea). A standard skeleton that solves cost by default directly hits small teams' fatal weakness.
 
-3. **空白三：长期记忆与角色一致性的可评估实现**
-   B3/B4（幻觉、人设漂移、跨会话记忆）是学术层(direction.md)与产业层共同痛点。Macha 用结构化记忆（因果记忆、反思摘要、世界状态向量）而非裸上下文窗口，并配套评估基准（角色一致性、长期记忆稳定性）——对应信息需求清单第 5 层。
+3. **Gap Three: Evaluable implementation of long-term memory and character consistency**
+   B3/B4 (hallucination, persona drift, cross-session memory) are joint pain points of the academic layer (direction.md) and industry layer. Macha uses structured memory (causal memory, reflection summaries, world-state vectors) rather than raw context windows, plus an evaluation benchmark (character consistency, long-term memory stability) — corresponding to layer 5 of the information-needs list.
 
-4. **空白四：可控生成与护栏（Guardrails）作为标准组件**
-   Square Enix 翻车与玩家"AI 缺乏灵魂"抵触说明：开放生成必须被约束。Macha 应内置"强约束提示 + 结构化输出 + 验证层 + 行为树/FSM 兜底 + 内容安全网关"的标准模式（参考 CSDN 脑洞系列与字节安全网关）。
+4. **Gap Four: Controllable generation and guardrails as standard components**
+   Square Enix's crash and players' "AI lacks soul" resistance show: open generation must be constrained. Macha should embed a standard pattern of "strong-constraint prompts + structured output + validation layer + behavior tree/FSM fallback + content safety gateway" (referencing CSDN brainstorm series and ByteDance safety gateway).
 
-5. **空白五：互操作接口与合规友好的本地优先**
-   定义类似 MCP 的"NPC 通信/工具调用协议"，让 NPC 大脑、工具链、平台三层可互操作；同时默认支持本地部署以满足 GDPR / 中国算法备案等合规（B5）。对应信息需求清单第 6 层。
+5. **Gap Five: Interoperable interface and compliance-friendly local-first**
+   Define an MCP-like "NPC communication / tool-calling protocol" so the NPC brain, toolchain, and platform layers can interoperate; also support local deployment by default to meet GDPR / China algorithm filing compliance (B5). Corresponds to layer 6 of the information-needs list.
 
-6. **空白六：评估即标准**
-   没有评估就没有标准。Macha 应自带"产业可理解的评估维度"（成本/延迟/角色一致性/长期记忆/合规），让"是否符合 Macha 标准"可被证明——这是从"框架"走向"标准骨架"的关键一跃。
+6. **Gap Six: Evaluation as standard**
+   No evaluation, no standard. Macha should ship "industry-understandable evaluation dimensions" (cost/latency/character consistency/long-term memory/compliance) so "whether it meets the Macha standard" can be proven — this is the key leap from "framework" to "standard skeleton."
 
-> **一句话定位**：Macha = 开源的、引擎无关的、把"成本/延迟/记忆/可控/合规"做成默认能力的 NPC 认知架构标准。它不和历史玩家抢"大脑"或"平台"，而是定义它们都要遵守的"骨架"。
-
----
-
-## 4. 来源收集（按团队规定格式）
-
-> 以下来源均为本次检索中实际访问到的页面。凡标注"需回溯一手来源/规模待核实"者，引用前请二次确认。
+> **One-line positioning**: Macha = an open-source, engine-agnostic NPC cognitive-architecture standard that makes "cost/latency/memory/control/compliance" default capabilities. It does not compete with historical players for "brain" or "platform," but defines the "skeleton" they all must obey.
 
 ---
 
-【类别】产业报告（二级市场整理）
-【标题】2025 全球 AI 游戏市场研究报告：行业洞察与未来趋势
-【链接/文件路径】https://blog.csdn.net/bvip911/article/details/150393068
-【一句话摘要】汇总 Newzoo / 头豹 / 伽马数据口径，给出 AI 游戏市场规模、增速、玩家行为与厂商布局（腾讯/网易/米哈游/三七互娱）。和 Macha 的关系：提供市场规模量级与"降本→玩法革新"拐点的产业证据。
-【关键结论】
-1. 2024 全球 AI 游戏市场 ≈350 亿美元（占游戏 15%），2029 预测 ≈1200 亿美元，CAGR 28.4%。
-2. 中国 AI 游戏 2024 ≈150 亿美元，2029 预测 ≈500 亿美元。
-3. 头部厂商中腾讯 18%、网易 12%、米哈游 8% 份额（该份额口径存疑，待核）。
-4. 技术瓶颈明确列出：AI 内容质量不稳、NPC 缺乏长期记忆/情感交互不真实。
-5. 逆水寒/和平精英/崩坏星穹铁道等均已落地 AI NPC。
-【可复用的东西】市场规模数据表、厂商布局对照、技术瓶颈清单（可直接喂给 Macha 需求文档）。
+## 4. Source Collection (Per Team-Specified Format)
+
+> All sources below are pages actually accessed during this search. Items marked "trace primary source / scale to be verified" should be double-checked before citing.
 
 ---
 
-【类别】产业报告（厂商测算）
-【标题】Game AI NPC Market – Size, Share & Industry Analysis 2026–2032
-【链接/文件路径】https://pmarketresearch.com/it/game-ai-npc-market
-【一句话摘要】独立市场研究机构对"游戏 AI NPC"细分市场的测算。和 Macha 的关系：佐证 NPC 对话是 AI 游戏最大技术方向（LLM 对话占 59.7%）。
-【关键结论】
-1. 2025 游戏 AI NPC 市场 12.5 亿美元 → 2032 51.9 亿美元，CAGR 22.58%。
-2. LLM 驱动对话系统占 2025 份额 59.7%；PC/主机占 64.1%。
-3. 北美+亚太领跑；竞争格局"碎片化"，中间件初创众多、引擎/云商并购整合。
-4. 核心驱动=生成式 AI 驱动的交互叙事；趋势=云端→端侧/边缘推理降延迟降成本。
-5. 多模态（语音→文本→动作）成现代 NPC 标配。
-【可复用的东西】细分市场份额结构、端侧化趋势判断（支撑 Macha 本地优先设计）。
+[Category]Industry report (secondary-market compilation)
+[Title]2025 Global AI Games Market Research Report: Industry Insights and Future Trends
+[Link/FilePath]https://blog.csdn.net/bvip911/article/details/150393068
+[One-line summary]Compiles Newzoo / Toulie / CNG (Gama) data, giving AI games market size, growth, player behavior, and vendor layout (Tencent/NetEase/miHoYo/37 Interactive). Relevance to Macha: provides market-size magnitudes and the "cost-down→gameplay-innovation" inflection industry evidence.
+[Key conclusions]
+1. 2024 global AI games market ≈$35B (15% of games), 2029 forecast ≈$120B, CAGR 28.4%.
+2. China AI games 2024 ≈$15B, 2029 forecast ≈$50B.
+3. Among top vendors Tencent 18%, NetEase 12%, miHoYo 8% share (this share caliber is questionable, pending verification).
+4. Technical bottlenecks explicitly listed: unstable AI content quality, NPCs lack long-term memory / unrealistic emotional interaction.
+5. Justice Online / Peacekeeper Elite / Honkai: Star Rail all have deployed AI NPCs.
+[Reusable]Market-size data table, vendor layout comparison, technical bottleneck list (can directly feed Macha requirements doc).
 
 ---
 
-【类别】产业报告（原始一手，Niko Partners）
-【标题】China Gamer Behaviour and Market Insights 2025（Niko Partners，2025-08-27）
-【链接/文件路径】https://ba.wnconf.com/news/Generative_AI/item-48683 （另见 https://wnhub.io/zh/news/other/item-48683）
-【一句话摘要】Niko Partners 对中国 1058 名玩家的调研，量化中国玩家对游戏内 GenAI 的认知与兴趣、工作室渗透率。和 Macha 的关系：中国市场的需求侧硬证据。
-【关键结论】
-1. 39.4% 中国玩家对游戏内生成式 AI 应用感兴趣，85.2% 已认知该技术。
-2. 60% 中国游戏工作室已将生成式 AI 纳入开发流程（"ahead of the game"）。
-3. 点名网易《逆水寒》手游集成多模态 GenAI 功能（智能 NPC 互动、角色自定义视频）。
-4. 短视频（抖音/快手）成最大游戏信息源（41%），迷你游戏覆盖 84.4% 玩家。
-5. 亚洲+MENA 游戏软件服务 2024 收入 866 亿美元，2029 预测 960 亿美元。
-【可复用的东西】中国市场需求侧数据点、对网易案例的第三方背书。
+[Category]Industry report (vendor estimate)
+[Title]Game AI NPC Market – Size, Share & Industry Analysis 2026–2032
+[Link/FilePath]https://pmarketresearch.com/it/game-ai-npc-market
+[One-line summary]Independent market research firm's estimate of the "game AI NPC" segment. Relevance to Macha: corroborates NPC dialogue as the largest AI-games technology direction (LLM dialogue 59.7%).
+[Key conclusions]
+1. 2025 game AI NPC market $1.25B → 2032 $5.19B, CAGR 22.58%.
+2. LLM-driven dialogue systems account for 59.7% of 2025 share; PC/console 64.1%.
+3. North America + Asia-Pacific lead; "fragmented" competition, many middleware startups, engine/cloud M&A consolidation.
+4. Core driver = generative-AI-driven interactive narrative; trend = cloud → on-device/edge inference to cut latency and cost.
+5. Multimodal (voice→text→action) becomes modern NPC standard.
+[Reusable]Segment market-share structure, on-device trend judgment (supports Macha local-first design).
 
 ---
 
-【类别】产业观点（a16z Games 调研）
-【标题】How AI Agents Are Transforming Video Games（a16z Games 调研转引）
-【链接/文件路径】https://gam3s.gg/news/agentic-gaming-ai-agents/
-【一句话摘要】汇总 a16z Games 对游戏工作室 AI 采用率的调研与 agentic gaming 趋势。和 Macha 的关系：证明 AI NPC/agent 已是产业主流而非噱头。
-【关键结论】
-1. 73% 工作室已在用 AI，88% 计划采用；小团队（<20 人）84% 已用。
-2. 创始人最积极（85%），美术岗最谨慎（58%）。
-3. 列举 Skyrim/Red Dead/Left 4 Dead/Nemesis System 等"半自主 NPC"先例。
-4. "Agentic gaming"定义：AI 自主决策、响应玩家与环境，产生涌现叙事。
-【可复用的东西】采用率数据（演示"需求真实"）、agentic gaming 定义。
+[Category]Industry report (primary, Niko Partners)
+[Title]China Gamer Behaviour and Market Insights 2025 (Niko Partners, 2025-08-27)
+[Link/FilePath]https://ba.wnconf.com/news/Generative_AI/item-48683 (also see https://wnhub.io/zh/news/other/item-48683)
+[One-line summary]Niko Partners survey of 1,058 Chinese players, quantifying Chinese players' awareness and interest in in-game GenAI, and studio penetration. Relevance to Macha: hard demand-side evidence for the China market.
+[Key conclusions]
+1. 39.4% of Chinese players interested in in-game generative AI, 85.2% already aware.
+2. 60% of Chinese game studios have incorporated generative AI into development (ahead of the game).
+3. Names NetEase Justice Online mobile's multimodal GenAI features (smart NPC interaction, character-customization video).
+4. Short video (Douyin/Kuaishou) became the largest game-info source (41%), mini-games cover 84.4% of players.
+5. Asia + MENA games software services 2024 revenue $86.6B, 2029 forecast $96B.
+[Reusable]China-market demand-side data points, third-party endorsement of the NetEase case.
 
 ---
 
-【类别】产业研究（a16z × OpenRouter）
-【标题】a16z Study: Open-Source LLMs Dominate Role-Playing Games, Storytelling
-【链接/文件路径】https://www.linkedin.com/posts/superprotocol_llm-api-openai-activity-7407552384924753920-TcL5 （完整 36 页报告链接见帖内 https://lnkd.in/gCd_xFNg）
-【一句话摘要】基于 OpenRouter 超 100 万亿 token 生产流量，揭示开源模型最大用途是角色扮演+叙事。和 Macha 的关系：直接证明"和虚拟角色聊天/共创故事"是 LLM 头号消费场景，与 Macha「可信 NPC」强相关。
-【关键结论】
-1. 超 50% 开源模型流量用于 role-playing / storytelling，而非编程。
-2. 开源模型份额一年内从 <10% 升至约 30%；DeepSeek、Qwen 增长最快。
-3. 亚洲流量占比 13%→31%，中国成美国之后第二大消费国。
-4. 中等模型（15–70B）性价比最佳；"glass slipper"效应——首个完美解决问题的模型赢得永久忠诚。
-【可复用的东西】需求场景证据、模型选型启示（中等开源模型优先→呼应 Macha 成本控制）。
+[Category]Industry viewpoint (a16z Games research)
+[Title]How AI Agents Are Transforming Video Games (a16z Games research citation)
+[Link/FilePath]https://gam3s.gg/news/agentic-gaming-ai-agents/
+[One-line summary]Compiles a16z Games research on game-studio AI adoption and agentic gaming trends. Relevance to Macha: proves AI NPC/agents are industry mainstream, not a gimmick.
+[Key conclusions]
+1. 73% of studios already use AI, 88% plan to adopt; small teams (<20) 84% already using.
+2. Founders most enthusiastic (85%), art roles most cautious (58%).
+3. Cites "semi-autonomous NPC" precedents like Skyrim/Red Dead/Left 4 Dead/Nemesis System.
+4. "Agentic gaming" defined as: AI autonomously decides, responds to player and environment, produces emergent narrative.
+[Reusable]Adoption-rate data (demonstrates "real demand"), agentic gaming definition.
 
 ---
 
-【类别】产业观点（a16z 2025 科技展望）
-【标题】a16z《2025 科技大趋势》（游戏章节：下一代 Pixar、有内心世界的 AI 伙伴）
-【链接/文件路径】https://www.y3pm.com/post/big-ideas-in-tech-2025/ （中文转引 https://news.qq.com/rain/a/20241212A06MTE00）
-【一句话摘要】a16z 50 位合伙人年度展望，游戏章节点名"AI 原生互动叙事"与"有内心世界的 AI 伙伴"。和 Macha 的关系：给出产业对"可信/有内在世界 NPC"的方向判断。
-【关键结论】
-1. 下一代"皮克斯"：AI 原生互动视频，实时按玩家输入生成画面，模糊影视与游戏。
-2. 下一代 AI 伙伴需有"内心世界"：有自己的朋友、对新闻的反应、动机与目标。
-3. 游戏技术（NVIDIA 图形、Unreal 实时 3D）正外溢到商业/自动驾驶/国防。
-【可复用的东西】"AI 伙伴需有内心世界"的设计信条（呼应 Macha 记忆/反思/动机模块）。
+[Category]Industry research (a16z × OpenRouter)
+[Title]a16z Study: Open-Source LLMs Dominate Role-Playing Games, Storytelling
+[Link/FilePath]https://www.linkedin.com/posts/superprotocol_llm-api-openai-activity-7407552384924753920-TcL5 (full 36-page report link in post https://lnkd.in/gCd_xFNg)
+[One-line summary]Based on OpenRouter's 100+ trillion token production traffic, reveals open-source models' biggest use is role-playing + narrative. Relevance to Macha: directly proves "chatting with / co-creating stories with virtual characters" is the #1 consumer LLM scenario, strongly related to Macha "believable NPC."
+[Key conclusions]
+1. Over 50% of open-source model traffic for role-playing / storytelling, not programming.
+2. Open-source model share rose from <10% to ~30% in a year; DeepSeek, Qwen growing fastest.
+3. Asia traffic share 13%→31%, China becomes 2nd-largest consumer after the US.
+4. Medium models (15–70B) best cost-performance; "glass slipper" effect — the first model to perfectly solve the problem wins permanent loyalty.
+[Reusable]Demand-scenario evidence, model-selection insight (medium open-source-first → echoes Macha cost control).
 
 ---
 
-【类别】产业观点（Sequoia × Roblox）
-【标题】红杉资本对谈 Roblox 生成式 AI 负责人 Stef Corazza
-【链接/文件路径】https://www.toutiao.com/article/7472014623378588210
-【一句话摘要】红杉 Training Data 播客，Roblox 分享用自然语言生成整个世界、3D 基础模型、高度垂直整合的元宇宙。和 Macha 的关系：平台层"AI 原生创作"的标杆案例。
-【关键结论】
-1. 未来可用手机麦克风"说一句话"生成整片森林/Boss 战/游戏机制。
-2. Roblox 社区绝大多数创作者授权用其数据训练，拥有最大多模态数据集之一。
-3. 工具成败不再取决于"控制权多少"，而取决于"能否准确捕捉创作意图"。
-【可复用的东西】平台层 AI-native 创作范式、对"意图捕捉"的强调（Macha 接口设计参考）。
+[Category]Industry viewpoint (a16z 2025 tech outlook)
+[Title]a16z "Big Ideas in Tech 2025" (Games chapter: next-gen Pixar, AI companions with an inner world)
+[Link/FilePath]https://www.y3pm.com/post/big-ideas-in-tech-2025/ (Chinese citation https://news.qq.com/rain/a/20241212A06MTE00)
+[One-line summary]a16z 50 partners' annual outlook, games chapter names "AI-native interactive narrative" and "AI companions with an inner world." Relevance to Macha: gives industry direction judgment on "believable / inner-world NPCs."
+[Key conclusions]
+1. Next-gen "Pixar": AI-native interactive video, generates visuals in real time from player input, blurs film and games.
+2. Next-gen AI companions need an "inner world": their own friends, reactions to news, motives and goals.
+3. Game tech (NVIDIA graphics, Unreal real-time 3D) is spilling into commerce/autonomous-driving/defense.
+[Reusable]"AI companion needs an inner world" design creed (echoes Macha memory/reflection/motive modules).
 
 ---
 
-【类别】公司/产品（NPC 大脑）
-【标题】Inworld AI Closes $50M Series A；Character Engine 与 Runtime
-【链接/文件路径】https://martechseries.com/predictive-ai/ai-platforms-machine-learning/inworld-ai-closes-50m-series-a-to-populate-video-games-and-the-metaverse-with-interactive-ai-driven-characters/ （融资与中文背景见 https://m.yfchuhai.com/article/11151.html ；Runtime 见 https://www.ainvest.com/news/inworld-runtime-disrupting-consumer-ai-infrastructure-unlocking-scalability-generation-ai-applications-2508/ ）
-【一句话摘要】AI 角色平台头部，多模型编排的 Character Engine + 解决"原型→量产"鸿沟的 Runtime。和 Macha 的关系：NPC 大脑层最强竞品/对标，其 Runtime 思路值得 Macha 借鉴。
-【关键结论】
-1. 累计融资约 1.2 亿美元，估值 5 亿，称"AI+游戏融资最充足初创"。
-2. 投资者含 Meta、迪士尼、英特尔、三星、微软 M12、Founders Fund 等。
-3. Character Engine 编排 30+ ML 模型（多模态角色表达：情绪/记忆/肢体语言）。
-4. 客户/伙伴：Xbox、NVIDIA、Epic、Unity、Roblox、网易。
-5. Runtime 主打"原型到量产"的可扩展消费级 AI 基础设施。
-【可复用的东西】多模型编排架构、无代码角色工作室交互范式、Runtime 分层思路。
+[Category]Industry viewpoint (Sequoia × Roblox)
+[Title]Sequoia talks with Roblox generative-AI lead Stef Corazza
+[Link/FilePath]https://www.toutiao.com/article/7472014623378588210
+[One-line summary]Sequoia Training Data podcast, Roblox shares generating an entire world from natural language, 3D foundation model, highly vertically integrated metaverse. Relevance to Macha: benchmark case of platform-layer "AI-native creation."
+[Key conclusions]
+1. Future: speak one sentence via phone mic to generate an entire forest / Boss fight / game mechanic.
+2. Vast majority of Roblox creators authorize use of their data for training, owning one of the largest multimodal datasets.
+3. Tool success no longer depends on "how much control" but on "whether it accurately captures creative intent."
+[Reusable]Platform-layer AI-native creation paradigm, emphasis on "intent capture" (Macha interface design reference).
 
 ---
 
-【类别】公司/产品（NPC 大脑 / 具身对话）
-【标题】Convai – Conversational AI for Virtual Worlds
-【链接/文件路径】http://convai.com （功能细节 https://www.toolmage.com/zh-hans/tool/convai ；中文教程 https://inviai.com/zh-CN/you-xi-zhong-you-rengong-zhi-neng-sheng-cheng-de-jue-se-dui-hua ）
-【一句话摘要】开发者的具身对话 AI 平台，多模态感知+NPC2NPC+知识库+叙事设计图，支持本地部署。和 Macha 的关系：NPC 大脑层重要竞品；其"知识库+叙事设计图+安全护栏"是 Macha 可参考的组件划分。
-【关键结论】
-1. 多模态感知（视觉/语音/文本）、知识库记忆、图形化叙事设计、NPC 之间对话。
-2. 深度集成 Unreal/Unity/Three.js；65+ 语言 500+ 语音；ISO 27001、支持 On-Prem。
-3. 前 Google/NVIDIA 工程师打造，主打低延迟、可扩展至百万用户。
-4. Unreal 插件仍 Beta；多代理叙事流需谨慎设计。
-【可复用的东西】组件划分（Mind/Avatar/Deploy 三段）、知识库+叙事图+护栏的模式。
+[Category]Company/Product (NPC Brain)
+[Title]Inworld AI Closes $50M Series A; Character Engine and Runtime
+[Link/FilePath]https://martechseries.com/predictive-ai/ai-platforms-machine-learning/inworld-ai-closes-50m-series-a-to-populate-video-games-and-the-metaverse-with-interactive-ai-driven-characters/ (funding and Chinese background https://m.yfchuhai.com/article/11151.html ; Runtime https://www.ainvest.com/news/inworld-runtime-disrupting-consumer-ai-infrastructure-unlocking-scalability-generation-ai-applications-2508/ )
+[One-line summary]Head of AI character platforms, multi-model orchestration Character Engine + Runtime solving prototype→production gap. Relevance to Macha: strongest NPC-brain-layer competitor/benchmark, its Runtime thinking worth borrowing for Macha.
+[Key conclusions]
+1. Cumulative funding ~$120M, $500M valuation, "best-funded AI+games startup."
+2. Investors include Meta, Disney, Intel, Samsung, Microsoft M12, Founders Fund, etc.
+3. Character Engine orchestrates 30+ ML models (multimodal character expression: emotion/memory/body language).
+4. Customers/partners: Xbox, NVIDIA, Epic, Unity, Roblox, NetEase.
+5. Runtime targets "prototype-to-production" scalable consumer AI infrastructure.
+[Reusable]Multi-model orchestration architecture, no-code character-studio interaction paradigm, Runtime layering idea.
 
 ---
 
-【类别】公司/产品（工具链 / 数字人技术栈）
-【标题】NVIDIA ACE – Build On-Device AI Companions & Digital Humans
-【链接/文件路径】https://developer.nvidia.com/blog?p=118679 （中文 Qwen3 本地部署 https://developer.nvidia.com/zh-cn/blog/nvidia-ace-adds-open-source-qwen3-slm-for-on-device-deployment-in-pc-games ；生态伙伴 https://www.ttmnq.com/news/39872.html ）
-【一句话摘要】NVIDIA 的数字人技术栈（Riva ASR + Audio2Face + TTS + Game Agent SDK + IGI 本地推理 SDK），支持云端/本地。和 Macha 的关系：工具链层最强基础设施；其 IGI SDK「统一推理 API 跨 GPU/NPU/CPU」正是 Macha 想定义的互操作接口雏形。
-【关键结论】
-1. ACE 微服务：ASR、Audio2Face、TTS、Chatterbox、Game Agent SDK。
-2. 已支持开源 Qwen3-8B 本地部署（IGI SDK 插件），MultiLoRA、CUDA in Graphics。
-3. 采纳方含 Convai、Inworld、米哈游、网易、腾讯、育碧、掌趣、西山居。
-4. 与 Inworld 组合"可驱动动态叙事"。
-【可复用的东西】端侧推理技术路线、统一推理 API 设计、与 NPC 大脑组合模式。
+[Category]Company/Product (NPC Brain / embodied dialogue)
+[Title]Convai – Conversational AI for Virtual Worlds
+[Link/FilePath]http://convai.com (feature details https://www.toolmage.com/zh-hans/tool/convai ; Chinese tutorial https://inviai.com/zh-CN/you-xi-zhong-you-rengong-zhi-neng-sheng-cheng-de-jue-se-dui-hua )
+[One-line summary]Developer-facing embodied conversational AI platform, multimodal perception + NPC2NPC + knowledge base + narrative design graph, supports local deployment. Relevance to Macha: important NPC-brain-layer competitor; its "knowledge base + narrative design graph + safety guardrails" is a component split Macha can reference.
+[Key conclusions]
+1. Multimodal perception (visual/voice/text), knowledge-base memory, graphical narrative design, NPC-to-NPC dialogue.
+2. Deep integration with Unreal/Unity/Three.js; 65+ languages 500+ voices; ISO 27001, supports On-Prem.
+3. Built by ex-Google/NVIDIA engineers, targets low latency, scalable to millions of users.
+4. Unreal plugin still Beta; multi-agent narrative flow needs careful design.
+[Reusable]Component split (Mind/Avatar/Deploy three stages), knowledge base + narrative graph + guardrails pattern.
 
 ---
 
-【类别】公司/产品（大厂自研 NPC）
-【标题】网易伏羲：AI Agent 驱动游戏玩法革新（逆水寒智能 NPC / 永劫无间语音 AI 队友）
-【链接/文件路径】https://fuxi.netease.com/database/2694 （永劫无间 AI 队友 https://www.163.com/dy/article/KA7TFQ5M053469RG.html ；逆水寒迭代 https://www.163.com/dy/article/KO0AII1605268BP2.html ；DeepSeek 接入 https://www.163.com/dy/article/JPH70QFQ05129QAF.html ）
-【一句话摘要】网易以 AOP（面向智能体编程）框架落地智能 NPC 与语音 AI 队友，是国内 AI NPC 最成熟案例。和 Macha 的关系：验证"感知—认知—决策—执行"闭环与"长期记忆+多模态"可玩性，但其方案不对外开放，是 Macha 要"标准化并开源"的对象。
-【关键结论】
-1. AOP 框架实现感知—认知—决策全链路；智能 NPC 有记忆、多模态、影响剧情走向。
-2. 永劫无间语音 AI 队友：ASR+指令理解+知识问答+人设对话+TTS，寻路成功率 77%→99%，社媒播放破 3 亿。
-3. 逆水寒：200+ 智能 NPC → DeepSeek 驱动"沈秋索" → 联动 5 大国产大模型 NPC 女团；门客系统 Agent 化获 2025 图象图形学学会科技进步一等奖。
-4. 与阿里云通义合作后训练模型选型，优化推理效率。
-【可复用的东西】AOP 架构范式、语音 AI 队友工程链路、RLHF 人设对话训练方法。
+[Category]Company/Product (Toolchain / digital-human tech stack)
+[Title]NVIDIA ACE – Build On-Device AI Companions & Digital Humans
+[Link/FilePath]https://developer.nvidia.com/blog?p=118679 (Chinese Qwen3 local deployment https://developer.nvidia.com/zh-cn/blog/nvidia-ace-adds-open-source-qwen3-slm-for-on-device-deployment-in-pc-games ; ecosystem partners https://www.ttmnq.com/news/39872.html )
+[One-line summary]NVIDIA's digital-human tech stack (Riva ASR + Audio2Face + TTS + Game Agent SDK + IGI local-inference SDK), supports cloud/local. Relevance to Macha: strongest toolchain-layer infrastructure; its IGI SDK "unified inference API across GPU/NPU/CPU" is exactly the interoperable-interface prototype Macha wants to define.
+[Key conclusions]
+1. ACE microservices: ASR, Audio2Face, TTS, Chatterbox, Game Agent SDK.
+2. Already supports open-source Qwen3-8B local deployment (IGI SDK plugin), MultiLoRA, CUDA in Graphics.
+3. Adopters include Convai, Inworld, miHoYo, NetEase, Tencent, Ubisoft, ZenUnited, Seasun.
+4. Combined with Inworld to "drive dynamic narrative."
+[Reusable]On-device inference technical route, unified inference API design, NPC-brain combination pattern.
 
 ---
 
-【类别】公司/产品（大厂 AI 原生游戏）
-【标题】Anuttacon（蔡浩宇）《Whispers from the Star》——AI 原生互动叙事
-【链接/文件路径】https://store.steampowered.com/app/3730100/Whispers_from_the_Star/ （背景 https://game.xiaomi.com/viewpoint/1393220466_1742277236646_100 ；合规 https://m.moegirl.org.cn/Whispers_from_the_Star ）
-【一句话摘要】米哈游创始人蔡浩宇新作，全语音实时 AI 对话救生宇航员 Stella，AI-native 游戏先锋。和 Macha 的关系：AI 原生玩法的标杆与警示——验证需求，也暴露"缺游戏框架/合规受限"。
-【关键结论】
-1. 2025-08-14 Steam 发布，好评率 82%（约 1557 评测），约 3 万份。
-2. 全语音/文本/视频实时开放式对话，每句话影响剧情与角色命运。
-3. 争议：被评"像大号 C.AI 玩具"、缺游戏框架；因国内 AI 模型未备案注销大陆社媒账号（2025-12 左右）。
-4. 云游戏模式、33.99 元低价，疑似以游玩收集 AI 数据。
-【可复用的东西】AI-native 玩法范式、合规风险警示（B5 真实案例）。
+[Category]Company/Product (Big-co self-built NPC)
+[Title]NetEase Fuxi: AI Agent Drives Gameplay Innovation (Justice Online smart NPC / Naraka voice AI teammate)
+[Link/FilePath]https://fuxi.netease.com/database/2694 (Naraka AI teammate https://www.163.com/dy/article/KA7TFQ5M053469RG.html ; Justice Online iteration https://www.163.com/dy/article/KO0AII1605268BP2.html ; DeepSeek connection https://www.163.com/dy/article/JPH70QFQ05129QAF.html )
+[One-line summary]NetEase uses AOP (Agent-Oriented Programming) framework to deploy smart NPCs and voice AI teammates, China's most mature AI NPC case. Relevance to Macha: validates "perception—cognition—decision—execution" closed loop and "long-term memory + multimodal" playability, but its solution is not open; it is what Macha wants to "standardize and open-source."
+[Key conclusions]
+1. AOP framework achieves perception—cognition—decision full loop; smart NPCs have memory, multimodal, affect plot direction.
+2. Naraka voice AI teammate: ASR + command understanding + knowledge Q&A + persona dialogue + TTS, pathfinding 77%→99%, 300M+ social views.
+3. Justice Online: 200+ smart NPCs → DeepSeek-driven "Shen Qiusuo" → 5 domestic large models forming NPC girl group; retainer system Agent-ized won 2025 Image and Graphics Society Science and Technology Progress First Prize.
+4. Post-training model selection with Alibaba Cloud Tongyi, optimizing inference efficiency.
+[Reusable]AOP architecture paradigm, voice AI teammate engineering chain, RLHF persona-dialogue training method.
 
 ---
 
-【类别】产品案例（AI GM 鼻祖 / 成本反面教材）
-【标题】AI Dungeon / Latitude – 开放式文字冒险与成本之痛
-【链接/文件路径】https://app.dealroom.co/companies/latitude_1_1 （盈利现状 https://m.huxiu.com/article/4694133.html ；wiki http://en.m.wiki2.org/wiki/AI_Dungeon ）
-【一句话摘要】最早的 AI GM 文字冒险，验证开放式叙事需求，也因 GPT-3 API 成本濒临破产。和 Macha 的关系：B1 成本卡点的最早血泪证据，直接说明"标准骨架必须内置成本控制"。
-【关键结论】
-1. 2019 上线，一周破 10 万、半年 150 万用户；2021 获 330 万美元种子轮（NFX 领投）。
-2. 早期因 OpenAI API 成本指数爆炸濒临破产，后引入低成本模型+上下文限制止血。
-3. 2024 从 Steam 下架；2025 年以 12 人团队做到约 700 万美元年收入且盈利。
-4. 曾因 31% 生成内容涉暴力色情引发审核伦理争议（GPT-3 约束不足）。
-【可复用的东西】成本失控案例、内容审核/护栏必要性证据。
+[Category]Company/Product (Big-co AI-native game)
+[Title]Anuttacon (Cai Haoyu) "Whispers from the Star" — AI-native interactive narrative
+[Link/FilePath]https://store.steampowered.com/app/3730100/Whispers_from_the_Star/ (background https://game.xiaomi.com/viewpoint/1393220466_1742277236646_100 ; compliance https://m.moegirl.org.cn/Whispers_from_the_Star )
+[One-line summary]miHoYo founder Cai Haoyu's new work, full-voice real-time AI dialogue with stranded astronaut Stella, AI-native game pioneer. Relevance to Macha: benchmark and warning of AI-native gameplay — validates demand, also exposes "lacks game framework / compliance constrained."
+[Key conclusions]
+1. Released Steam 2025-08-14, 82% positive (~1,557 reviews), ~30K copies.
+2. Full voice/text/video real-time open dialogue, every line affects plot and character fate.
+3. Controversy: reviewed as "like a big C.AI toy," lacks game framework; deactivated mainland social accounts because domestic AI model unfiled (~2025-12).
+4. Cloud-gaming model, low ¥33.99 price, suspected of collecting AI data through play.
+[Reusable]AI-native gameplay paradigm, compliance-risk warning (B5 real case).
 
 ---
 
-【类别】产品案例（AI 原生派对游戏）
-【标题】Suck Up!（Proxima）——零营销破亿播放的 AI NPC 游戏
-【链接/文件路径】https://www.huafengwang.net/djgl/68029.html （评测 https://www.howtogeek.com/these-games-prove-theres-a-right-way-to-use-modern-ai-in-gaming ；团队复盘 https://www.linkedin.com/posts/nicholasozak_we-developed-and-released-suck-up-quietly-activity-7158155765583659008-Hycz ）
-【一句话摘要】吸血鬼敲门、每扇门后是 ChatGPT 驱动的 AI NPC，零预算 YouTube 播放破亿。和 Macha 的关系：证明"AI 只是让可传播的互动结构成立得更快"，Macha 应服务"互动结构"而非仅"对话"。
-【关键结论】
-1. 2023-12 零宣发上线，一个月 YouTube 播放破 2000 万、全平台累计过亿。
-2. 2025-10-01 才以完整 1.0 登陆 Steam（成就/创意工坊/挑战模式）。
-3. 核心不是"用了 AI"，而是"可被无限复制、被观看、被传播的互动结构"。
-4. 每个 NPC 有性格/疑虑/不可预测反应，玩家唯一工具是"一张嘴"。
-【可复用的东西】AI-native 游戏设计方法论（结构 > 模型）、病毒传播机制。
+[Category]Product case (AI GM pioneer / cost negative example)
+[Title]AI Dungeon / Latitude – Open text adventure and the pain of cost
+[Link/FilePath]https://app.dealroom.co/companies/latitude_1_1 (profitability status https://m.huxiu.com/article/4694133.html ; wiki http://en.m.wiki2.org/wiki/AI_Dungeon )
+[One-line summary]Earliest AI GM text adventure, validated open-narrative demand, also nearly bankrupt from GPT-3 API costs. Relevance to Macha: earliest blood-and-tears evidence of B1 cost bottleneck, directly shows "standard skeleton must have cost control built in."
+[Key conclusions]
+1. Launched 2019, 100K in a week, 1.5M users in half a year; 2021 raised $3.3M seed (NFX led).
+2. Early on, OpenAI API cost exploded exponentially, nearly bankrupt; later introduced low-cost models + context limits to stop bleeding.
+3. Delisted from Steam 2024; 2025 reached ~$7M annual revenue profitable with 12-person team.
+4. Once sparked moderation/ethics controversy as 31% of generated content involved violence/porn (insufficient GPT-3 constraints).
+[Reusable]Cost-runaway case, content-moderation/guardrail necessity evidence.
 
 ---
 
-【类别】产品案例（AI 原生推理 / 翻车对照）
-【标题】Vaudeville 与 Square Enix《港口镇连续杀人事件》AI 版
-【链接/文件路径】Vaudeville：https://www.howtogeek.com/these-games-prove-theres-a-right-way-to-use-modern-ai-in-gaming ；Square Enix：https://www.vice.com/en/article/square-enixs-ai-tech-demo-is-a-staggering-failure （中文 https://www.sohu.com/a/669770907_121143647 ）
-【一句话摘要】两个"开放对话 NPC"案例：Vaudeville 概念惊艳但 AI 质量不稳；Square Enix 直接翻车（好评率 8–12%）。和 Macha 的关系：B3 可控性 + B2 延迟/性能 + B1 成本三重失败的反面教材。
-【关键结论】
-1. Vaudeville：角色雷同、答非所问、自相矛盾，撑不起复杂谋杀推理。
-2. Square Enix：本地 NLP 占 10GB、需 5GB 显存，GPU 直接卡死；NPC 理解力差，变"猜词游戏"。
-3. SE 因伦理顾虑禁用 NLG（自然语言生成），导致 AI"不智能"。
-4. 好评率仅 8–12%，"史上最低"行列；玩家称"不如原版文本解析器"。
-【可复用的东西】可控生成/验证层/性能预算的反面清单（Macha 护栏模块必做项）。
+[Category]Product case (AI-native party game)
+[Title]Suck Up! (Proxima) — Zero-marketing 100M-view AI NPC game
+[Link/FilePath]https://www.huafengwang.net/djgl/68029.html (review https://www.howtogeek.com/these-games-prove-theres-a-right-way-to-use-modern-ai-in-gaming ; team retrospective https://www.linkedin.com/posts/nicholasozak_we-developed-and-released-suck-up-quietly-activity-7158155765583659008-Hycz )
+[One-line summary]Vampire knocks on doors, each door an AI NPC driven by ChatGPT, zero-budget YouTube 100M+ views. Relevance to Macha: proves "AI just makes a shareable interactive structure happen faster," Macha should serve "interactive structure" not just "dialogue."
+[Key conclusions]
+1. Launched 2023-12 with zero promotion, 20M+ YouTube views in a month, 100M+ cumulative across platforms.
+2. Only reached full 1.0 on Steam 2025-10-01 (achievements/workshop/challenge mode).
+3. Core is not "used AI" but "an interactive structure that can be infinitely copied, watched, spread."
+4. Each NPC has personality/doubt/unpredictable reactions; player's only tool is "a mouth."
+[Reusable]AI-native game design methodology (structure > model), viral-spread mechanism.
 
 ---
 
-【类别】产品案例（AI-native 语义裁决）
-【标题】Infinite Craft（Neal Agarwal）——LLaMa 驱动的"组合"沙盒
-【链接/文件路径】https://leedsjournal.co.uk/infinite-craft （AI-native 游戏分类见 https://arxiv.org/html/2607.00527v1 ）
-【一句话摘要】浏览器沙盒，用 LLM 做"语义裁决"（组合物品是否合法/生成什么）。和 Macha 的关系：比"聊天 NPC"更稳的 AI-native 范式，呼应 AI-Native 论文"语义裁决"轴，拓展 Macha 对"NPC 之外 AI 玩法"的视野。
-【关键结论】
-1. 2024-01 上线，从四元素出发无限组合，日造约 3 亿配方。
-2. 用 LLaMa 后端保证组合一致性且出人意料。
-3. 2025-05 加"Combo Archive"，社区驱动、有 Story Mode 计划。
-4. AI-Native 论文将其归类为"Sandbox/craft + Semantic adjudication"。
-【可复用的东西】"语义裁决"作为稳定 AI 玩法范式（Macha 评估/设计理论层参考）。
+[Category]Product case (AI-native reasoning / crash contrast)
+[Title]Vaudeville and Square Enix "Port Town Serial Murder" AI version
+[Link/FilePath]Vaudeville: https://www.howtogeek.com/these-games-prove-theres-a-right-way-to-use-modern-ai-in-gaming ; Square Enix: https://www.vice.com/en/article/square-enixs-ai-tech-demo-is-a-staggering-failure (Chinese https://www.sohu.com/a/669770907_121143647 )
+[One-line summary]Two "open-dialogue NPC" cases: Vaudeville stunning concept but unstable AI quality; Square Enix crashed outright (8–12% positive). Relevance to Macha: negative example of B3 controllability + B2 latency/performance + B1 cost triple failure.
+[Key conclusions]
+1. Vaudeville: cookie-cutter characters, non-sequiturs, self-contradictions, can't sustain complex murder mystery.
+2. Square Enix: local NLP took 10GB, needed 5GB VRAM, GPU froze; NPCs poor comprehension, became "word-guessing game."
+3. SE disabled NLG (natural language generation) due to ethical concerns, making AI "not smart."
+4. Only 8–12% positive, among "lowest ever"; players said "worse than original text parser."
+[Reusable]Negative checklist for controllable generation / validation layer / performance budget (Macha guardrail module must-haves).
 
 ---
 
-【类别】工程实践（成本/延迟/架构）
-【标题】LLMs in Games: 5 Studio-Killing Problems & 异步动态叙事服务层
-【链接/文件路径】Gladecore：https://www.gladecore.com/blog/llms-in-games ；字节架构：https://youthcamp.bytedance.com/post/7584073390694547471 ；CSDN 脑洞：https://adg.csdn.net/696f265b437a6b4033697da1.html
-【一句话摘要】一线团队总结 LLM 进游戏的五大致死问题（成本模型/延迟/定制/集成摩擦/合规），并提出"异步动态叙事服务层"与"生成式 NPC 行为系统"架构。和 Macha 的关系：几乎就是 Macha 架构蓝图的工程版证据。
-【关键结论】
-1. 五大问题：按 token 计费惩罚成功、云端 1–3 秒延迟、定制受限、SDK 摩擦、断网/隐私/GDPR。
-2. 字节方案：LLM 封装为异步/可队列/可缓存的独立服务层 + 智能路由（缓存/轻模型/云端大模型）+ 叙事状态库 + 安全网关。
-3. CSDN 方案：本地小模型 + 云端异步 + 预生成缓存 + 行为分帧 + 强约束提示 + 结构化输出 + 验证层 + FSM/行为树兜底。
-【可复用的东西】**可直接转化为 Macha 架构模块**：分级路由、缓存、叙事状态 DB、安全网关、验证层、降级策略、行为树兜底。
+[Category]Product case (AI-native semantic adjudication)
+[Title]Infinite Craft (Neal Agarwal) — LLaMa-driven "combination" sandbox
+[Link/FilePath]https://leedsjournal.co.uk/infinite-craft (AI-native game classification https://arxiv.org/html/2607.00527v1 )
+[One-line summary]Browser sandbox, uses LLM for "semantic adjudication" (whether combining items is valid / what to generate). Relevance to Macha: more stable AI-native paradigm than "chat NPCs," echoes AI-Native paper "semantic adjudication" axis, expands Macha's view of "AI gameplay beyond NPCs."
+[Key conclusions]
+1. Launched 2024-01, from four elements infinite combinations, ~300M recipes/day.
+2. Uses LLaMa backend to ensure combination consistency yet surprising.
+3. 2025-05 added "Combo Archive," community-driven, has Story Mode plan.
+4. AI-Native paper classifies it as "Sandbox/craft + Semantic adjudication."
+[Reusable]"Semantic adjudication" as a stable AI gameplay paradigm (Macha evaluation/design-theory layer reference).
 
 ---
 
-【类别】学术论文（AI-native 游戏分类）
-【标题】AI Native Games: A Survey and Roadmap（arXiv 2607.00527v1）
-【链接/文件路径】https://arxiv.org/html/2607.00527v1
-【一句话摘要】系统梳理 53 款 AI 原生游戏，提出"混合化""从对话代理走向世界/机制级 AI"趋势与分类轴。和 Macha 的关系：提供 AI-native 游戏的设计本体与分类体系，支撑 Macha 设计理论层。
-【关键结论】
-1. 当前三大趋势：纯文本续写→任务导向玩法；AI-native 越来越"混合"（生成模型+ authored goals/约束/验证/缓存）；领域仍不均衡（一致性/延迟/评估/审核/成本/重玩深度是共性难题）。
-2. 最普遍模式不是全自动世界模拟，而是"约束下的玩法循环"，AI 扮演特定角色（嫌疑人/裁判/GM/角色/生成器）。
-3. 列出 Suck Up!、Vaudeville、Infinite Craft 等 53 款带年份与类型轴。
-【可复用的东西】AI-native 游戏分类表、混合设计范式、"约束循环"方法论。
+[Category]Engineering practice (cost/latency/architecture)
+[Title]LLMs in Games: 5 Studio-Killing Problems & Async Dynamic Narrative Service Layer
+[Link/FilePath]Gladecore: https://www.gladecore.com/blog/llms-in-games ; ByteDance architecture: https://youthcamp.bytedance.com/post/7584073390694547471 ; CSDN brainstorm: https://adg.csdn.net/696f265b437a6b4033697da1.html
+[One-line summary]Front-line teams summarize five LLM-in-games deadly problems (cost model/latency/customization/integration friction/compliance), propose "async dynamic narrative service layer" and "generative NPC behavior system" architecture. Relevance to Macha: almost the engineering-version evidence of Macha's architecture blueprint.
+[Key conclusions]
+1. Five problems: token billing punishes success, cloud 1–3s latency, customization limited, SDK friction, offline/privacy/GDPR.
+2. ByteDance solution: wrap LLM as async/queueable/cacheable independent service layer + smart routing (cache/light model/cloud large model) + narrative state store + safety gateway.
+3. CSDN solution: local small model + cloud async + pre-gen cache + behavior framing + strong-constraint prompt + structured output + validation layer + FSM/behavior-tree fallback.
+[Reusable]**Can be directly converted to Macha architecture modules**: tiered routing, cache, narrative-state DB, safety gateway, validation layer, degradation strategy, behavior-tree fallback.
 
 ---
 
-【类别】综述（2025 行业文化拉锯）
-【标题】Generative AI in Gaming 2025: Human vs. Machine Game Design Review
-【链接/文件路径】https://www.nexaspecs.com/2025/12/generative-ai-in-gaming-2025-human-vs.html
-【一句话摘要】复盘 2025 生成式 AI 从技术好奇变为行业支柱但引发"灵魂/就业/伦理"争议的拉锯。和 Macha 的关系：提醒 Macha 标准需包含"透明度/标注/人工把关"维度以回应社区抵触（B7）。
-【关键结论】
-1. 2025 是 GenAI 从好奇变为行业支柱但极具争议的转折年。
-2. 玩家对"AI 叙事缺乏主题深度与意图"存疑，"hand-crafted"成为质量标签。
-3. 行业推动 AI 使用透明度披露。
-4. 技术挑战：一致性、性能、评估仍是核心。
-【可复用的东西】社区接纳维度（透明度/标注）、"人工+AI"混合定位。
+[Category]Academic paper (AI-native game classification)
+[Title]AI Native Games: A Survey and Roadmap (arXiv 2607.00527v1)
+[Link/FilePath]https://arxiv.org/html/2607.00527v1
+[One-line summary]Systematically reviews 53 AI-native games, proposes trends and classification axes of "hybridization" and "from dialogue agents to world/mechanic-level AI." Relevance to Macha: provides AI-native game design ontology and classification system, supports Macha design-theory layer.
+[Key conclusions]
+1. Three current trends: pure-text continuation → task-oriented gameplay; AI-native increasingly "hybrid" (generative model + authored goals/constraints/validation/cache); field still uneven (consistency/latency/evaluation/moderation/cost/replay-depth common hard problems).
+2. Most common pattern is not fully-automatic world simulation but "constrained gameplay loop," AI plays specific role (suspect/referee/GM/character/generator).
+3. Lists 53 games with Suck Up!/Vaudeville/Infinite Craft etc. by year and type axis.
+[Reusable]AI-native game classification table, hybrid design paradigm, "constrained loop" methodology.
 
 ---
 
-## 附：未获一手来源 / 待核实项（诚实标注）
-
-- **Newzoo 原始付费报告**、**头豹研究院原始报告**：本次仅通过 CSDN 博主整理文获取二手数据，市场规模数字建议回溯一手。
-- **a16z Game Fund ONE 规模（约 6 亿美元）**：来自中文长文（URL 缺失），本次未能取得 a16z 官方页面佐证，引用前请核实。
-- **Game AI NPC Market 的 12.5 亿→51.9 亿美元**：来自 pmarketresearch 厂商测算，非中立第三方，量级参考即可。
-- **米哈游"无定谷科技 5 亿""Glossa 大模型"**等细节：来自中文媒体综述，部分未经官方确认，建议以米哈游/Anuttacon 官方披露为准。
-- **Whispers from the Star 国内注销账号**：来自中文维基式条目，时间线（2025-12）需二次确认。
+[Category]Review (2025 industry culture tug-of-war)
+[Title]Generative AI in Gaming 2025: Human vs. Machine Game Design Review
+[Link/FilePath]https://www.nexaspecs.com/2025/12/generative-ai-in-gaming-2025-human-vs.html
+[One-line summary]Reviews 2025 generative AI moving from tech curiosity to industry pillar yet sparking "soul/employment/ethics" controversy tug-of-war. Relevance to Macha: reminds Macha standard to include "transparency/labeling/human oversight" dimensions to respond to community resistance (B7).
+[Key conclusions]
+1. 2025 is the turning year where GenAI went from curiosity to industry pillar but was highly controversial.
+2. Players doubt "AI narrative lacks thematic depth and intent," "hand-crafted" becomes a quality label.
+3. Industry pushes AI-use transparency disclosure.
+4. Technical challenges: consistency, performance, evaluation remain core.
+[Reusable]Community-acceptance dimensions (transparency/labeling), "human + AI" hybrid positioning.
 
 ---
 
-> **编制说明**：本简报所有外链均为本次检索实际命中页面。Macha 后续如需引用具体数字做对外材料，请优先回溯表中"待核实项"的一手来源。
+## Appendix: Sources Not Obtained Primary / Pending Verification (Honest Disclosure)
+
+- **Newzoo original paid report**, **Toulie Research original report**: this time only obtained secondary data via a CSDN blogger's compilation; market-size numbers suggest tracing primary sources.
+- **a16z Game Fund ONE scale (~$600M)**: from a Chinese long-form article (URL missing), could not obtain a16z official page corroboration; please verify before citing.
+- **Game AI NPC Market's $1.25B→$5.19B**: from pmarketresearch vendor estimate, not neutral third party, magnitude reference only.
+- **miHoYo "Anuttacon $500M" "Glossa large model"** and other details: from Chinese media reviews, partly unconfirmed officially, suggest using miHoYo/Anuttacon official disclosures.
+- **Whispers from the Star domestic account deactivation**: from a Chinese wiki-style entry, timeline (2025-12) needs secondary confirmation.
 
 ---
 
-## 5. 深化补充：量化市场与国产专项（2025–2026 加法式更新）
+> **Compilation note**: All external links in this brief are pages actually hit during this search. If Macha later needs to cite specific numbers for external materials, please prioritize tracing the "pending verification" primary sources in the table.
 
-> 本节为原有框架的**加法式深化**，不改动上文任何结论。目标是把"五道/八道卡点 = Macha 白空间"的定性判断，落到**可引用的数字、真实融资、成本量级与国产专项**上。所有数字标注来源与口径；凡二手/厂商测算均显式注明。
+---
 
-### 5.1 市场规模与增速（量化、带 CAGR、多口径对照）
+## 5. Deepening Supplement: Quantified Market and Domestic Special (2025–2026 Additive Update)
 
-> ⚠️ 口径差异提醒：不同机构对"游戏 AI / 生成式 AI 游戏 / AI NPC"的定义与边界差异极大（见下表），**切忌把不同口径数字直接相加**。但所有口径共同指向一个结论：游戏大盘增速见顶（个位数），而 AI 相关细分赛道维持 **20%–35% 量级高 CAGR**。
+> This section is an **additive deepening** of the original framework, not changing any conclusion above. The goal is to ground the qualitative judgment "five/eight bottlenecks = Macha white space" in **citable numbers, real funding, cost magnitudes, and the domestic special**. All numbers are labeled with source and caliber; secondary/vendor estimates are explicitly noted.
 
-| 指标 / 口径 | 数值与增速 | 来源 | 备注 |
+### 5.1 Market Size and Growth (Quantified, with CAGR, Multi-Caliber Comparison)
+
+> ⚠️ Caliber-difference reminder: different institutions define and bound "games AI / generative-AI games / AI NPC" very differently (see table below); **do not directly add numbers of different calibers**. But all calibers point to one conclusion: the overall games market growth has peaked (single digits), while AI-related segments maintain **20%–35% magnitude high CAGR**.
+
+| Metric / caliber | Value and growth | Source | Note |
 |---|---|---|---|
-| 全球游戏市场（2025） | **$188.8B**，同比 **+3.4%**；玩家 **35.8 亿** | Newzoo《Global Games Market Report 2025》 | 移动 $103.0B / 主机 $45.9B / PC $39.9B |
-| 全球游戏市场（2028 预测） | **$206.5B**，2025–2028 **CAGR +3.0%** | Newzoo（同上） | "成熟但不停滞"，增长靠留存与生态 |
-| 中国游戏市场（2025） | 实际销售收入 **¥3507.9 亿**，同比 **+7.68%**；用户 **6.83 亿** | 《2025 年中国游戏产业报告》（音数协游戏工委） | 增速显著高于全球大盘 |
-| 生成式 AI 游戏市场 | 2025 **$1.79B** → 2026 **$2.21B**（**CAGR 23.1%**）→ 2030 **$5.09B**（**CAGR 23.2%**） | The Business Research Company / ResearchAndMarkets《Generative AI in Gaming Market 2026》 | 2025 亚太为最大区域 |
-| 生成式 AI 在游戏（窄口径） | 2024E 15 → 2025E 18 → 2026E 22 → 2030E 55 → 2033E **110 亿美元**（约 **25% CAGR**） | market.us / 开源证券研究所 | 口径较小，量级参考 |
-| AI 生成内容（AIGC）游戏 | 2025 **$4.54B**，2025–2033 **CAGR 33.57%** | DataInsightsMarket | 含资产/关卡/叙事生成，范围更宽 |
-| 游戏 AI NPC 细分 | 2025 **$1.25B** → 2032 **$5.19B**，**CAGR 22.58%**（LLM 对话占 59.7%） | pmarketresearch（前 §1.2 已引） | 厂商测算，量级参考 |
-| NPC AI 市场（独立研究） | 2029 **$5.51B** | Research & Markets（经行业报告转引） | 需回溯一手 |
+| Global games market (2025) | **$188.8B**, **+3.4%** YoY; players **3.58B** | Newzoo "Global Games Market Report 2025" | Mobile $103.0B / console $45.9B / PC $39.9B |
+| Global games market (2028 forecast) | **$206.5B**, 2025–2028 **CAGR +3.0%** | Newzoo (same) | "Mature but not stagnant," growth from retention and ecosystem |
+| China games market (2025) | Actual sales ¥350.79B, **+7.68%** YoY; users **683M** | "2025 China Games Industry Report" (GPC/CGIGC) | Growth significantly above global |
+| Generative AI games market | 2025 **$1.79B** → 2026 **$2.21B** (**CAGR 23.1%**) → 2030 **$5.09B** (**CAGR 23.2%**) | The Business Research Company / ResearchAndMarkets "Generative AI in Gaming Market 2026" | 2025 Asia-Pacific largest region |
+| Generative AI in games (narrow caliber) | 2024E 15 → 2025E 18 → 2026E 22 → 2030E 55 → 2033E **$11B** (~**25% CAGR**) | market.us / Open Source Securities Research | Small caliber, magnitude reference |
+| AIGC games | 2025 **$4.54B**, 2025–2033 **CAGR 33.57%** | DataInsightsMarket | Includes assets/levels/narrative generation, wider scope |
+| Game AI NPC segment | 2025 **$1.25B** → 2032 **$5.19B**, **CAGR 22.58%** (LLM dialogue 59.7%) | pmarketresearch (cited §1.2) | Vendor estimate, magnitude reference |
+| NPC AI market (independent research) | 2029 **$5.51B** | Research & Markets (via industry report) | Trace primary |
 
-**解读**：无论取哪个口径，AI 游戏细分赛道的 CAGR（22%–34%）都是整体游戏市场（3%–7%）的 **5–10 倍**。Macha 所瞄准的"AI NPC / 智能体交互"正是其中占比最大、增速最确定的方向之一——这是把"白空间"从愿景变成"可计算 TAM"的关键。
+**Interpretation**: Regardless of caliber, the CAGR of AI-games segments (22%–34%) is **5–10×** that of the overall games market (3%–7%). The "AI NPC / agent interaction" Macha targets is one of the largest-share, most-certain-growth directions within it — this is the key to turning "white space" from vision into "calculable TAM."
 
-### 5.2 融资图谱（真实金额，2021–2026）
+### 5.2 Funding Map (Real Amounts, 2021–2026)
 
-> 单位均为美元，除非特别标注。估值与轮次以公司公告/主流数据库（Crunchbase 类、PitchBook 类转引）为准；标注"需核实"者请回溯一手。
+> Units are USD unless otherwise noted. Valuations and rounds per company announcements / mainstream databases (Crunchbase-class, PitchBook-class citations); items marked "verify" please trace primary.
 
-| 公司 | 轮次 | 时间 | 金额 | 估值/累计 | 领投 / 重要投资方 | 备注 |
+| Company | Round | Time | Amount | Valuation/cumulative | Lead / key investors | Note |
 |---|---|---|---|---|---|---|
-| **Inworld AI** | Seed | 2021-11 | $7M | — | KPCB、CRV、M12 等 | NPC 大脑绝对头部 |
-| Inworld AI | Series A | 2023-08 | **$50M** | 估值 **$500M**（"halficorn"） | Lightspeed 领投；Meta、迪士尼、英特尔、三星、M12、Founders Fund | AI×游戏融资最多的初创之一 |
-| Inworld AI | 累计 | 至 2023 | **≈$1.0–1.3 亿** | 5 轮 | — | startupintros 列 $133M；行业报告列 $125.7M |
-| Inworld AI | 战略合作 | 2023– | 非股权 | — | **微软 Xbox**（多年协议） | AI 设计 Copilot + 游戏内 AI 引擎 |
-| **Convai** | Seed | 2022 末 | **$2.5M** | — | — | 具身对话 NPC 引擎 |
-| Convai | 估值（二级） | 2022-12 | — | 估值 **$21M**（UpMarket 模型） | 自筹为主 | 2024 营收约 **$6.5M**（UpMarket，需核实）；Unity 商店装机 27 万+ |
-| **Volley** | Series C | 2024-07 | **$55M** | 累计 **>$75M** | **微软 M12 + Lightspeed** 领投 | 语音 AI 游戏（Jeopardy!/Wheel of Fortune on Alexa/Fire TV） |
-| Volley | 经营 | 2024 | ARR **>$30M**（同比 2x） | MAU **500 万** | — | 收费 $9.99–12.99/月 |
-| **Altera**（现 Fundamental Research Labs） | Pre-seed | 2023-12 | $2M | — | a16z 领投 | Minecraft 千 Agent 文明 Project Sid |
-| Altera | Seed | 2024-05 | **$9M** | — | First Spark + Patron（a16z Speedrun、Eric Schmidt） | |
-| Altera | Series A | 2025-08 | **$33M** | 累计 **>$40M**（fundbat 列 $44M） | **Prosus** 领投；a16z Speedrun、Patrick Collison | 由游戏 Agent 扩至通用数字人/办公 Agent |
-| **NVIDIA** | 战略投资 | 持续 | 非本轮 | — | 投了 Luma AI、Inworld 等 | ACE 生态靠技术+硬件绑定扩张，非融资竞赛 |
-| **米哈游** | 战略投入 | 2026-05 | 三年最高 **¥1000 亿** AI 投入 | — | 自有 | 无定谷科技（5 亿元）孵化；全栈自研路线 |
-| **恺英网络** | 战投 | 2025-07 | 引入比高集团（周星驰）投资 | — | 比高集团子公司 | 孵化"形意"大模型与 AI 游戏引擎公司极逸（SOON 平台） |
-| **巨人网络** | 备案 | 2025-12 | GiantGPT 完成生成式 AI 备案 | — | 自有 | **国内游戏行业首个垂类大模型备案**（角色演绎/情景推理/长期记忆） |
+| **Inworld AI** | Seed | 2021-11 | $7M | — | KPCB, CRV, M12, etc. | Absolute NPC-brain leader |
+| Inworld AI | Series A | 2023-08 | **$50M** | Valuation **$500M** ("halficorn") | Lightspeed led; Meta, Disney, Intel, Samsung, M12, Founders Fund | Among best-funded AI×games startups |
+| Inworld AI | Cumulative | to 2023 | **≈$100–130M** | 5 rounds | — | startupintros lists $133M; industry report lists $125.7M |
+| Inworld AI | Strategic | 2023– | Non-equity | — | **Microsoft Xbox** (multi-year) | AI design Copilot + in-game AI engine |
+| **Convai** | Seed | Late 2022 | **$2.5M** | — | — | Embodied dialogue NPC engine |
+| Convai | Valuation (secondary) | 2022-12 | — | Valuation **$21M** (UpMarket model) | Mostly self-funded | 2024 revenue ~**$6.5M** (UpMarket, verify); Unity store installs 270K+ |
+| **Volley** | Series C | 2024-07 | **$55M** | Cumulative **>$75M** | **Microsoft M12 + Lightspeed** led | Voice AI games (Jeopardy!/Wheel of Fortune on Alexa/Fire TV) |
+| Volley | Operations | 2024 | ARR **>$30M** (2× YoY) | MAU **5M** | — | Charges $9.99–12.99/month |
+| **Altera** (now Fundamental Research Labs) | Pre-seed | 2023-12 | $2M | — | a16z led | Minecraft thousand-agent civilization Project Sid |
+| Altera | Seed | 2024-05 | **$9M** | — | First Spark + Patron (a16z Speedrun, Eric Schmidt) | |
+| Altera | Series A | 2025-08 | **$33M** | Cumulative **>$40M** (fundbat lists $44M) | **Prosus** led; a16z Speedrun, Patrick Collison | From game agents to general digital-human / office agents |
+| **NVIDIA** | Strategic | ongoing | Not this round | — | Invested in Luma AI, Inworld, etc. | ACE ecosystem expands via tech + hardware binding, not funding race |
+| **miHoYo** | Strategic | 2026-05 | Three-year max **¥100B** AI investment | — | Own | Anuttacon (¥500M) incubated; full-stack self-developed route |
+| **Kaiying Network** | Strategic | 2025-07 | Introduced Brilliant (Stephen Chow) group investment | — | Brilliant subsidiary | Incubated "Xingyi" large model and AI game-engine company Jiyi (SOON platform) |
+| **Giant Network** | Filing | 2025-12 | GiantGPT completed generative-AI filing | — | Own | **First vertical large-model filing in domestic games industry** (character acting / scenario reasoning / long-term memory) |
 
-**解读**：全球 AI×游戏融资高度集中于"NPC 大脑/平台"层（Inworld、Volley、Altera），且**战略资本（微软 M12、Prosus、a16z、Lightspeed、迪士尼、Meta）深度下场**——说明大厂不是在自研就是在占坑，独立第三方"标准骨架"层的投资仍是空白，恰是 Macha 的募资/生态叙事空间。国产侧则是**大厂自有投入 + 垂类大模型备案竞赛**（巨人、恺英、三七"小七"、完美"天工"），尚未出现对外开放的标准层。
+**Interpretation**: Global AI×games funding is highly concentrated in the "NPC brain / platform" layer (Inworld, Volley, Altera), and **strategic capital (Microsoft M12, Prosus, a16z, Lightspeed, Disney, Meta) is deeply in the game** — meaning big companies are either self-building or staking claims; investment in the independent third-party "standard skeleton" layer is still blank, exactly Macha's fundraising/ecosystem narrative space. On the domestic side it is **big-company own investment + vertical large-model filing race** (Giant, Kaiying, 37 Interactive "Xiaoqi", Perfect "Tiangong"), with no open standard layer yet appearing.
 
-### 5.3 成本结构拆解：云端托管 NPC 的 $/月/玩家 量级估算
+### 5.3 Cost Structure Breakdown: Cloud-Hosted NPC $/month/player Magnitude Estimate
 
-> 以下为公开工程/投资测算的**量级汇总**（非 Macha 实测）。核心结论高度一致：**纯云端按 token 计费在规模下不可持续**，必须走"本地小模型 + 云端兜底 + 高缓存命中"的混合架构——这正是 Macha「空白二：把成本/延迟作为一等公民」的工程依据。
+> Below is a **magnitude summary** of public engineering/investment estimates (not Macha measured). Core conclusion is highly consistent: **pure-cloud token billing is unsustainable at scale**, must go "local small model + cloud fallback + high cache hit" hybrid architecture — exactly the engineering basis for Macha "Gap Two: cost/latency as first-class citizens."
 
-| 成本维度 | 量级（$/月/玩家 或 等价） | 来源 | 条件 |
+| Cost dimension | Magnitude ($/month/player or equiv) | Source | Condition |
 |---|---|---|---|
-| **每轮对话成本** | **$0.001–$0.10**（GPT-4o mini 单次交换 ≈ $0.0075–$0.015） | theneuralbase（cost-per-conversation） | 取决于模型与缓存；10 万并发日聊一次 ≈ $22K–$45K/月 |
-| **纯云端推理（重对话）** | **$10–$50 / MAU / 月**（200–400 次 API 调用/会话） | theneuralbase（latency-optimization） | 云端为主；1M 玩家游戏月烧 **$500K–$2M** |
-| **边缘/端侧推理** | **$0.50–$2.00 / 玩家 / 月**（区域推理集群） | theneuralbase（同上） | 本地/边缘， profitability 关键 |
-| **VC 框架测算** | 每会话 $0.30–$2.25（10 调用/分 ×30 分 ×500 tok × $2–15/M）→ 月 **$3–$22.5/玩家**；10 万 MAU 即 **$300K–$2.25M/月** | Dre Dyson（VC 尽调框架） | 对比手游 ARPU $0.5–2/月 → **AI 成本可超营收 10 倍** |
-| **混合架构降本实证** | 某组合从 **$1.80 → $0.12 / 玩家 / 月**（3 年省约 $18M） | Dre Dyson（同上） | 本地+云端混合 |
-| **模型价差（输出 token）** | GPT-4o $10.00/M vs GLM-4 Plus $0.80/M = **12.5×**；40 亿输出 token/月 = **$360 万/月** 差距 | dev.to 生产实测（2026） | 国产模型（DeepSeek/GLM/Qwen）性价比突出 |
+| **Per-turn dialogue cost** | **$0.001–$0.10** (GPT-4o mini single exchange ≈ $0.0075–$0.015) | theneuralbase (cost-per-conversation) | Depends on model and cache; 100K concurrent chatting once/day ≈ $22K–$45K/month |
+| **Pure-cloud inference (heavy dialogue)** | **$10–$50 / MAU / month** (200–400 API calls/session) | theneuralbase (latency-optimization) | Cloud-dominant; 1M-player game burns **$500K–$2M/month** |
+| **Edge/on-device inference** | **$0.50–$2.00 / player / month** (regional inference cluster) | theneuralbase (same) | Local/edge, key to profitability |
+| **VC framework estimate** | $0.30–$2.25/session (10 calls/min × 30 min × 500 tok × $2–15/M) → $3–$22.5/player/month; 100K MAU = **$300K–$2.25M/month** | Dre Dyson (VC diligence framework) | vs. mobile ARPU $0.5–2/month → **AI cost can exceed revenue 10×** |
+| **Hybrid cost reduction proof** | A combo went from **$1.80 → $0.12 / player / month** (≈$18M saved over 3 years) | Dre Dyson (same) | Local + cloud hybrid |
+| **Model price gap (output token)** | GPT-4o $10.00/M vs GLM-4 Plus $0.80/M = **12.5×**; 400M output tokens/month = **$3.6M/month** gap | dev.to production test (2026) | Domestic models (DeepSeek/GLM/Qwen) stand out on cost-performance |
 
-**结论性公式（给 Macha 架构用）**：
-- 成本 ≈ `调用量 × (本地占比×近零 + 云端占比×单价) × (1 − 缓存命中率)`
-- 要让 AI NPC 在百万级 MAU 下盈利，**缓存命中率需 >70%**（一周后真实会话实测）、**本地/边缘承载 >80% 常规对话**、云端仅兜底复杂生成。这与 §2.5/§3 提出的"分级路由 + 预生成缓存 + 行为树兜底"完全吻合。
+**Conclusive formula (for Macha architecture)**:
+- Cost ≈ `call volume × (local share × near-zero + cloud share × unit price) × (1 − cache hit rate)`
+- To make AI NPCs profitable at million-level MAU, **cache hit rate must be >70%** (real-session test after one week), **local/edge must carry >80% of routine dialogue**, cloud only falls back for complex generation. This perfectly matches the "tiered routing + pre-gen cache + behavior-tree fallback" proposed in §2.5/§3.
 
-### 5.4 中文市场专项：国产 AI NPC 与平台深度案例
+### 5.4 China-Market Special: Domestic AI NPC and Platform Deep Cases
 
-#### 5.4.1 网易伏羲（AOP 框架，国内最成熟、强绑内部）
-- **技术路线**：AOP（面向智能体编程）——感知→认知→决策→执行闭环；人设对话大模型经 RLHF；强化学习优化寻路（77%→99%）。
-- **落地产品/游戏**：
-  - 《逆水寒》手游：智能 NPC（长期记忆/情绪/动态剧情）、门客系统（**全服玩家自建 AI 门客超 4000 万个**）、剧组模式（游戏内 3D 短视频）、AI 小龙虾（2026-07 黄金畅玩服上线，离线托管自动任务，官方合规防脚本）。
-  - 《永劫无间》手游：业界首个语音 AI 队友；**PC 版成首款采用 NVIDIA ACE + 大模型在端侧实现 AI 队友的国产游戏**（2025-03-27）。
-  - 《全明星街球派对》：AI Agent"战术大脑"，强化学习训练不同风格篮球 Bot。
-- **投入与成效**：2025 研发投入 **177 亿元**（连续六年破百亿，近 5 年累计超 800 亿）；AI 玩法使用户日均互动时长 **+40%**。
-- **对 Macha**：最强"大脑"实证，但**强绑网易内部、未标准化对外**——正是 Macha 要"开源化、引擎无关化"的对象。
+#### 5.4.1 NetEase Fuxi (AOP framework, most mature domestically, strongly internally bound)
+- **Technical route**: AOP (Agent-Oriented Programming) — perception→cognition→decision→execution closed loop; persona-dialogue large model via RLHF; reinforcement learning optimizes pathfinding (77%→99%).
+- **Deployed products/games**:
+  - Justice Online mobile: smart NPCs (long-term memory/emotion/dynamic plot), retainer system (**whole-server player-built AI retainers exceed 40M**), film-crew mode (in-game 3D short video), AI crayfish (2026-07 gold smooth-play server launch, offline hosting auto-tasks, official compliant anti-bot).
+  - Naraka: Bladepoint mobile: industry-first voice AI teammate; **PC version became first domestic game with ACE + large model on-device AI teammate** (2025-03-27).
+  - All-Star Street Ball Party: AI agent "tactics brain," RL-trained basketball bots of different styles.
+- **Investment and results**: 2025 R&D investment **¥17.7B** (over ¥10B for six consecutive years, over ¥80B cumulative in 5 years); AI gameplay raised users' average daily interaction time **+40%**.
+- **For Macha**: strongest "brain" proof, but **strongly internally bound, not standardized for external use** — exactly what Macha wants to "open-source, engine-agnostic."
 
-#### 5.4.2 米哈游 / Anuttacon（造梦派，2026 战略收缩的活教材）
-- **游戏内 AI**：《崩坏：星穹铁道》"帕姆 AI 助手"实时对话、《星布谷地》二测 AI NPC（可同时对接多名玩家、具备完整记忆/身份认知/社交能力）。
-- **旗舰押注**：下一代都市开放世界《Varsapura》（蔡浩宇亲自任制作人），2026-05 官宣**三年最高 ¥1000 亿 AI 投入**、全栈自研。
-- **Anuttacon 现实教训（2026）**：
-  - 《Whispers from the Star》好评率从 82% **跌至约 35%**，后续开发放缓；
-  - AI 陪伴产品 **AnuNeko 上线不足一年停运**；**《BSide: Olivia Lin》上线不到一个月停运**；
-  - 蔡浩宇 LinkedIn 身份更新为"Independent LLM + Agent Developer"，重心从通用 AI 应用转向 **LLM/Agent**。
-- **对 Macha**：反面证据链——印证 **B3 可控性**（开放生成撑不起长期目标/剧情）、**B5 合规**（国内模型备案）、"**缺游戏框架 = 像大号 C.AI 玩具**"。米哈游的千亿投入说明方向正确，但其"应用层频繁试错、收缩回基础模型"的轨迹，恰恰证明产业缺的是可复用的**标准骨架**而非又一个 Demo。
+#### 5.4.2 miHoYo / Anuttacon (dream-building faction, 2026 strategic-retraction living textbook)
+- **In-game AI**: Honkai: Star Rail "Pam AI assistant" real-time dialogue, Star Burst Valley second-beta AI NPCs (can serve multiple players simultaneously, with complete memory/identity/social capability).
+- **Flagship bet**: next-gen urban open world Varsapura (Cai Haoyu as producer himself), 2026-05 announced **three-year max ¥100B AI investment**, full-stack self-developed.
+- **Anuttacon real lessons (2026)**:
+  - Whispers from the Star positive rating fell from 82% **to ~35%**, subsequent development slowed.
+  - AI companion product **AnuNeko shut down within a year of launch**; **BSide: Olivia Lin shut down within a month of launch**.
+  - Cai Haoyu LinkedIn identity updated to "Independent LLM + Agent Developer," shifting from general AI apps to **LLM/Agent**.
+- **For Macha**: negative-evidence chain — confirms **B3 controllability** (open generation can't sustain long-term goals/plot), **B5 compliance** (domestic model filing), "**lacks game framework = like a big C.AI toy**". miHoYo's ¥100B investment shows the direction is right, but its trajectory of "frequent application-layer trial-and-error, retraction to foundation models" precisely proves the industry lacks a reusable **standard skeleton**, not another Demo.
 
-#### 5.4.3 腾讯（混元 / GiiNEX / GameMate，规模化落地最激进）
-- **技术路线**：混元大模型（小田由**混元 3 preview** 驱动）+ GameMate 1.0 框架 + GiiNEX 双引擎 + 混元 3D；策略模型当天训练当天反馈的敏捷产研。
-- **落地产品/游戏**：
-  - 《和平精英》AI 队友"绝地指挥"：**累计体验用户 1.1 亿，峰值周末日活 1770 万**；明星队友"小田"（2026-05-28）行业首个情感养成 AI 队友；**麦克风开启率 ≈75%、单局消息互动 70 轮**；AI 战犬"布鲁斯"战术协同。
-  - 绿洲启元（UGC）：行业首个"UGC 全链路 AI 创作助手"，**春节 DAU 突破 5800 万、20 万张在线地图**，玩家 15 分钟落地创意。
-  - 《王者荣耀》AI 队友系统玩家满意度 **+35%**；《三角洲行动》AI 生成地图**缩短开发周期 40%**。
-  - 代号 Craft（SPARK 2026）：自然语言生成游戏、一键导出 Unity；**GDC 2026 以 21 场议题领跑所有厂商**；超 40 款游戏已部署 AI。
-- **对 Macha**：证明"大 DAU + 高并发 + 低延迟"下 AI NPC 可跑通商业闭环（留存粘合剂），但其能力**锁在腾讯生态**；Macha 可借鉴其"场景封装 + 知识库 + 策略模型"的工程范式。
+#### 5.4.3 Tencent (Hunyuan / GiiNEX / GameMate, most aggressive at scale)
+- **Technical route**: Hunyuan large model (Xiaotian driven by **Hunyuan 3 preview**) + GameMate 1.0 framework + GiiNEX dual engine + Hunyuan 3D; strategy model trains same-day with same-day feedback agile production-research.
+- **Deployed products/games**:
+  - Peacekeeper Elite AI teammate "Jidi Zhihui": **cumulative experience users 110M, peak weekend DAU 17.7M**; star teammate "Xiaotian" (2026-05-28) industry-first emotional-companion AI teammate; **mic open rate ≈75%, 70 interaction messages per match**; AI war dog "Bruce" tactical coordination.
+  - Oasis Genesis (UGC): industry-first "UGC full-chain AI creation assistant," **Spring Festival DAU broke 58M, 200K online maps**, players land ideas in 15 minutes.
+  - Honor of Kings AI teammate system player satisfaction **+35%**; Delta Force AI-generated maps **cut dev cycle 40%**.
+  - Code Craft (SPARK 2026): natural-language game generation, one-click export to Unity; **GDC 2026 led all vendors with 21 sessions**; over 40 games already deployed AI.
+- **For Macha**: proves AI NPC commercial loop works under "large DAU + high concurrency + low latency" (retention glue), but its capability is **locked in Tencent's ecosystem**; Macha can borrow its "scenario packaging + knowledge base + strategy model" engineering paradigm.
 
-#### 5.4.4 恺英网络（形意 / 织梦 / SOON，AI 工业化管线最完整）
-- **技术路线**："形意"大模型覆盖动画/场景/数值/代码/界面/地图生成；"织梦"大模型（Transformer，故事脚本）已完成备案；**与 DeepSeek R1 深度对接**；极逸公司《SOON》AI 全流程开发平台（美术→代码部署自动化，开发周期**从数月降至小时级**）。
-- **资本/布局**：2025-07 引入比高集团（周星驰）投资；投资企业自然选择推 3D AI 数字伴侣"EVE"、乐相科技（大朋 VR）AI 眼镜。
-- **对 Macha**：代表"AI 工业化提效"路线（存量提效 + 增量陪伴），与 Macha「空白二/三」互补——Macha 可吸收其"全流程生成"作为上层工具，底层认知架构仍由标准骨架定义。
+#### 5.4.4 Kaiying Network (Xingyi / Zhimeng / SOON, most complete AI-industrialization pipeline)
+- **Technical route**: "Xingyi" large model covers animation/scene/numerics/code/UI/map generation; "Zhimeng" large model (Transformer, story script) completed filing; **deeply connected to DeepSeek R1**; Jiyi company SOON AI full-process dev platform (art→code deployment automation, dev cycle **from months down to hours**).
+- **Capital/layout**: 2025-07 introduced Brilliant (Stephen Chow) group investment; invested in Natural Selection pushing 3D AI digital companion "EVE", Dapeng (DPVR) AI glasses.
+- **For Macha**: represents "AI industrialization efficiency" route (stock efficiency gains + incremental companionship), complementary to Macha "Gap Two/Three" — Macha can absorb its "full-process generation" as an upper-layer tool, while the underlying cognitive architecture is still defined by the standard skeleton.
 
-#### 5.4.5 其他国产垂类模型（广度补充）
-- **巨人网络 GiantGPT**：2025-12 完成生成式 AI 备案，**国内游戏行业首个垂类大模型**（角色演绎/情景推理/长期记忆），已在《征途》系列测试；"AI 假人"玩法 Q1 2026 参与对局破 4 亿场、生成 AI 假人超 29 亿。
-- **三七互娱"小七"**：员工 AI 覆盖率 100%，2D 美术 AI 占比 >80%，广告视频 AI 参与率 >70%；孵化《明月宫心》AI 原生小游戏（2–3 人 10 天一款）。
-- **完美世界"天工"**：自研游戏大模型，深度嵌入研发与体验。
-- **字节跳动**：公开材料以**异步动态叙事服务层**架构范式为主（分级路由 + 缓存 + 叙事状态库 + 安全网关，见 §4 Gladecore/字节来源）；独立对外 NPC 产品尚未规模化，建议以工程范式而非产品对标。
+#### 5.4.5 Other domestic vertical models (breadth supplement)
+- **Giant Network GiantGPT**: completed generative-AI filing 2025-12, **first vertical large model in domestic games industry** (character acting / scenario reasoning / long-term memory), already tested in the Zhengtu series; "AI dummy" gameplay Q1 2026 participation broke 400M matches, generated over 2.9B AI dummies.
+- **37 Interactive "Xiaoqi"**: employee AI coverage 100%, 2D art AI share >80%, ad-video AI participation >70%; incubated Mingyue Gongxin AI-native mini-game (2–3 people, 10 days per game).
+- **Perfect World "Tiangong"**: self-developed games large model, deeply embedded in R&D and experience.
+- **ByteDance**: public materials mainly the **async dynamic narrative service layer** architecture paradigm (tiered routing + cache + narrative-state store + safety gateway, see §4 Gladecore/ByteDance sources); independent external NPC product not yet at scale, suggest engineering paradigm not product benchmark.
 
-### 5.5 量化卡点图：各玩家技术路线 × 八道卡点对比
+### 5.5 Quantified Bottleneck Map: Each Player's Tech Route × Eight Bottlenecks Comparison
 
-| 玩家 | 模型策略 | 部署 | 长期记忆 | 可控性/护栏 | 合规(备案) | 开放标准 | 成本结构 | 主攻卡点 |
+| Player | Model strategy | Deployment | Long-term memory | Controllability/guardrails | Compliance (filing) | Open standard | Cost structure | Main bottleneck |
 |---|---|---|---|---|---|---|---|---|
-| **Inworld** | 多模型编排(自研+外接) | 云端为主 | 强(Character Engine) | 中（需自管） | 弱(跨境) | 否(生态锁定) | 高(B1) | B1/B2/B5 |
-| **Convai** | 外接 LLM + 知识库 | 云/本地 | 中 | 强(知识库+护栏) | 中(ISO27001/On-Prem) | 否 | 中 | B1/B3 |
-| **Volley** | GPT-4o 类语音栈 | 云端 | 弱(单局) | 弱(开放生成) | 弱 | 否 | 高(靠订阅转嫁) | B1/B3 |
-| **Altera** | 自研 Agent | 云端 | 强(文明级) | 中 | 弱 | 否 | 高 | B1/B4 |
-| **网易伏羲** | 自研大模型(AOP) | 云+端(ACE) | 强 | 强(RLHF+行为树) | 强(国内) | 否(内部) | 中(大厂摊销) | B6(集成) |
-| **腾讯混元** | 自研混元+策略模型 | 云+端 | 强(小田记忆) | 强(知识库+开关) | 强(备案) | 否(生态) | 中(大厂摊销) | B2(高并发) |
-| **米哈游** | Glossa+自研 | 云为主 | 中 | 弱(试错收缩) | 中(未备案受限) | 否 | 高(自有投入) | B3/B5 |
-| **恺英形意** | 自研垂类+DeepSeek | 云 | 中(脚本生成) | 中 | 强(备案) | 否 | 低(提效) | B8(量产) |
-| **NVIDIA ACE** | 蒸馏 SLM + 多模型 | **端侧优先** | 中 | 强(工具链) | 中 | 半(IGI SDK API) | 低(端侧) | B2/B1 |
-| **Macha（目标）** | 可插拔/开源 | **本地优先+云端兜底** | **结构化记忆** | **内置护栏+验证层** | **本地优先合规** | **是(MCP 式协议)** | **混合最低** | 全部 B1–B8 |
+| **Inworld** | Multi-model orchestration (self+external) | Cloud-dominant | Strong (Character Engine) | Medium (self-managed) | Weak (cross-border) | No (ecosystem lock) | High (B1) | B1/B2/B5 |
+| **Convai** | External LLM + knowledge base | Cloud/local | Medium | Strong (KB+guardrails) | Medium (ISO27001/On-Prem) | No | Medium | B1/B3 |
+| **Volley** | GPT-4o-class voice stack | Cloud | Weak (single match) | Weak (open gen) | Weak | No | High (subsidy via subscription) | B1/B3 |
+| **Altera** | Self-built Agent | Cloud | Strong (civilization-level) | Medium | Weak | No | High | B1/B4 |
+| **NetEase Fuxi** | Self-built large model (AOP) | Cloud+edge (ACE) | Strong | Strong (RLHF+BT) | Strong (domestic) | No (internal) | Medium (big-co amortized) | B6 (integration) |
+| **Tencent Hunyuan** | Self-built Hunyuan + strategy model | Cloud+edge | Strong (Xiaotian memory) | Strong (KB+switch) | Strong (filed) | No (ecosystem) | Medium (big-co amortized) | B2 (high concurrency) |
+| **miHoYo** | Glossa + self-built | Cloud-dominant | Medium | Weak (trial-retract) | Medium (unfiled constrained) | No | High (own investment) | B3/B5 |
+| **Kaiying Xingyi** | Self-built vertical + DeepSeek | Cloud | Medium (script gen) | Medium | Strong (filed) | No | Low (efficiency) | B8 (production) |
+| **NVIDIA ACE** | Distilled SLM + multi-model | **Edge-first** | Medium | Strong (toolchain) | Medium | Half (IGI SDK API) | Low (edge) | B2/B1 |
+| **Macha (target)** | Pluggable / open-source | **Local-first + cloud fallback** | **Structured memory** | **Built-in guardrails + validation layer** | **Local-first compliance** | **Yes (MCP-style protocol)** | **Lowest hybrid** | All B1–B8 |
 
-**一句话结论**：现有玩家在"模型自研、部署、记忆、护栏、合规、开放标准、成本"七个维度上**几乎都做了取舍、且无人同时占全**；NVIDIA ACE 在"端侧降本/降延迟"上最接近，但仍锁定硬件栈。**唯一尚未被占领的格子是右下角"开源 + 引擎无关 + 把成本/延迟/记忆/可控/合规做成默认能力的标准骨架"——这就是 Macha 的量化白空间。**
+**One-line conclusion**: Existing players made trade-offs on almost all seven dimensions of "model self-build, deployment, memory, guardrails, compliance, open standard, cost," and **no one occupies all simultaneously**; NVIDIA ACE is closest on "edge cost-down/latency-down" but still locks the hardware stack. **The only unoccupied cell is the bottom-right "open-source + engine-agnostic + cost/latency/memory/control/compliance as default-capability standard skeleton" — this is Macha's quantified white space.**
 
-### 5.6 对 Macha 的再确认（承接 §3）
+### 5.6 Re-confirmation for Macha (continuing §3)
 
-1. **TAM 可计算**：以"游戏 AI NPC 细分 2025 $1.25B → 2032 $5.19B（CAGR 22.58%）"为保守底，叠加生成式 AI 游戏 23% CAGR 大势，Macha 作为"标准骨架"抽取的应是其中的**中间件/平台抽成层**，而非与应用层争利。
-2. **成本论证闭环**：§5.3 的量级测算证明"不内置成本控制的 AI NPC = 越成功越亏"，Macha 的"本地优先 + 缓存 >70% + 混合架构"不是可选项，是**生死线**。
-3. **国产窗口**：巨人/恺英/三七的垂类大模型备案、腾讯/网易的规模化落地，说明国内市场已过热且**强生态锁定**；Macha 若走"开源标准 + 国产模型友好（DeepSeek/GLM/Qwen 性价比 12.5×）"路线，可在国产碎片化格局中成为事实接口层。
-4. **警示资产**：米哈游 Anuttacon 的 2026 收缩、Whispers 好评率 82%→35%，是 Macha「空白三/四（可控性、护栏）」最硬的反面教材，应写进评估基准。
-
----
-
-### 5.7 来源收集（深化补充，按团队六字段格式）
-
-> 以下为本次深化检索实际命中页面；厂商测算/二级估值均标注"需核实"。
+1. **TAM calculable**: using "game AI NPC segment 2025 $1.25B → 2032 $5.19B (CAGR 22.58%)" as conservative floor, plus the generative-AI-games 23% CAGR macro trend, Macha as a "standard skeleton" should extract the **middleware/platform take-rate layer**, not compete with the application layer for profit.
+2. **Cost argument closed loop**: §5.3 magnitude estimates prove "AI NPC without built-in cost control = the more successful, the more you lose"; Macha's "local-first + cache >70% + hybrid architecture" is not optional, it is a **life-or-death line**.
+3. **Domestic window**: Giant/Kaiying/37 vertical-model filings, Tencent/NetEase scale deployment, show the domestic market is already overheated and **strongly ecosystem-locked**; if Macha takes the "open standard + domestic-model-friendly (DeepSeek/GLM/Qwen cost-performance 12.5×)" route, it can become the de-facto interface layer in the fragmented domestic landscape.
+4. **Warning assets**: miHoYo Anuttacon's 2026 retraction, Whispers positive 82%→35%, are the hardest negative examples for Macha "Gap Three/Four (controllability, guardrails)," and should be written into the evaluation benchmark.
 
 ---
 
-【类别】产业报告（一手，Newzoo）
-【标题】Global Games Market Report 2025 — Market to hit $189 billion in 2025
-【链接/文件路径】https://newzoo.com/articles/global-games-market-189-billion-2025
-【一句话摘要】Newzoo 2025 旗舰报告：全球游戏市场 2025 达 $188.8B（+3.4%），2028 预测 $206.5B（CAGR 3.0%），玩家 35.8 亿。和 Macha 的关系：提供整体游戏大盘增速（个位数）作为 AI 细分高 CAGR 的对照基线。
-【关键结论】
-1. 2025 全球游戏 $188.8B（+3.4%）；移动 $103.0B、主机 $45.9B、PC $39.9B。
-2. 2028 预测 $206.5B，2025–2028 CAGR 仅 3.0%，市场成熟。
-3. 玩家 35.8 亿（+4.4%），移动占 30 亿。
-4. 中美两国 2025 各约 $49.8B / $49.6B，合计占全球一半。
-5. 增长靠留存、多设备、UGC 生态，而非新玩家。
-【可复用的东西】整体市场 CAGR 基线、平台拆分、玩家基数（喂给 Macha 市场章节）。
+### 5.7 Source Collection (Deepening Supplement, Per Team Six-Field Format)
+
+> Below are pages actually hit during this deepening search; vendor estimates / secondary valuations all marked "verify."
 
 ---
 
-【类别】产业报告（一手，音数协游戏工委）
-【标题】2025 年中国游戏产业报告
-【链接/文件路径】引自 Tanwan 年报转引（https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0327/2026032703488.pdf ）
-【一句话摘要】2025 中国国内游戏市场实际销售收入 ¥3507.9 亿（+7.68%），用户 6.83 亿（+1.35%）。和 Macha 的关系：中国市场规模与增速显著高于全球，是 Macha 国产路线的重要底盘。
-【关键结论】
-1. 2025 中国游戏实际销售收入 ¥3507.9 亿，同比 +7.68%。
-2. 游戏用户 6.83 亿，同比 +1.35%。
-3. 2025 国家出台《网络出版科技创新引领计划》支持 AI/大数据/云/区块链研发。
-4. "十五五"规划纲要鼓励文化科技企业国际运营、数字赋能。
-5. 国产市场增速是全球大盘（3%）的 2 倍以上。
-【可复用的东西】中国市场规模硬数据、政策利好信号（支撑 Macha 国产合规路线）。
+[Category]Industry report (primary, Newzoo)
+[Title]Global Games Market Report 2025 — Market to hit $189 billion in 2025
+[Link/FilePath]https://newzoo.com/articles/global-games-market-189-billion-2025
+[One-line summary]Newzoo 2025 flagship report: global games market 2025 reaches $188.8B (+3.4%), 2028 forecast $206.5B (CAGR 3.0%), players 3.58B. Relevance to Macha: provides overall games-market growth (single digit) as baseline contrasting AI-segment high CAGR.
+[Key conclusions]
+1. 2025 global games $188.8B (+3.4%); mobile $103.0B, console $45.9B, PC $39.9B.
+2. 2028 forecast $206.5B, 2025–2028 CAGR only 3.0%, market mature.
+3. Players 3.58B (+4.4%), mobile 3.0B.
+4. US and China each ~$49.8B / $49.6B in 2025, together half the global.
+5. Growth from retention, multi-device, UGC ecosystem, not new players.
+[Reusable]Overall-market CAGR baseline, platform split, player base (feeds Macha market chapter).
 
 ---
 
-【类别】产业报告（厂商/研究机构）
-【标题】Generative AI in Gaming Market Report 2026
-【链接/文件路径】https://www.thebusinessresearchcompany.com/report/generative-ai-in-gaming-global-market-report （同步 https://www.researchandmarkets.org/report/global-generative-ai-in-gaming-market ）
-【一句话摘要】生成式 AI 游戏市场 2025 $1.79B → 2026 $2.21B（CAGR 23.1%）→ 2030 $5.09B（CAGR 23.2%），亚太最大。和 Macha 的关系：提供"生成式 AI 游戏"赛道的量化 CAGR，佐证高增长。
-【关键结论】
-1. 2025 $1.79B，2026 $2.21B（CAGR 23.1%），2030 $5.09B（CAGR 23.2%）。
-2. 2025 亚太为最大区域。
-3. 驱动：AI 内容创作采用、云游戏、VR/AR、个性化体验、元宇宙就绪。
-4. 趋势：程序化关卡、实时角色行为建模、自适应玩法、动态内容个性化、AI 测试。
-5. 主要玩家含微软、EA、Square Enix、Ubisoft、Unity、腾讯、网易等。
-【可复用的东西】生成式 AI 游戏 CAGR、功能拆分（NPC 为子项之一）。
+[Category]Industry report (primary, GPC/CGIGC)
+[Title]2025 China Games Industry Report
+[Link/FilePath]Cited via Tanwan annual report (https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0327/2026032703488.pdf )
+[One-line summary]2025 China domestic games market actual sales ¥350.79B (+7.68%), users 683M (+1.35%). Relevance to Macha: China market size and growth significantly above global, important foundation for Macha domestic route.
+[Key conclusions]
+1. 2025 China games actual sales ¥350.79B, +7.68% YoY.
+2. Game users 683M, +1.35% YoY.
+3. 2025 state issued "Network Publishing Tech-Innovation Leadership Plan" supporting AI/big-data/cloud/blockchain R&D.
+4. "15th Five-Year" plan encourages cultural-tech enterprises' international operations, digital empowerment.
+5. Domestic market growth is 2×+ the global (3%).
+[Reusable]China-market size hard data, policy-tailwind signal (supports Macha domestic-compliance route).
 
 ---
 
-【类别】产业测算（券商/第三方，窄口径）
-【标题】预计 2024–2033 年全球生成式 AI 在游戏中的市场规模（亿美元）
-【链接/文件路径】开源证券研究所 / market.us，经 ima 知识库转引（https://ima.qq.com/wiki/?shareId=d548021a437cf2f7992008afcfebd3b361bece8d8d19985a0e0f5c4acc91de31 ）
-【一句话摘要】窄口径测算：生成式 AI 游戏 2024E 15 → 2025E 18 → 2033E 110 亿美元（约 25% CAGR）。和 Macha 的关系：作为另一口径交叉验证高增长，但口径较小，引用需注明。
-【关键结论】
-1. 2024E 15、2025E 18、2026E 22、2027E 28、2028E 35、2029E 45、2030E 55、2031E 70、2032E 88、2033E 110 亿美元。
-2. 九年约 25% CAGR。
-3. 口径明显小于 The Business Research Company 的 $1.79B（2025），说明定义边界差异大。
-4. 需回溯 market.us 一手报告确认统计范围。
-【可复用的东西】长周期预测曲线（量级参考，注意口径）。
+[Category]Industry report (vendor / research institute)
+[Title]Generative AI in Gaming Market Report 2026
+[Link/FilePath]https://www.thebusinessresearchcompany.com/report/generative-ai-in-gaming-global-market-report (mirror https://www.researchandmarkets.org/report/global-generative-ai-in-gaming-market )
+[One-line summary]Generative AI games market 2025 $1.79B → 2026 $2.21B (CAGR 23.1%) → 2030 $5.09B (CAGR 23.2%), Asia-Pacific largest. Relevance to Macha: provides quantified CAGR of "generative AI games" track, corroborates high growth.
+[Key conclusions]
+1. 2025 $1.79B, 2026 $2.21B (CAGR 23.1%), 2030 $5.09B (CAGR 23.2%).
+2. 2025 Asia-Pacific largest region.
+3. Drivers: AI content-creation adoption, cloud gaming, VR/AR, personalized experience, metaverse readiness.
+4. Trends: procedural levels, real-time character-behavior modeling, adaptive gameplay, dynamic content personalization, AI testing.
+5. Key players include Microsoft, EA, Square Enix, Ubisoft, Unity, Tencent, NetEase, etc.
+[Reusable]Generative AI games CAGR, feature split (NPC is a sub-item).
 
 ---
 
-【类别】公司/产品（NPC 大脑，融资）
-【标题】Inworld AI Funding, Team & Investors（累计 $133M，估值 $500M）
-【链接/文件路径】https://startupintros.com/orgs/inworld-ai （另 Industry Report 汇总 https://simonaking.com/blog/ai-interactive-film-game-report ）
-【一句话摘要】Inworld AI 累计融资约 $1.0–1.3 亿，2023-08 Series A $50M、估值 $500M（"halficorn"），微软 Xbox 多年合作。和 Macha 的关系：NPC 大脑层最强竞品，融资与估值数字可写入 Macha 竞争格局对照。
-【关键结论】
-1. 5 轮累计约 $133M；2023-08 Series A $50M（Lightspeed 领投），估值 $500M。
-2. 投资方含 Meta、迪士尼、英特尔、三星、M12、Founders Fund 等。
-3. Character Engine 编排 30+ ML 模型；Runtime 解决原型→量产。
-4. 微软多年合作：Xbox AI 设计 Copilot + 游戏内 AI 引擎。
-5. 行业报告列其累计 $125.7M、估值 $5 亿，为 AI 游戏融资最多初创。
-【可复用的东西】融资金额/估值、客户与伙伴清单（竞争地图数据）。
+[Category]Industry estimate (broker / third-party, narrow caliber)
+[Title]Global generative AI in games market size 2024–2033 (US$100M)
+[Link/FilePath]Open Source Securities Research / market.us, via ima knowledge base (https://ima.qq.com/wiki/?shareId=d548021a437cf2f7992008afcfebd3b361bece8d8d19985a0e0f5c4acc91de31 )
+[One-line summary]Narrow-caliber estimate: generative AI games 2024E 15 → 2025E 18 → 2033E 110 (≈25% CAGR). Relevance to Macha: as another caliber cross-validating high growth, but small caliber, cite with note.
+[Key conclusions]
+1. 2024E 15, 2025E 18, 2026E 22, 2027E 28, 2028E 35, 2029E 45, 2030E 55, 2031E 70, 2032E 88, 2033E 110 (US$100M).
+2. ~25% CAGR over nine years.
+3. Caliber clearly smaller than The Business Research Company's $1.79B (2025), showing large definition-boundary differences.
+4. Need to trace market.us primary report to confirm scope.
+[Reusable]Long-period forecast curve (magnitude reference, note caliber).
 
 ---
 
-【类别】公司/产品（NPC 引擎，融资/经营）
-【标题】Convai — Seed $2.5M，自筹为主，2024 营收约 $6.5M
-【链接/文件路径】https://businessmodelcanvastemplate.com/blogs/brief-history/convai-brief-history （二级估值 https://www.upmarket.co/private-markets/pre-ipo/convai-zh/ ）
-【一句话摘要】Convai 2022 末 Seed $2.5M，主要自筹，UpMarket 模型估值 $21M（二级，需核实），2024 营收约 $6.5M。和 Macha 的关系：具身对话 NPC 引擎竞品，组件划分（Mind/Avatar/Deploy）可参考。
-【关键结论】
-1. 2022 末 Seed $2.5M；主要自筹运营，未大规模 VC。
-2. UpMarket 二级估值模型 $21M（Seed，2022-12），需核实。
-3. 2024 营收约 $6.5M（UpMarket 跟踪，需核实）。
-4. Unity 商店装机 27 万+；CES 2024 NVIDIA 发布会亮相。
-5. 多模态感知（视觉/语音/文本）+ 知识库 + NPC2NPC。
-【可复用的东西】组件三段式划分、自筹路径参考（Macha 开源路线对照）。
+[Category]Company/Product (NPC Brain, funding)
+[Title]Inworld AI Funding, Team & Investors (cumulative $133M, $500M valuation)
+[Link/FilePath]https://startupintros.com/orgs/inworld-ai (Industry Report summary https://simonaking.com/blog/ai-interactive-film-game-report )
+[One-line summary]Inworld AI cumulative funding ~$100–130M, 2023-08 Series A $50M, $500M valuation ("halficorn"), multi-year Microsoft Xbox partnership. Relevance to Macha: strongest NPC-brain-layer competitor, funding and valuation numbers can go into Macha competitive-map comparison.
+[Key conclusions]
+1. 5 rounds cumulative ~$133M; 2023-08 Series A $50M (Lightspeed led), $500M valuation.
+2. Investors include Meta, Disney, Intel, Samsung, M12, Founders Fund, etc.
+3. Character Engine orchestrates 30+ ML models; Runtime bridges prototype→production.
+4. Microsoft multi-year partnership: Xbox AI design Copilot + in-game AI engine.
+5. Industry report lists cumulative $125.7M, $500M valuation, best-funded AI-games startup.
+[Reusable]Funding amount/valuation, customer and partner list (competitive-map data).
 
 ---
 
-【类别】公司/产品（语音 AI 游戏，融资）
-【标题】Volley Raises $55 Million（Series C，微软 M12 + Lightspeed 领投）
-【链接/文件路径】https://www.orrick.com/zh-TW/News/2024/07/Artificial-Intelligence-and-Gaming-Volley-Raises-55-Million （中文 https://new.qq.com/rain/a/20240712A0ACJS00 ）
-【一句话摘要】Volley 2024-07 Series C $55M（微软 M12 + Lightspeed 领投），累计 >$75M，ARR >$30M、MAU 500 万。和 Macha 的关系：语音 AI 游戏商业化最成功的初创，订阅转嫁成本模式可对照。
-【关键结论】
-1. Series C $55M，微软 M12 与 Lightspeed 领投，累计 >$75M。
-2. ARR >$30M（同比 2x），MAU 500 万，收费 $9.99–12.99/月。
-3. 产品：Jeopardy!/Wheel of Fortune/Song Quiz 等 Alexa/Fire TV 语音游戏。
-4. 用 GPT-4o 类多模态模型替代"转录→LLM→TTS"多步流水，提速 3×。
-5. 试水 LLM 驱动的个性化虚拟角色（AI 虚拟伴侣方向）。
-【可复用的东西】语音 AI 游戏商业化模型、订阅转嫁成本思路。
+[Category]Company/Product (NPC engine, funding/operations)
+[Title]Convai — Seed $2.5M, mostly self-funded, 2024 revenue ~$6.5M
+[Link/FilePath]https://businessmodelcanvastemplate.com/blogs/brief-history/convai-brief-history (secondary valuation https://www.upmarket.co/private-markets/pre-ipo/convai-zh/ )
+[One-line summary]Convai late-2022 Seed $2.5M, mostly self-funded, UpMarket model valuation $21M (secondary, verify), 2024 revenue ~$6.5M. Relevance to Macha: embodied-dialogue NPC engine competitor, component split (Mind/Avatar/Deploy) reference.
+[Key conclusions]
+1. Late-2022 Seed $2.5M; mostly self-funded, no large VC.
+2. UpMarket secondary valuation model $21M (Seed, 2022-12), verify.
+3. 2024 revenue ~$6.5M (UpMarket tracking, verify).
+4. Unity store installs 270K+; CES 2024 NVIDIA keynote appearance.
+5. Multimodal perception (visual/voice/text) + knowledge base + NPC2NPC.
+[Reusable]Three-stage component split, self-funded path reference (Macha open-source route contrast).
 
 ---
 
-【类别】公司/产品（Agent，融资）
-【标题】Fundamental Research Labs（原 Altera）Secures $33M Series A（Prosus 领投）
-【链接/文件路径】https://cbg.com.cy/fundamental-research-labs-secures-over-30m-to-expand-ai-agent-development-across-industries （数据 https://fundbat.com/company/altera ）
-【一句话摘要】Altera/Fundamental Research Labs：Pre-seed $2M（2023，a16z）、Seed $9M（2024）、Series A $33M（2025-08，Prosus 领投），累计 >$40M；Project Sid 千 Agent 文明。和 Macha 的关系：长期自主 Agent 路线参照，但其游戏集成尚未产品化。
-【关键结论】
-1. Pre-seed $2M（2023-12，a16z 领投）；Seed $9M（2024-05，First Spark+Patron，a16z Speedrun、Eric Schmidt）；Series A $33M（2025-08，Prosus 领投，累计 >$40M）。
-2. Project Sid：1000+ 自主 Agent 在 Minecraft 形成文明（经济/治理）。
-3. 产品从游戏 Bot 扩至 Fairies（通用 Agent）、Shortcut（Excel Agent）。
-4. 创始人 Robert Yang（MIT），定位"数字人类"。
-5. 游戏侧仍偏研究/演示，未跑通商业游戏集成。
-【可复用的东西】长期自主 Agent 架构思路、多 Agent 文明实验数据。
+[Category]Company/Product (voice AI games, funding)
+[Title]Volley Raises $55 Million (Series C, Microsoft M12 + Lightspeed led)
+[Link/FilePath]https://www.orrick.com/zh-TW/News/2024/07/Artificial-Intelligence-and-Gaming-Volley-Raises-55-Million (Chinese https://new.qq.com/rain/a/20240712A0ACJS00 )
+[One-line summary]Volley 2024-07 Series C $55M (Microsoft M12 + Lightspeed led), cumulative >$75M, ARR >$30M, MAU 5M. Relevance to Macha: most commercially successful voice-AI-game startup, subscription-cost-subsidy model contrast.
+[Key conclusions]
+1. Series C $55M, Microsoft M12 and Lightspeed led, cumulative >$75M.
+2. ARR >$30M (2× YoY), MAU 5M, charges $9.99–12.99/month.
+3. Products: Jeopardy!/Wheel of Fortune/Song Quiz etc. Alexa/Fire TV voice games.
+4. Uses GPT-4o-class multimodal model replacing "transcribe→LLM→TTS" multi-step pipeline, 3× faster.
+5. Experimenting with LLM-driven personalized virtual characters (AI companion direction).
+[Reusable]Voice AI games commercial model, subscription-cost-subsidy idea.
 
 ---
 
-【类别】工程实践（成本量级测算）
-【标题】Cost per conversation / Latency optimization for live NPC inference
-【链接/文件路径】https://theneuralbase.com/ai-for-gaming/learn/beginner/cost-per-conversation （延迟/边缘 https://theneuralbase.com/ai-for-gaming/learn/intermediate/latency-optimization/ ）
-【一句话摘要】量化云端 NPC 推理成本：每轮对话 $0.001–$0.10；纯云端重对话 $10–$50/MAU/月；边缘 $0.50–$2.00/玩家/月；1M 玩家云-only 月烧 $500K–$2M。和 Macha 的关系：直接支撑「空白二：成本作为一等公民」的量级论证。
-【关键结论】
-1. 单次交换 GPT-4o mini ≈ $0.0075–$0.015；缓存可降本 60–80%。
-2. 云端重对话 $10–$50/MAU/月；边缘 $0.50–$2.00/玩家/月。
-3. 1M 玩家纯云端月成本 $500K–$2M，端侧近乎强制。
-4. 量化 1–3B 模型本地推理 15–40ms；缓存预生成对话 0.1ms 查找。
-5. 混合：端侧战斗/移动、边缘对话、云异步叙事生成。
-【可复用的东西】成本公式、混合部署架构范式（直接喂 Macha 架构决策）。
+[Category]Company/Product (Agent, funding)
+[Title]Fundamental Research Labs (formerly Altera) Secures $33M Series A (Prosus led)
+[Link/FilePath]https://cbg.com.cy/fundamental-research-labs-secures-over-30m-to-expand-ai-agent-development-across-industries (data https://fundbat.com/company/altera )
+[One-line summary]Altera/Fundamental Research Labs: Pre-seed $2M (2023, a16z), Seed $9M (2024), Series A $33M (2025-08, Prosus led), cumulative >$40M; Project Sid thousand-agent civilization. Relevance to Macha: long-term autonomous-agent route reference, but its game integration not yet productized.
+[Key conclusions]
+1. Pre-seed $2M (2023-12, a16z led); Seed $9M (2024-05, First Spark+Patron, a16z Speedrun, Eric Schmidt); Series A $33M (2025-08, Prosus led, cumulative >$40M).
+2. Project Sid: 1000+ autonomous agents form civilization (economy/governance) in Minecraft.
+3. Products expanded from game bots to Fairies (general agent), Shortcut (Excel agent).
+4. Founder Robert Yang (MIT), positioned as "digital humans."
+5. Game side still research/demo, no commercial game integration proven.
+[Reusable]Long-term autonomous-agent architecture idea, multi-agent civilization experiment data.
 
 ---
 
-【类别】投资分析（VC 成本框架）
-【标题】Why VCs Should Care About AI in Game Development（per-player cost model）
-【链接/文件路径】https://dredyson.com/why-vcs-should-care-about-ai-in-game-development-gamedev-tips-tools-techniques-and-gpt-llm-agent-integration-a-startup-valuation-perspective-the-hidden-truth-about-technical-due-diligence-in-seed-f/
-【一句话摘要】VC 尽调框架：每玩家月成本 $3–$22.5（10 调用/分×30 分×500 tok×$2–15/M），10 万 MAU 即 $300K–$2.25M/月，可超手游 ARPU 10 倍；混合架构把某组合从 $1.80 降到 $0.12/玩家/月。和 Macha 的关系：用资本语言证明"不控成本 = 不可投资"，强化 Macha 成本控制叙事。
-【关键结论】
-1. 每会话 $0.30–$2.25，月 $3–$22.5/玩家；10 万 MAU = $300K–$2.25M/月。
-2. 对比手游 ARPU $0.5–2/月，AI 成本可超营收 10 倍。
-3. 混合本地/云把某组合从 $1.80 → $0.12/玩家/月，3 年省约 $18M。
-4. AI-native 架构公司估值可高 3–5×。
-5. 技术成熟度分层：API 拼接 ↔ 基础设施 ↔ 数据飞轮。
-【可复用的东西】单位经济模型、估值倍数论证（Macha 募资/白皮书用）。
+[Category]Engineering practice (cost magnitude estimate)
+[Title]Cost per conversation / Latency optimization for live NPC inference
+[Link/FilePath]https://theneuralbase.com/ai-for-gaming/learn/beginner/cost-per-conversation (latency/edge https://theneuralbase.com/ai-for-gaming/learn/intermediate/latency-optimization/ )
+[One-line summary]Quantifies cloud NPC inference cost: per-turn dialogue $0.001–$0.10; pure-cloud heavy dialogue $10–$50/MAU/month; edge $0.50–$2.00/player/month; 1M players cloud-only burns $500K–$2M/month. Relevance to Macha: directly supports "Gap Two: cost as first-class citizen" magnitude argument.
+[Key conclusions]
+1. Single exchange GPT-4o mini ≈ $0.0075–$0.015; cache can cut cost 60–80%.
+2. Cloud heavy dialogue $10–$50/MAU/month; edge $0.50–$2.00/player/month.
+3. 1M players pure-cloud monthly cost $500K–$2M, on-device nearly mandatory.
+4. Quantified 1–3B model local inference 15–40ms; cache pre-gen dialogue 0.1ms lookup.
+5. Hybrid: on-device combat/movement, edge dialogue, cloud async narrative generation.
+[Reusable]Cost formula, hybrid-deployment architecture paradigm (directly feeds Macha architecture decisions).
 
 ---
 
-【类别】工程实测（模型价差）
-【标题】Building AI Game NPCs From Scratch: What Nobody Tells You（2026 生产实测）
-【链接/文件路径】https://dev.to/fiercedash/building-ai-game-npcs-from-scratch-what-nobody-tells-you-4k4c
-【一句话摘要】2026 生产实测：Global API 184 个模型，token 价 $0.01–$3.50/M；GPT-4o 输出 $10.00/M vs GLM-4 Plus $0.80/M = 12.5×，40 亿输出 token/月差 $360 万。和 Macha 的关系：论证"模型—工作负载匹配"与国产模型性价比，支撑 Macha 多模型路由。
-【关键结论】
-1. 模型价差极大：输出 token $0.80（GLM-4 Plus）~$10.00（GPT-4o）/M。
-2. 国产/开源模型（DeepSeek V4、Qwen3-32B、GLM-4）性价比突出。
-3. NPC 工作负载不均匀，需按延迟容忍分桶路由。
-4. 多区域部署（us/eu/ap）降低 p99 延迟。
-5. 缓存命中 >70% 后真实成本显著低于理论值。
-【可复用的东西】模型路由策略、国产模型性价比证据（Macha 默认青睐本地/国产）。
+[Category]Investment analysis (VC cost framework)
+[Title]Why VCs Should Care About AI in Game Development (per-player cost model)
+[Link/FilePath]https://dredyson.com/why-vcs-should-care-about-ai-in-game-development-gamedev-tips-tools-techniques-and-gpt-llm-agent-integration-a-startup-valuation-perspective-the-hidden-truth-about-technical-due-diligence-in-seed-f/
+[One-line summary]VC diligence framework: per-player monthly cost $3–$22.5 (10 calls/min×30 min×500 tok×$2–15/M), 100K MAU = $300K–$2.25M/month, can exceed mobile ARPU 10×; hybrid architecture brought a combo from $1.80 to $0.12/player/month. Relevance to Macha: proves in capital language "no cost control = uninvestable," strengthens Macha cost-control narrative.
+[Key conclusions]
+1. Per session $0.30–$2.25, monthly $3–$22.5/player; 100K MAU = $300K–$2.25M/month.
+2. Vs. mobile ARPU $0.5–2/month, AI cost can exceed revenue 10×.
+3. Hybrid local/cloud brought a combo from $1.80 → $0.12/player/month, ≈$18M saved over 3 years.
+4. AI-native architecture company valuation can be 3–5× higher.
+5. Tech-maturity tiers: API glue ↔ infrastructure ↔ data flywheel.
+[Reusable]Unit-economics model, valuation-multiple argument (Macha fundraising/whitepaper use).
 
 ---
 
-【类别】公司/产品（工具链，NVIDIA ACE 2025–2026）
-【标题】NVIDIA RTX Advances with Neural Rendering and Digital Human Technologies at GDC 2025 / 2026
-【链接/文件路径】GDC2025 https://developer.nvidia.com/blog/nvidia-rtx-advances-with-neural-rendering-and-digital-human-technologies-at-gdc-2025/ （GDC2026 https://www.linkedin.com/pulse/advancing-state-path-tracing-ai-neural-rendering-gdc-2026-spitzer-3gyzc ；永劫无间端侧 https://game.xiaomi.com/viewpoint/1098536009_1743083895028_16 ）
-【一句话摘要】NVIDIA ACE 在 GDC2025 落地 inZOI "Smart Zoi"（5 亿参数 SLM Mistral-Nemo-Minitron 端侧）、永劫无间手游成首款国产 ACE 端侧 AI 队友；GDC2026 扩展至 PUBG 可共玩角色、Creative Assembly 动态 AI 顾问、Nemovision-4B VLM。和 Macha 的关系：端侧降本/降延迟的最强参考，IGI SDK 统一推理 API 是 Macha 互操作接口雏形。
-【关键结论】
-1. inZOI 首发 ACE 自主 NPC "Smart Zoi"，5 亿参数 SLM 端侧 RTX 加速。
-2. 永劫无间手游 PC 版：首款国产游戏 ACE+LLM 端侧 AI 队友。
-3. GDC2026：PUBG 可共玩 Ally、Creative Assembly 动态 AI 顾问、Nemovision-4B VLM。
-4. ACE 套件含 ASR/Avatar/Animation/VLM，云+端统一。
-5. 娱美德《MIR 5》引入 ACE+NIM 做 AI Boss "Astrion"。
-【可复用的东西】端侧 SLM 路线、统一推理 API 设计（Macha 接口参考）。
+[Category]Engineering test (model price gap)
+[Title]Building AI Game NPCs From Scratch: What Nobody Tells You (2026 production test)
+[Link/FilePath]https://dev.to/fiercedash/building-ai-game-npcs-from-scratch-what-nobody-tells-you-4k4c
+[One-line summary]2026 production test: 184 models on global API, token price $0.01–$3.50/M; GPT-4o output $10.00/M vs GLM-4 Plus $0.80/M = 12.5×, 400M output tokens/month = $3.6M gap. Relevance to Macha: argues "model-workload matching" and domestic-model cost-performance, supports Macha multi-model routing.
+[Key conclusions]
+1. Huge model price gap: output token $0.80 (GLM-4 Plus) ~ $10.00 (GPT-4o)/M.
+2. Domestic/open models (DeepSeek V4, Qwen3-32B, GLM-4) stand out on cost-performance.
+3. NPC workload uneven, needs latency-tolerance bucketed routing.
+4. Multi-region deployment (us/eu/ap) cuts p99 latency.
+5. After cache hit >70%, real cost significantly below theoretical.
+[Reusable]Model routing strategy, domestic-model cost-performance evidence (Macha defaults to favoring local/domestic).
 
 ---
 
-【类别】公司/产品（大厂，腾讯和平精英/混元）
-【标题】腾讯《和平精英》AI 队友"小田"与绿洲启元（混元 3 preview 驱动）
-【链接/文件路径】https://cloud.tencent.com/developer/article/2681949 （深度 https://t.cj.sina.cn/articles/view/7294209083/1b2c4cc3b00101s4hu ）
-【一句话摘要】腾讯《和平精英》AI 队友累计体验 1.1 亿、峰值日活 1770 万；"小田"为行业首个混元 3 preview 情感养成 AI 队友；绿洲启元 UGC AI 创作 DAU 破 5800 万；GDC 2026 腾讯 21 场议题领跑。和 Macha 的关系：大 DAU 高并发下 AI NPC 商业闭环的标杆，工程范式（知识库+策略模型+开关）可借鉴。
-【关键结论】
-1. AI 队友累计 1.1 亿体验、峰值周末日活 1770 万；麦克风开启率 ≈75%、单局 70 轮互动。
-2. "小田"由混元 3 preview + GameMate 1.0 驱动，具情感养成与长期记忆。
-3. 绿洲启元 UGC AI 创作：春节 DAU 5800 万、20 万张在线地图、15 分钟落地创意。
-4. 王者荣耀 AI 队友满意度 +35%；三角洲行动 AI 地图 -40% 周期。
-5. 超 40 款游戏部署 AI；GDC 2026 以 21 场议题领跑。
-【可复用的东西】高并发 AI NPC 工程范式、UGC+AI 创作闭环（Macha 案例库）。
+[Category]Company/Product (Toolchain, NVIDIA ACE 2025–2026)
+[Title]NVIDIA RTX Advances with Neural Rendering and Digital Human Technologies at GDC 2025 / 2026
+[Link/FilePath]GDC2025 https://developer.nvidia.com/blog/nvidia-rtx-advances-with-neural-rendering-and-digital-human-technologies-at-gdc-2025/ (GDC2026 https://www.linkedin.com/pulse/advancing-state-path-tracing-ai-neural-rendering-gdc-2026-spitzer-3gyzc ; Naraka on-device https://game.xiaomi.com/viewpoint/1098536009_1743083895028_16 )
+[One-line summary]NVIDIA ACE landed inZOI "Smart Zoi" (500M-param SLM Mistral-Nemo-Minitron on-device) at GDC2025, Naraka mobile became first domestic ACE on-device AI teammate; GDC2026 expanded to PUBG co-playable ally, Creative Assembly dynamic AI advisor, Nemovision-4B VLM. Relevance to Macha: strongest reference for edge cost-down/latency-down, IGI SDK unified inference API is Macha interoperable-interface prototype.
+[Key conclusions]
+1. inZOI first ACE autonomous NPC "Smart Zoi", 500M-param SLM on-device RTX-accelerated.
+2. Naraka mobile PC version: first domestic game ACE+LLM on-device AI teammate.
+3. GDC2026: PUBG co-playable Ally, Creative Assembly dynamic AI advisor, Nemovision-4B VLM.
+4. ACE suite includes ASR/Avatar/Animation/VLM, cloud+edge unified.
+5. Wemade MIR 5 introduces ACE+NIM for AI Boss "Astrion."
+[Reusable]On-device SLM route, unified inference API design (Macha interface reference).
 
 ---
 
-【类别】公司/产品（大厂，网易伏羲 AOP）
-【标题】网易伏羲 AI Agent 驱动游戏玩法革新（CGDC 2025 / 逆水寒盘点）
-【链接/文件路径】CGDC https://www.cnblogs.com/wyfx/p/19021186 （逆水寒盘点 https://blog.51cto.com/u_10819805/14755008 ）
-【一句话摘要】网易以 AOP 框架落地智能 NPC（逆水寒门客超 4000 万、永劫无间语音 AI 队友端侧 ACE、全明星街球战术 AI、AI 小龙虾离线托管）；2025 研发投入 177 亿。和 Macha 的关系：国内最成熟"大脑"实证，但其强绑内部、未标准化对外，是 Macha 开源化的对象。
-【关键结论】
-1. AOP 闭环：感知→认知→决策→执行；RLHF 人设对话；寻路 77%→99%。
-2. 逆水寒：智能 NPC、门客系统（全服自建 AI 门客超 4000 万）、剧组模式、AI 小龙虾（2026-07 黄金畅玩服离线托管）。
-3. 永劫无间手游：业界首个语音 AI 队友；PC 版首款国产 ACE 端侧 AI 队友。
-4. 全明星街球派对：强化学习篮球 AI Bot（单打/协作风格）。
-5. 2025 研发投入 177 亿，AI 玩法使用户日均互动 +40%。
-【可复用的东西】AOP 架构范式、语音 AI 队友工程链路、UGC 创作工具（Macha 参考）。
+[Category]Company/Product (Big-co, Tencent Peacekeeper Elite / Hunyuan)
+[Title]Tencent Peacekeeper Elite AI teammate "Xiaotian" and Oasis Genesis (Hunyuan 3 preview driven)
+[Link/FilePath]https://cloud.tencent.com/developer/article/2681949 (deep https://t.cj.sina.cn/articles/view/7294209083/1b2c4cc3b00101s4hu )
+[One-line summary]Tencent Peacekeeper Elite AI teammate cumulative experience 110M, peak DAU 17.7M; "Xiaotian" industry-first Hunyuan 3 preview emotional-companion AI teammate; Oasis Genesis UGC AI creation DAU broke 58M; GDC 2026 Tencent led with 21 sessions. Relevance to Macha: benchmark of AI NPC commercial loop under large DAU high concurrency, engineering paradigm (knowledge base + strategy model + switch) borrowable.
+[Key conclusions]
+1. AI teammate cumulative 110M experience, peak weekend DAU 17.7M; mic open rate ≈75%, 70 interactions/match.
+2. "Xiaotian" driven by Hunyuan 3 preview + GameMate 1.0, with emotional companionship and long-term memory.
+3. Oasis Genesis UGC AI creation: Spring Festival DAU 58M, 200K online maps, 15-minute idea landing.
+4. Honor of Kings AI teammate satisfaction +35%; Delta Force AI maps -40% cycle.
+5. Over 40 games deployed AI; GDC 2026 led with 21 sessions.
+[Reusable]High-concurrency AI NPC engineering paradigm, UGC+AI creation loop (Macha case library).
 
 ---
 
-【类别】公司/产品（大厂，米哈游/Anuttacon 2026 收缩）
-【标题】蔡浩宇 Anuttacon 战略收缩：AnuNeko/BSide 停运、Whispers 好评率跌至 35%
-【链接/文件路径】https://www.toutiao.com/article/7671440711262142991 （行业 https://www.163.com/dy/article/L455VVSN0519DDQ2.html ；千亿投入 https://www.toutiao.com/a7669342971933901375 ）
-【一句话摘要】2026 年 Anuttacon 多线收缩：AnuNeko 上线不足一年停运、BSide:Olivia Lin 上线不到一月停运、Whispers 好评率 82%→35%；蔡浩宇转做 LLM+Agent；米哈游 simultaneously 官宣三年最高 ¥1000 亿 AI 投入。和 Macha 的关系：AI 原生"缺游戏框架/可控性/合规"的最硬反面教材。
-【关键结论】
-1. AnuNeko（AI 陪伴猫）上线不足一年停运；BSide:Olivia Lin 上线 <1 月停运。
-2. Whispers from the Star 好评率从 82% 跌至约 35%，开发放缓。
-3. 蔡浩宇 LinkedIn 更新为"Independent LLM + Agent Developer"，重心转向 Agent。
-4. 米哈游 2026-05 官宣三年最高 ¥1000 亿 AI 投入、全栈自研，为《Varsapura》铺路。
-5. 星穹铁道"帕姆 AI 助手"、星布谷地二测 AI NPC（多玩家并发+完整记忆）已落地。
-【可复用的东西】反面清单（B3 可控性/B5 合规/缺框架）、大厂长期投入对照（Macha 评估基准）。
+[Category]Company/Product (Big-co, NetEase Fuxi AOP)
+[Title]NetEase Fuxi AI Agent Drives Gameplay Innovation (CGDC 2025 / Justice Online review)
+[Link/FilePath]CGDC https://www.cnblogs.com/wyfx/p/19021186 (Justice Online review https://blog.51cto.com/u_10819805/14755008 )
+[One-line summary]NetEase uses AOP framework to deploy smart NPCs (Justice Online retainers exceed 40M, Naraka voice AI teammate on-device ACE, All-Star Street Ball tactics AI, AI crayfish offline hosting); 2025 R&D ¥17.7B. Relevance to Macha: most mature domestic "brain" proof, but strongly internally bound, not standardized for external use, is what Macha open-sources.
+[Key conclusions]
+1. AOP loop: perception→cognition→decision→execution; RLHF persona dialogue; pathfinding 77%→99%.
+2. Justice Online: smart NPCs, retainer system (whole-server self-built AI retainers exceed 40M), film-crew mode, AI crayfish (2026-07 gold smooth-play server offline hosting).
+3. Naraka mobile: industry-first voice AI teammate; PC version first domestic ACE on-device AI teammate.
+4. All-Star Street Ball Party: RL basketball AI bots (solo/coop styles).
+5. 2025 R&D ¥17.7B, AI gameplay raised users' avg daily interaction +40%.
+[Reusable]AOP architecture paradigm, voice AI teammate engineering chain, UGC creation tools (Macha reference).
 
 ---
 
-【类别】公司/产品（大厂，恺英形意/织梦/SOON）
-【标题】恺英网络"形意"大模型与 SOON AI 全流程开发平台（含比高集团投资）
-【链接/文件路径】半年报 https://static.cninfo.com.cn/finalpage/2025-08-30/1224623698.PDF （研报 https://stock.finance.sina.com.cn/stock/view/paper.php?symbol=sh000001&reportid=809963044912 ；概念 https://www.toutiao.com/article/7667875040730137122 ）
-【一句话摘要】恺英自研"形意"大模型（动画/场景/数值/代码/界面）、"织梦"大模型备案并与 DeepSeek R1 对接；极逸《SOON》平台把游戏开发从数月降至小时级；2025-07 引入比高集团（周星驰）投资。和 Macha 的关系：代表"AI 工业化提效"路线，与 Macha「空白二/三」互补。
-【关键结论】
-1. 形意覆盖动画/场景/数值/代码/界面/地图生成；织梦（Transformer）故事脚本备案。
-2. 与 DeepSeek R1 深度对接，各项能力显著增强。
-3. SOON（极逸）AI 全流程开发平台：美术→代码部署自动化，周期数月→小时级。
-4. 2025-07 比高集团（周星驰）子公司签投资备忘录。
-5. 投资企业自然选择推 3D AI 数字伴侣"EVE"、大朋 VR AI 眼镜。
-【可复用的东西】AI 工业化管线范式、垂类模型备案路径（Macha 国产合规参考）。
+[Category]Company/Product (Big-co, miHoYo/Anuttacon 2026 retraction)
+[Title]Cai Haoyu Anuttacon Strategic Retraction: AnuNeko/BSide shut down, Whispers positive fell to 35%
+[Link/FilePath]https://www.toutiao.com/article/7671440711262142991 (industry https://www.163.com/dy/article/L455VVSN0519DDQ2.html ; ¥100B investment https://www.toutiao.com/a7669342971933901375 )
+[One-line summary]2026 Anuttacon multi-line retraction: AnuNeko shut down within a year, BSide:Olivia Lin within a month, Whispers positive 82%→35%; Cai Haoyu shifted to LLM+Agent; miHoYo simultaneously announced three-year max ¥100B AI investment. Relevance to Macha: hardest negative example of AI-native "lacks game framework / controllability / compliance."
+[Key conclusions]
+1. AnuNeko (AI companion cat) shut down within a year; BSide:Olivia Lin shut down within <1 month.
+2. Whispers from the Star positive fell from 82% to ~35%, development slowed.
+3. Cai Haoyu LinkedIn updated to "Independent LLM + Agent Developer," shifting to Agent.
+4. miHoYo 2026-05 announced three-year max ¥100B AI investment, full-stack self-developed, paving way for Varsapura.
+5. Star Rail "Pam AI assistant", Star Burst Valley second-beta AI NPCs (multi-player concurrency + complete memory) already deployed.
+[Reusable]Negative checklist (B3 controllability / B5 compliance / lacks framework), big-co long-term investment contrast (Macha evaluation benchmark).
 
 ---
 
-【类别】产业综述（国产垂类模型广度）
-【标题】A 股游戏行业 AI 应用盘点（巨人 GiantGPT / 三七小七 / 完美天工）
-【链接/文件路径】https://baike.baidu.com/item/A%E8%82%A1%E6%B8%B8%E6%88%8F%E8%A1%8C%E4%B8%9A/68330059
-【一句话摘要】国内游戏企业 AI 普及率 86%、前 50 收入企业 80% 已布局；巨人 GiantGPT（2025-12 备案，首个游戏垂类）、三七"小七"（美术 AI>80%）、完美"天工"等垂类模型密集涌现。和 Macha 的关系：国产"垂类模型备案竞赛"已成势，但都未对外开放标准层，留白给 Macha。
-【关键结论】
-1. 游戏企业 AI 普及率 86%；前 50 收入企业 80% 披露 AI 布局。
-2. 巨人 GiantGPT 2025-12 备案，国内游戏行业首个垂类大模型（长期记忆/情景推理）。
-3. 三七"小七"：员工 AI 覆盖 100%，2D 美术 AI>80%，《明月宫心》10 天一款。
-4. 完美"天工"自研游戏大模型，嵌入研发与体验。
-5. 巨人"AI 假人"Q1 2026 参与对局破 4 亿场、生成 AI 假人超 29 亿。
-【可复用的东西】国产 AI 游戏格局全景、垂类模型备案清单（竞争地图扩充）。
+[Category]Company/Product (Big-co, Kaiying Xingyi/Zhimeng/SOON)
+[Title]Kaiying Network "Xingyi" large model and SOON AI full-process dev platform (incl. Brilliant investment)
+[Link/FilePath]Semi-annual report https://static.cninfo.com.cn/finalpage/2025-08-30/1224623698.PDF (research https://stock.finance.sina.com.cn/stock/view/paper.php?symbol=sh000001&reportid=809963044912 ; concept https://www.toutiao.com/article/7667875040730137122 )
+[One-line summary]Kaiying self-built "Xingyi" large model (animation/scene/numerics/code/UI), "Zhimeng" large model filed and connected to DeepSeek R1; Jiyi SOON platform brings game dev from months to hours; 2025-07 introduced Brilliant (Stephen Chow) group investment. Relevance to Macha: represents "AI industrialization efficiency" route, complementary to Macha "Gap Two/Three."
+[Key conclusions]
+1. Xingyi covers animation/scene/numerics/code/UI/map generation; Zhimeng (Transformer) story-script filed.
+2. Deeply connected to DeepSeek R1, capabilities significantly enhanced.
+3. SOON (Jiyi) AI full-process dev platform: art→code deployment automation, cycle months→hours.
+4. 2025-07 Brilliant (Stephen Chow) subsidiary signed investment MOU.
+5. Invested in Natural Selection pushing 3D AI digital companion "EVE", Dapeng VR AI glasses.
+[Reusable]AI industrialization pipeline paradigm, vertical-model filing path (Macha domestic-compliance reference).
 
 ---
 
-> **深化说明**：§5 全部为加法内容，未改动 §0–§4 任何结论。新增数字均带来源与口径；厂商/二级估值（Convai $21M、Inworld $125.7M、Volley ARR 等）建议引用前回溯一手。米哈游 Anuttacon 2026 收缩、Whispers 好评率等时间线与数值来自中文媒体，需二次确认。
+[Category]Industry review (domestic vertical-model breadth)
+[Title]A-share Games Industry AI Application Review (Giant GiantGPT / 37 Xiaoqi / Perfect Tiangong)
+[Link/FilePath]https://baike.baidu.com/item/A%E8%82%A1%E6%B8%B8%E6%88%8F%E8%A1%8C%E4%B8%9A/68330059
+[One-line summary]Domestic games-enterprise AI penetration 86%, top-50 revenue enterprises 80% already laid out; Giant GiantGPT (2025-12 filed, first games vertical), 37 "Xiaoqi" (art AI>80%), Perfect "Tiangong" and other vertical models densely emerging. Relevance to Macha: domestic "vertical-model filing race" already formed momentum, but none open a standard layer, leaving white space for Macha.
+[Key conclusions]
+1. Games-enterprise AI penetration 86%; top-50 revenue enterprises 80% disclose AI layout.
+2. Giant GiantGPT 2025-12 filed, first vertical large model in domestic games industry (long-term memory / scenario reasoning).
+3. 37 "Xiaoqi": employee AI coverage 100%, 2D art AI>80%, Mingyue Gongxin 10 days per game.
+4. Perfect "Tiangong" self-built games large model, embedded in R&D and experience.
+5. Giant "AI dummy" Q1 2026 participation broke 400M matches, generated over 2.9B AI dummies.
+[Reusable]Domestic AI-games landscape panorama, vertical-model filing list (competitive-map expansion).
+
+---
+
+> **Deepening note**: §5 is all additive content, no conclusion in §0–§4 changed. New numbers all bring source and caliber; vendor/secondary valuations (Convai $21M, Inworld $125.7M, Volley ARR, etc.) suggest tracing primary before citing. miHoYo Anuttacon 2026 retraction, Whispers positive etc. timeline and values are from Chinese media, need secondary confirmation.

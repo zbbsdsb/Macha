@@ -1,42 +1,42 @@
-# 初步技术方向
+# Preliminary Technical Direction
 
-## 问题定义
+## Problem Definition
 
-团队目前缺少的不是“更多论文”，而是一个可以开始编码的**最小可验证方向**。
+What the team lacks right now is not "more papers," but a **minimum verifiable direction** we can start coding against.
 
-我们建议以以下问题作为第一个里程碑：
+We propose taking the following question as the first milestone:
 
-> **如何让一个游戏 NPC 在多次对话后仍然记住玩家，并保持稳定的人格和行为逻辑？**
+> **How can a game NPC still remember the player after multiple conversations, while maintaining a stable persona and behavior logic?**
 
-## 核心假设
+## Core Hypothesis
 
-一个可信 NPC 至少需要：
+A believable NPC needs at least:
 
-- **感知**：从游戏事件/玩家输入中提取结构化观察。
-- **记忆**：保存短期上下文和长期经历，并能按相关性检索。
-- **反思**：定期把零散经历抽象为更高层的人格/关系/世界认知。
-- **规划**：根据当前目标、记忆和反思生成下一步行动。
-- **行动**：把决策转换为游戏引擎可执行的指令或对话。
+- **Perception**: extract structured observations from game events / player input.
+- **Memory**: store short-term context and long-term experiences, and retrieve them by relevance.
+- **Reflection**: periodically abstract scattered experiences into higher-level persona / relationship / world cognition.
+- **Planning**: generate the next action based on current goals, memory, and reflection.
+- **Action**: translate decisions into instructions or dialogue executable by the game engine.
 
-## 第一个 MVP（建议）
+## First MVP (Suggested)
 
-- 用 Python 实现一个“最小认知内核”。
-- 不绑定具体游戏引擎，先用命令行/文本环境验证。
-- 提供 `Agent` 接口，内部包含 `Memory`、`Reasoning`、`Perception`、`Action` 四个模块。
-- 用简单的模拟场景测试：NPC 与玩家进行 5 轮对话，之后隔一段时间再对话，NPC 仍能记得关键事实。
+- Implement a "minimal cognitive core" in Python.
+- Do not bind to any specific game engine; validate first in a command-line / text environment.
+- Provide an `Agent` interface, internally composed of four modules: `Memory`, `Reasoning`, `Perception`, `Action`.
+- Test with a simple simulation scenario: the NPC conducts 5 rounds of dialogue with the player, then converses again after an interval, and the NPC can still recall key facts.
 
-## 技术选型建议
+## Technology Selection Suggestions
 
-- **语言**：Python 3.10+
-- **LLM 接入**：先封装一个 `LLMClient` 接口，具体模型可后接 OpenAI、本地模型等。
-- **记忆存储**：初期可用 JSON/SQLite，后续再升级为向量库或知识图谱。
-- **配置**：YAML 管理 NPC 人设和世界设定。
+- **Language**: Python 3.10+
+- **LLM access**: first wrap an `LLMClient` interface; specific models can be plugged in later (OpenAI, local models, etc.).
+- **Memory storage**: early stage can use JSON / SQLite, later upgraded to a vector database or knowledge graph.
+- **Configuration**: YAML to manage NPC persona and world settings.
 
-## 非目标（第一版不做）
+## Non-Goals (Not in the First Version)
 
-- 不做完整游戏引擎集成。
-- 不做大规模多智能体网络。
-- 不做生产级推理成本优化。
-- 不做复杂的视觉感知。
+- No full game engine integration.
+- No large-scale multi-agent network.
+- No production-grade inference cost optimization.
+- No complex visual perception.
 
-先把“单 NPC 的长期记忆与角色一致性”跑通。
+First, get "single-NPC long-term memory and character consistency" working.

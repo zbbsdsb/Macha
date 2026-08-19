@@ -1,168 +1,168 @@
-# 关于“我们渴望的游戏 Agent”的当前结论
+# Current Conclusions on the "Game Agent We Desire"
 
-> 版本：v0.1（暂定结论，供团队继续检验）
-> 状态：活跃
-> 前置材料：
+> Version: v0.1 (tentative conclusions, for the team to continue testing)
+> Status: Active
+> Prerequisites:
 > - [what-we-desire-in-game-agents.md](what-we-desire-in-game-agents.md)
-> - [four-papers-boundary-and-fusion.md](four-papers-boundary-and-fusion.md)（已归档）
+> - [four-papers-boundary-and-fusion.md](four-papers-boundary-and-fusion.md) (archived)
 
 ---
 
-## 1. 当前阶段可以写下来的结论
+## 1. Conclusions That Can Be Written Down at the Current Stage
 
-### 结论一：玩家渴望的不是“Agent”，而是“世界的回应”
+### Conclusion One: What the Player Desires Is Not an "Agent," but the "World's Response"
 
-我们先把问题从“Agent 应该有什么能力”转向了“玩家希望世界如何对待他”。
+We shifted the question from "what capabilities should an agent have" to "how does the player want the world to treat them."
 
-Agent 只是世界变得会回应的接口。玩家真正需要的是：
+The agent is merely the interface through which the world becomes responsive. What the player truly needs is:
 
-- 世界看见了我；
-- 世界记住了我；
-- 世界评价了我；
-- 我的行为改变了世界；
-- 世界不完全围绕我转动。
+- The world has seen me;
+- The world has remembered me;
+- The world has evaluated me;
+- My actions have changed the world;
+- The world does not revolve entirely around me.
 
-因此，评价一个 Agent 的首要问题不是“它聪明吗”，而是“它让世界回应了吗”。
+Therefore, the primary question for evaluating an agent is not "is it smart," but "has it made the world respond?"
 
-### 结论二：玩家渴望的是一个“可被相信、可被改变、会留下后果的他者”
+### Conclusion Two: What the Player Desires Is a "Believable, Changeable Other That Leaves Consequences"
 
-这句话可以拆成五个条件：
+This sentence can be broken into five conditions:
 
-1. **它看见我**：它的反应针对我当前的状态，而不是通用模板。
-2. **它记得我**：它记得关系中重要的事，并允许琐事被遗忘。
-3. **它是它自己**：它有边界，会拒绝，不能被我随意改写。
-4. **它会被我改变**：我的行为在它身上留下痕迹，而且改变有代价。
-5. **它会超出我**：它有自己的日程、关系与行为，不完全为了我而存在。
+1. **It sees me**: Its reaction targets my current state, not a generic template.
+2. **It remembers me**: It remembers what matters in the relationship, and allows trivialities to be forgotten.
+3. **It is itself**: It has boundaries, can refuse, and cannot be arbitrarily rewritten by me.
+4. **It can be changed by me**: My actions leave traces on it, and change has a cost.
+5. **It exceeds me**: It has its own schedule, relationships, and behavior, and does not exist entirely for me.
 
-缺少其中任何一条，玩家都会感到这个角色“不是真的”。
+Lacking any one of these, the player will feel the character is "not real."
 
-### 结论三：玩家对 Agent 的渴望是一个张力系统，不是能力清单
+### Conclusion Three: The Player's Desire for the Agent Is a Tension System, Not a Capability List
 
-这些要求彼此冲突：
+These requirements conflict with one another:
 
-| 张力 | 过度偏向一边的后果 |
+| Tension | Consequence of Over-Leaning to One Side |
 |---|---|
-| 回应我 vs 独立于我 | 只回应我，它变成家具；只独立，我无法和它建立关系 |
-| 记得我 vs 允许遗忘 | 什么都记得，显得是数据库；忘掉关键，显得背叛 |
-| 稳定 vs 可塑 | 完全稳定，它没有生命；任意可塑，它没有自己 |
-| 可预测 vs 可意外 | 完全可预测，它是机关；完全意外，它不可理解 |
-| 属于世界 vs 服务玩法 | 完全属于世界，游戏无法进行；完全服务玩法，它只是任务按钮 |
+| Responds to me vs. independent of me | If it only responds to me, it becomes furniture; if it is only independent, I cannot build a relationship with it |
+| Remembers me vs. allows forgetting | If it remembers everything, it seems a database; if it forgets the key things, it seems a betrayal |
+| Stable vs. malleable | If completely stable, it has no life; if arbitrarily malleable, it has no self |
+| Predictable vs. surprising | If completely predictable, it is a mechanism; if completely surprising, it is incomprehensible |
+| Belongs to the world vs. serves gameplay | If it belongs entirely to the world, the game cannot proceed; if it serves gameplay entirely, it is just a quest button |
 
-所以“好 Agent”不是某项指标最高，而是能在这些张力之间维持稳定。这也是为什么任何单一技术升级都很难单独解决“真实感”。
+So a "good agent" is not one with the highest score on some metric, but one that maintains stability among these tensions. This is also why no single technological upgrade alone can solve the "sense of authenticity."
 
-### 结论四：现有 Agent 的失败，本质是“关系断裂”，而不是“智能不足”
+### Conclusion Four: The Failure of Existing Agents Is Essentially "Relationship Breakage," Not "Insufficient Intelligence"
 
-我们用关系语言重新描述常见失败：
+We re-describe common failures in the language of relationships:
 
-- “它没看见我”：玩家状态改变，NPC 反应不变。
-- “它记错了东西”：NPC 记得琐碎对话，却忘了关键承诺。
-- “它没有自己”：玩家可以随意让 NPC 改变立场、忘记禁忌。
-- “它只为我存在”：玩家不在场时，NPC 没有生活；玩家一出现，所有 NPC 开始服务玩家。
-- “它和世界无关”：NPC 说出的话与空间、时间、经济、战争状态没有因果联系。
+- "It didn't see me": The player's state changed, but the NPC's reaction did not.
+- "It remembered the wrong things": The NPC remembers trivial dialogue but forgets a key promise.
+- "It has no self": The player can arbitrarily make the NPC change its stance or forget its taboos.
+- "It exists only for me": When the player is absent, the NPC has no life; the moment the player appears, all NPCs start serving the player.
+- "It has nothing to do with the world": What the NPC says has no causal connection to space, time, economy, or war state.
 
-这比“模型幻觉”“上下文不够”“推理太弱”更接近玩家实际体验。
+This is closer to the player's actual experience than "model hallucination," "insufficient context," or "too-weak reasoning."
 
-### 结论五：分类必须增加“关系轴”
+### Conclusion Five: The Classification Must Add a "Relationship Axis"
 
-现有分类轴都有价值，但都是外部视角：
+The existing classification axes all have value, but they are all external perspectives:
 
-- 技术轴：它怎么实现；
-- 来源轴：信息从哪来；
-- 角色轴：它在生产中承担什么功能；
-- 机制轴：去掉 AI 后玩法是否成立。
+- Technical axis: how it is implemented;
+- Source axis: where the information comes from;
+- Role axis: what function it serves in production;
+- Mechanism axis: whether the gameplay holds up after removing AI.
 
-我们主张增加一条从玩家出发的轴：
+We advocate adding an axis that starts from the player:
 
-> 这个 Agent 正在满足玩家的哪一种关系需要？
+> Which relationship need of the player is this agent satisfying?
 
-初步提出四种关系原型：
+We initially propose four relationship archetypes:
 
-1. **见证者**：让玩家感到“世界看见了我”。
-2. **关系者**：让玩家感到“我的行为在别人身上留下了历史”。
-3. **阻力者**：让玩家感到“世界有规则、有代价、有拒绝”。
-4. **他者**：让玩家感到“这里有不完全围绕我的生命”。
+1. **Witness**: Makes the player feel "the world has seen me."
+2. **Relation-holder**: Makes the player feel "my actions have left a history on others."
+3. **Resistor**: Makes the player feel "the world has rules, costs, and refusals."
+4. **Other**: Makes the player feel "there is a life here that does not revolve entirely around me."
 
-这四种原型不是互斥标签，而是同一 NPC 可以按不同比例同时具备的关系属性。
+These four archetypes are not mutually exclusive labels, but relationship attributes that the same NPC can possess simultaneously in different proportions.
 
-### 结论六：“场域叠加”是一个切片，不是一个总框架
+### Conclusion Six: "Field Superposition" Is a Slice, Not a Total Framework
 
-场域叠加目前最适合解释：
+Field superposition is currently best at explaining:
 
-> 玩家和 NPC 在解释同一事件时，所站的位置不同。
+> When the player and NPC interpret the same event, they stand in different positions.
 
-它属于“看见”与“世界性”之间的一种解释机制。
+It belongs to an interpretive mechanism between "seeing" and "worldliness."
 
-但它不能单独解释：
+But it cannot alone explain:
 
-- NPC 为什么该记住某件事；
-- NPC 为什么该拒绝；
-- NPC 如何被改变；
-- NPC 如何超出玩家。
+- Why the NPC should remember something;
+- Why the NPC should refuse;
+- How the NPC is changed;
+- How the NPC exceeds the player.
 
-因此，它应该被保留为论文的重要切片，而不应被拔高为全貌。
-
----
-
-## 2. 当前阶段的暂定定义
-
-> **玩家渴望的游戏 Agent，不是一个“更像人”的对象，而是一个被世界规则约束、拥有自身边界、能对玩家行为留下可理解后果，并因此让世界显得会回应的他者。**
-
-这个定义有三个要点：
-
-1. **被世界规则约束**：它不能是漂浮的对话窗口。
-2. **拥有自身边界**：它必须能拒绝、能保持自己。
-3. **留下可理解后果**：玩家能看懂自己的行为如何影响了它和世界。
+Therefore, it should be retained as an important slice of the paper, not elevated into the whole picture.
 
 ---
 
-## 3. 这些结论带来的直接推论
+## 2. Tentative Definition at the Current Stage
 
-### 对论文
+> **The game agent the player desires is not an object that is "more human-like," but an other constrained by world rules, possessing its own boundaries, able to leave understandable consequences from the player's actions, and thereby making the world seem responsive.**
 
-论文不应该再写“如何让 Agent 更智能”，而应该写：
+This definition has three key points:
 
-> 如何从玩家关系出发，重新定义并跨越游戏 Agent 的鸿沟。
-
-“场域叠加”可以作为第一个切片进入论文，但后面需要展开为更完整的关系鸿沟。
-
-### 对 Macha 架构
-
-标准骨架的目标不再是“把记忆、推理、行动模块做好”，而是提供五类关系保证：
-
-1. 被看见的保证；
-2. 被记住的保证；
-3. 有边界的保证；
-4. 可被改变的保证；
-5. 不完全属于玩家的保证。
-
-技术模块只是兑现这些保证的手段。
-
-### 对评估
-
-不应该只问“NPC 回答是否正确”，而应该问：
-
-- 它是否对我的状态变化做出了针对性反应？
-- 它是否记住了关系中重要的事？
-- 它是否在该拒绝的时候拒绝？
-- 它是否因为我的行为而发生了可观察的改变？
-- 它是否有不完全围绕我而存在的行为？
+1. **Constrained by world rules**: It cannot be a floating dialogue window.
+2. **Possessing its own boundaries**: It must be able to refuse and maintain itself.
+3. **Leaving understandable consequences**: The player can understand how their actions affected it and the world.
 
 ---
 
-## 4. 我们还没有结论的地方
+## 3. Direct Implications of These Conclusions
 
-1. “世界的回应”和“他者”哪一个才是更根本的概念？
-2. 四种关系原型是否足够？是否需要增加“裁判者”“引导者”等？
-3. 五个条件是否必须全部同时存在，还是不同类型游戏只激活其中一部分？
-4. “场域叠加”应该作为论文的第一个切片，还是作为更大关系框架的子机制？
-5. 如何把“关系轴”变成一个可操作、可测量的分类系统，而不是又一堆漂亮词汇？
+### For the Paper
+
+The paper should no longer write "how to make the agent smarter," but should write:
+
+> How to redefine and cross the game-agent gap starting from the player relationship.
+
+"Field superposition" can enter the paper as the first slice, but afterward it needs to expand into a more complete relationship gap.
+
+### For the Macha Architecture
+
+The goal of the standard skeleton is no longer "to do memory, reasoning, and action modules well," but to provide five kinds of relationship guarantees:
+
+1. The guarantee of being seen;
+2. The guarantee of being remembered;
+3. The guarantee of having boundaries;
+4. The guarantee of being changeable;
+5. The guarantee of not belonging entirely to the player.
+
+The technical modules are merely the means to deliver these guarantees.
+
+### For Evaluation
+
+We should not only ask "is the NPC's answer correct," but should ask:
+
+- Did it react specifically to my state change?
+- Did it remember what matters in the relationship?
+- Did it refuse when it should have refused?
+- Did it undergo observable change because of my actions?
+- Does it have behavior that does not exist entirely for me?
 
 ---
 
-## 5. 下一步建议
+## 4. What We Still Have No Conclusion On
 
-先不写论文正文，而是做一个小实验：
+1. Which is the more fundamental concept: "the world's response" or "the other"?
+2. Are the four relationship archetypes sufficient? Do we need to add "judge" or "guide," etc.?
+3. Must all five conditions exist simultaneously, or do different game types only activate part of them?
+4. Should "field superposition" be the first slice of the paper, or a sub-mechanism of a larger relationship framework?
+5. How to turn the "relationship axis" into an operable, measurable classification system, rather than another pile of pretty words?
 
-> 挑 3–5 个玩家公认“真实”或“不真实”的游戏 NPC 案例，用“五个条件 + 四种关系原型”去解释它们为什么成立或失败。
+---
 
-如果这套关系语言能解释清楚具体案例，我们的结论才算真正立住；如果解释不了，就知道哪里需要修改。
+## 5. Next-Step Suggestions
+
+Rather than writing the paper body first, run a small experiment:
+
+> Pick 3–5 game NPC cases that players universally consider "authentic" or "inauthentic," and use the "five conditions + four relationship archetypes" to explain why they succeed or fail.
+
+Only if this relationship language can clearly explain concrete cases will our conclusions truly stand; if it cannot, we will know where revision is needed.

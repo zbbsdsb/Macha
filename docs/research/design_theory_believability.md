@@ -1,342 +1,342 @@
-# NPC 可信度需求文档（设计理论 → 技术指标）
+# NPC Believability Requirement Document (Design Theory → Technical Metrics)
 
-> **类别归属**：`information_needs.md` 第 4 类「游戏设计理论：NPC 可信度与玩法」。
-> **文档性质**：研究子任务交付物（不是 Demo，而是为 Macha「标准骨架」服务的设计理论翻译层）。
-> **配套文档**：`direction.md`（最小可验证方向：长期记忆 + 角色一致性）、`positioning.md`（四篇论文定位）、`architecture.md`（目标架构：Perception / Memory / Reasoning / Action 四层）、`evaluation_benchmarks.md`（可信度/一致性评估维度表 F1–F13 / E9–E13）。
-> **核心命题**：Macha 服务的是「设计可信 NPC」，不是「更强的聊天机器人」。本文档把设计语言（MDA、互动叙事、可信度理论、AI 原生设计）翻译为 Macha 必须可度量、可落地的技术指标，使 `architecture.md` 的模块与 `evaluation_benchmarks.md` 的维度形成闭环。
-
----
-
-## 0. 文档使用方法
-
-- **第 1 节**是给工程与产品团队的主交付：**设计关切 → 技术要求对照表**。每一行说明「设计想达成什么」以及「Macha 必须做到什么、用什么指标度量」。
-- **第 2 节**把设计理论概念（MDA / 互动叙事 / 可信度 / AI 原生）映射到 Macha 的模块与指标，便于在架构与评估之间建立可追溯链路。
-- **第 3–5 节**是三个专项分析：玩家对 NPC 记忆的期待、开放世界 vs 叙事游戏的行为差异、AI 原生游戏的「语义裁决 / 多智能体模拟」案例拆解。
-- **第 6 节**按 `information_needs.md` 约定的固定格式登记关键来源。
-- **第 7 节**给出 Macha 落地的设计原则与待办。
-
-> 说明：所有 URL 均来自本次研究通过 WebSearch / WebFetch 实际获取。其中 MDA 原始 PDF（northwestern 域名）经 WebFetch 确认可访问（重定向至 `users.cs.northwestern.edu/~hunicke/MDA.pdf`）；其余主链接均为搜索返回的可用页面。个别经典论文（Bates 1994、Loyall & Bates 1997）以摘要页/镜像页登记，正式引用前建议补全原始出处。
+> **Category**: `information_needs.md` Category 4 "Game Design Theory: NPC Believability and Gameplay."
+> **Document nature**: Research sub-task deliverable (not a Demo, but a design-theory translation layer serving Macha's "standard skeleton").
+> **Companion documents**: `direction.md` (minimum verifiable direction: long-term memory + character consistency), `positioning.md` (four-paper positioning), `architecture.md` (target architecture: Perception / Memory / Reasoning / Action four layers), `evaluation_benchmarks.md` (believability / consistency evaluation-dimension tables F1–F13 / E9–E13).
+> **Core proposition**: Macha serves "designing believable NPCs," not "a stronger chatbot." This document translates design language (MDA, interactive narrative, believability theory, AI-native design) into technical metrics Macha must be able to measure and land, so that `architecture.md`'s modules and `evaluation_benchmarks.md`'s dimensions form a closed loop.
 
 ---
 
-## 1. 设计关切 → 技术要求对照表（核心交付）
+## 0. How to Use This Document
 
-> 每一行 = 一个设计关切。右列给出 Macha 的**技术需求**与**可度量指标**（尽量复用 `evaluation_benchmarks.md` 的 F/E 维度）。
+- **Section 1** is the main deliverable for engineering and product teams: the **design-concern → technical-requirement mapping table**. Each row states "what the design wants to achieve" and "what Macha must do and with what metric."
+- **Section 2** maps design-theory concepts (MDA / interactive narrative / believability / AI-native) to Macha's modules and metrics, enabling a traceable chain between architecture and evaluation.
+- **Sections 3–5** are three special analyses: players' expectations of NPC memory, open-world vs. narrative-game behavior differences, and the "semantic adjudication / multi-agent simulation" case teardown of AI-native games.
+- **Section 6** registers key sources in the fixed format agreed in `information_needs.md`.
+- **Section 7** gives Macha's landing design principles and to-do.
 
-| # | 设计关切 | 设计意图（设计师想达成什么） | Macha 技术需求 | 可度量指标（关联评估维度） |
+> Note: All URLs come from this research via actual WebSearch / WebFetch. The MDA original PDF (northwestern domain) was confirmed accessible via WebFetch (redirected to `users.cs.northwestern.edu/~hunicke/MDA.pdf`); other main links are usable pages returned by search. A few classic papers (Bates 1994, Loyall & Bates 1997) are registered via abstract / mirror pages; it is recommended to complete the original sources before formal citation.
+
+---
+
+## 1. Design Concern → Technical Requirement Mapping Table (core deliverable)
+
+> Each row = one design concern. The right columns give Macha's **technical requirement** and **measurable metric** (reusing `evaluation_benchmarks.md`'s F/E dimensions where possible).
+
+| # | Design concern | Design intent (what the designer wants) | Macha technical requirement | Measurable metric (linked eval dimension) |
 |---|---|---|---|---|
-| C1 | **可信度 / Believability** | 玩家主观相信「这是一个真实存在、有内在生命的角色」，愿意为之投入情感 | NPC 必须呈现「生命的假象」：一致性、情绪、觉知、社会性、可理解性并存的稳定表现 | Paiva 九维李克特量表（行为一致性 / 经验变化 / 觉知 / 行为可理解性 / 人格 / 情绪表达 / 社会性 / 视觉冲击 / 可预测性）→ **F3 / F7** |
-| C2 | **角色一致性 / Role Fidelity** | NPC 在长程交互中保持人格、说话风格、价值观、禁忌稳定，不「原地变脸」 | 人格/价值观/禁忌必须作为不可变约束注入 Reasoning 层；对话与行动均受 Character 层校验 | RoleBench 三指标 CUS / RAW / SPE；DNLI 蕴含一致性；对抗性人设偏移探测 → **F1** |
-| C3 | **记忆期望 / Memory Expectations** | 玩家期待 NPC「记得关键的事、淡忘琐碎的事」，记忆服务于关系与叙事而非信息堆砌 | 实现「有目的的记忆」：高价值事件（背叛/忠诚/承诺/共担风险）优先留存，低价值交互可衰减；记忆须驱动后续态度与行为 | 记忆命中率、记忆衰减合理性、跨会话态度一致性、声誉/流言传播正确性 → **F2 / F4** |
-| C4 | **能动性 / Agency** | NPC 有自己的目标、恐惧、社会关系与行为阈值，能主动行动而非仅被动应答 | Reasoning 层须含「目标 + 规划 + 阈值触发」；NPC 可在无玩家输入时自行决策（见 C9 世界真实感） | 自主目标达成率、目标驱动行为占比、规划成功率（AgentBench/SmartPlay 思路）→ **F5** |
-| C5 | **可预测性 / Predictability** | 行为可被玩家理解和预期（不过度随机、也不完全死板），这是可玩性与信任的基础 | 行为轨迹熵需落在「有趣但不混乱」区间；决策可被回放与解释 | 行为轨迹熵 / 可解释性打分、Paiva predictability 量表 → **F7 / E12** |
-| C6 | **情感与社会性 / Emotion & Sociality** | NPC 有情绪、会共情、与他人有关系网，情绪变化符合性格与情境 | Memory/Reasoning 维护情绪状态与关系图；情绪与关系驱动对话与行动选择 | 情绪一致性、关系演化合理性、多人社会反应一致性 → **F3 / F1** |
-| C7 | **涌现叙事 / Emergent Narrative** | 故事由交互「长出来」而非预写剧本；玩家感到自己是自己故事的主角 | 以结构化世界状态 + 角色动机驱动生成，而非纯自由文本续写；提供「叙事引力」约束 | 叙事连贯性、玩家能动性评分（Player Agency）、长程不崩坏率 → 见第 5 节 |
-| C8 | **受控自主性 / Bounded Autonomy** | NPC 在「角色/世界规则」边界内自由，越界时系统否决或引导，而非无限生成 | Action 层输出须受世界状态、角色动机、叙事对齐过滤；定义「机械不变量」（目标/规则/状态/反馈/节奏/能动性） | 越界率、叙事对齐率、风格合规率 → **F1 / F4** |
-| C9 | **世界真实感 / Lives Beyond You** | 玩家不在场时 NPC 仍有日常、关系与生命，世界不围绕玩家冻结 | 多 NPC 调度与共享世界时钟；NPC 间预置关系网与自主日程；记忆与事件跨 NPC 传播 | 自主日程覆盖率、NPC 间关系一致性、玩家缺席期间世界事件正确性 → **F5 / F2** |
-| C10 | **跨会话连续性 / Session Continuity** | 数天/数月后回归，NPC 仍记得关系、承诺与后果 | 长期记忆外挂（非仅上下文窗口）；世界状态存于模型之外（server/外部状态） | 跨会话记忆召回率、知识更新正确率（LongMemEval KU）→ **F2 / F4** |
-| C11 | **反幻觉 / 抗角色漂移** | NPC 不编造未发生的事、不前后矛盾、不混淆新旧事实 | Memory 与 Character 层作为「事实与人格锚」，行动前做一致性校验 | LoCoMo 对抗集、LongMemEval Abstention、记忆一致性压力测试 → **F4** |
+| C1 | **Believability** | Players subjectively believe "this is a real being with inner life," willing to invest emotion | NPC must present "the illusion of life": consistency, emotion, awareness, sociability, understandability coexisting in stable performance | Paiva nine-dimension Likert scale (behavior consistency / experience change / awareness / behavior understandability / personality / emotion expression / sociability / visual impact / predictability) → **F3 / F7** |
+| C2 | **Role Fidelity** | NPC keeps personality, speaking style, values, taboos stable over long interaction, no "instant face-change" | Personality/values/taboos must be injected into the Reasoning layer as immutable constraints; dialogue and action both checked by the Character layer | RoleBench three metrics CUS / RAW / SPE; DNLI entailment consistency; adversarial persona-drift detection → **F1** |
+| C3 | **Memory Expectations** | Players expect NPC to "remember the important, forget the trivial," memory serving relationship and narrative not information piling | Implement "purposeful memory": high-value events (betrayal/loyalty/promise/shared risk) retained first, low-value interactions can decay; memory must drive later attitude and behavior | Memory hit rate, memory-decay reasonableness, cross-session attitude consistency, reputation / gossip propagation correctness → **F2 / F4** |
+| C4 | **Agency** | NPC has its own goals, fears, social relations, and behavior thresholds; can act proactively not just passively answer | Reasoning layer must include "goal + planning + threshold trigger"; NPC can decide on its own without player input (see C9 world realness) | Autonomous-goal achievement rate, goal-driven behavior ratio, planning-success rate (AgentBench/SmartPlay idea) → **F5** |
+| C5 | **Predictability** | Behavior can be understood and anticipated by players (not over-random, not fully rigid), foundation of playability and trust | Behavior-trajectory entropy must lie in the "interesting but not chaotic" band; decisions replayable and explainable | Behavior-trajectory entropy / explainability score, Paiva predictability scale → **F7 / E12** |
+| C6 | **Emotion & Sociality** | NPC has emotion, empathizes, has a relation network with others, emotion change fits personality and situation | Memory/Reasoning maintain emotion state and relation graph; emotion and relations drive dialogue and action choices | Emotion consistency, relation-evolution reasonableness, multi-person social-reaction consistency → **F3 / F1** |
+| C7 | **Emergent Narrative** | Story "grows" from interaction rather than pre-written script; player feels the protagonist of their own story | Driven by structured world state + character motivation, not pure free-text continuation; provide "narrative gravity" constraints | Narrative coherence, player-agency score, long-run non-collapse rate → see Section 5 |
+| C8 | **Bounded Autonomy** | NPC is free within "character / world-rule" boundaries; when crossing, the system vetoes or guides rather than generating infinitely | Action-layer output must be filtered by world state, character motivation, narrative alignment; define "mechanical invariants" (goal/rule/state/feedback/pacing/agency) | Boundary-crossing rate, narrative-alignment rate, style-compliance rate → **F1 / F4** |
+| C9 | **Lives Beyond You (world realness)** | When player is absent, NPC still has daily life, relations, and life; world does not freeze around player | Multi-NPC scheduling and shared world clock; pre-set relation networks and autonomous schedules between NPCs; memory and events propagate across NPCs | Autonomous-schedule coverage, NPC-relation consistency, world-event correctness during player absence → **F5 / F2** |
+| C10 | **Session Continuity** | Return days/months later, NPC still remembers relations, promises, consequences | Long-term memory externalized (not just context window); world state stored outside the model (server / external state) | Cross-session memory recall rate, knowledge-update correctness (LongMemEval KU) → **F2 / F4** |
+| C11 | **Anti-hallucination / anti-character-drift** | NPC does not fabricate un-happened events, no self-contradiction, no confusing new and old facts | Memory and Character layers as "fact and personality anchors," consistency check before action | LoCoMo adversarial set, LongMemEval Abstention, memory-consistency stress test → **F4** |
 
 ---
 
-## 2. 设计理论概念 → Macha 模块 / 指标映射
+## 2. Design-Theory Concept → Macha Module / Metric Mapping
 
-| 来源概念 | 核心主张 | 映射到 Macha 模块 | 映射到 Macha 指标 |
+| Source concept | Core claim | Maps to Macha module | Maps to Macha metric |
 |---|---|---|---|
-| **MDA（Hunicke, LeBlanc, Zubek 2004）** | 游戏 = Mechanics（规则/数据/算法）→ Dynamics（运行期涌现行为）→ Aesthetics（玩家情感响应）；设计师正向建、玩家逆向体验；「游戏更像人造物而非媒体，内容即其行为」 | **Mechanics**→ Macha 的接口契约（`Observation`/`MemoryItem`/`BaseAgent`）与 `architecture.md` 的算法层；**Dynamics**→ Perception→Memory→Reasoning→Action 在玩家输入下的涌现；**Aesthetics**→ 玩家主观可信度（F3/F7） | 用「机械不变量」保证 Dynamics 朝目标 Aesthetics 收敛；以玩家调研（TrueSkill 配对）度量 Aesthetics → **F3 / F7 / E13** |
-| **互动叙事 Interactive Drama（Chris Crawford）** | 真正的交互 = 多个活跃主体间「倾听—思考—发言」的循环；只有「互动叙事」而非「互动故事」；系统须能基于玩家反馈即时生成故事，并维持结构完整 | Macha 的 Reasoning 即「故事引擎内核」：维护 storyworld（角色、关系、动机、规则），按玩家行动即时生成下一步；对话是 Verbs 的一种 | 叙事连贯性、玩家能动性（是否真有「戏剧性且多样」的选择）、结构完整度 → 见 C7 |
-| **可信度 Believability（Bates 1994; Loyall & Bates 1997; Paiva/Gomes 2013）** | 可信 = 提供「生命的假象」以让观众悬置怀疑；情绪须被恰当时机表达；语言与行动须由同一人格/情绪驱动；九维度量（行为一致性/经验变化/觉知/可理解性/人格/视觉/可预测性/社会性/情绪表达） | **Character 层**（人格、情绪、关系）贯穿 Perception→Memory→Reasoning→Action；情绪状态机在 Reasoning 内；视觉/动作由 Action 层呈现 | Paiva 九维量表 + Game Agent Matrix → **F1 / F3 / F7** |
-| **AI-based Game Design（Eladhari et al. 2011; Treanor et al. 2015）** | AI 应是游戏的「共同作者」而非烟雾弹（smoke-and-mirrors）；提出设计模式：AI is Visualized、AI as Role-model、Mixed-Initiative 等；Mechanics/Dynamics/Aesthetics 须深度绑定 AI 系统 | Macha 提供的不是「更聪明的对话」，而是可被设计者用来构造玩法的「AI 机制原语」（记忆、反思、规划、社会推理）；支持 mixed-initiative（玩家+NPC 共创作） | 设计者可组合性、模式复用度、是否产生「expressive AI」（玩家需读懂 NPC 意图）→ **F5 / C7** |
-| **The Sims 信息素模型（Will Wright）** | 角色是「环境分布智能」：每个物体广播「需求气味」（食物/能量/社交…），Sim 循气味行动；**刻意保留「不完美自主性」**——早期版本太聪明反而让玩家无需操作，于是加入随机与「隐藏定时炸弹」以维持玩法张力 | Macha 的 Perception 层把世界对象标注为「可被欲望/目标吸附的信号源」；Autonomy 参数须可调（太聪明=玩家无关，太笨=无聊）；行为阈值引入可控随机 | 自治度调参曲线、玩家介入必要性、行为多样性 → **C4 / C5 / F5** |
-| **AI-Native 设计本体论（arXiv:2607.00527）** | 反事实标准：移除运行时生成式 AI，核心循环是否崩塌？G/N 双轴分类；核心难题是「把语义开放性组织成稳定玩法」，依赖机械不变量 | Macha 的 Action 层承担 **N 轴机制**：语义裁决（Semantic Adjudication）、多智能体模拟（Multi-Agent Simulation）、生成式叙事（Generative Narrative）等；所有生成受「目标/规则/状态/反馈/节奏/能动性」约束 | 移除生成式组件后核心循环是否仍可玩（反事实测试）、机械不变量覆盖率 → 见第 5 节 |
-| **Generative Agents / Smallville（arXiv:2304.03442）** | 记忆流 + 反思 + 规划产生可信社会行为；记忆含时间衰减、重要性加权、语义关联；反思在重要性阈值触发 | 直接对应 Macha 的 Memory（衰减/加权/检索）+ Reasoning（反思与规划）三层件 | LoCoMo / LongMemEval / MemoryArena → **F2 / F4 / F5** |
+| **MDA (Hunicke, LeBlanc, Zubek 2004)** | Game = Mechanics (rules/data/algorithms) → Dynamics (runtime emergent behavior) → Aesthetics (player emotional response); designer builds forward, player experiences backward; "a game is more like a designed artifact than a media, content is its behavior" | **Mechanics**→ Macha's interface contracts (`Observation`/`MemoryItem`/`BaseAgent`) and `architecture.md`'s algorithm layer; **Dynamics**→ Perception→Memory→Reasoning→Action emerging under player input; **Aesthetics**→ player subjective believability (F3/F7) | Use "mechanical invariants" to ensure Dynamics converges to target Aesthetics; measure Aesthetics via player research (TrueSkill pairing) → **F3 / F7 / E13** |
+| **Interactive Drama (Chris Crawford)** | True interaction = "listen-think-speak" loop among multiple active agents; only "interactive storytelling" not "interactive story"; system must generate story instantly from player feedback while keeping structural integrity | Macha's Reasoning is the "story-engine core": maintains storyworld (characters, relations, motivations, rules), generates next step instantly from player actions; dialogue is one kind of Verb | Narrative coherence, player agency (whether there are truly "dramatic and diverse" choices), structural integrity → see C7 |
+| **Believability (Bates 1994; Loyall & Bates 1997; Paiva/Gomes 2013)** | Believable = provide "the illusion of life" so audience suspends disbelief; emotion must be expressed at the right moment; language and action must be driven by the same personality/emotion; nine-dimension measure (behavior consistency/experience change/awareness/understandability/personality/visual/emotion expression/predictability/sociability) | **Character layer** (personality, emotion, relations) runs through Perception→Memory→Reasoning→Action; emotion state machine inside Reasoning; visuals/actions presented by Action layer | Paiva nine-dimension scale + Game Agent Matrix → **F1 / F3 / F7** |
+| **AI-based Game Design (Eladhari et al. 2011; Treanor et al. 2015)** | AI should be the game's "co-author" not a smoke-and-mirrors; proposes design patterns: AI is Visualized, AI as Role-model, Mixed-Initiative, etc.; Mechanics/Dynamics/Aesthetics must deeply bind the AI system | Macha provides not "smarter dialogue" but "AI mechanism primitives" (memory, reflection, planning, social reasoning) usable by designers to construct gameplay; supports mixed-initiative (player + NPC co-creation) | Designer combinability, pattern reuse, whether it produces "expressive AI" (player must read NPC intent) → **F5 / C7** |
+| **The Sims pheromone model (Will Wright)** | Character is "environmentally distributed intelligence": each object broadcasts a "need smell" (food/energy/social…), Sim follows the smell; **deliberately keeps "imperfect autonomy"** — early versions too smart made player irrelevant, so randomness and "hidden time bombs" were added to maintain play tension | Macha's Perception layer marks world objects as "signal sources attractable by desire/goal"; Autonomy parameter must be tunable (too smart = player irrelevant, too dumb = boring); behavior threshold introduces controllable randomness | Autonomy tuning curve, player-intervention necessity, behavior diversity → **C4 / C5 / F5** |
+| **AI-Native design ontology (arXiv:2607.00527)** | Counterfactual standard: remove runtime generative AI, does the core loop collapse? G/N dual-axis classification; core difficulty is "organizing semantic openness into stable gameplay," relying on mechanical invariants | Macha's Action layer carries the **N-axis mechanism**: Semantic Adjudication, Multi-Agent Simulation, Generative Narrative, etc.; all generation constrained by "goal/rule/state/feedback/pacing/agency" | Whether the core loop is still playable after removing generative components (counterfactual test), mechanical-invariant coverage → see Section 5 |
+| **Generative Agents / Smallville (arXiv:2304.03442)** | Memory stream + reflection + planning produce believable social behavior; memory has time decay, importance weighting, semantic association; reflection triggered at importance threshold | Directly corresponds to Macha's Memory (decay/weighting/retrieval) + Reasoning (reflection and planning) three-layer | LoCoMo / LongMemEval / MemoryArena → **F2 / F4 / F5** |
 
 ---
 
-## 3. 专项分析 A：玩家对 NPC 记忆的期待（"NPC 到底该记住什么"）
+## 3. Special Analysis A: Players' Expectations of NPC Memory ("what exactly should the NPC remember")
 
-设计语言常把「记忆」当成数据库问题，但玩家感知的是**关系与叙事权重**。综合产业与社区研究（见第 6 节来源），可提炼为以下需求：
+Design language often treats "memory" as a database problem, but players perceive **relationship and narrative weight**. Synthesizing industry and community research (see Section 6 sources), we distill the following requirements:
 
-### 3.1 有目的的记忆（Purpose-Driven Memory），而非全量记忆
+### 3.1 Purpose-Driven Memory, not full-volume memory
 
-- **高价值记忆**（应优先留存）：背叛或忠诚行为、阵营/道德取向漂移、未履行的承诺、共担风险或共享成功的关键时刻、影响关系的重大抉择。
-- **低价值记忆**（应衰减或忽略）：每一次琐碎对话选项、重复的微小动作——记住太多反而制造噪声与叙事不一致。
-- **设计含义**：Macha 的 Memory 层必须做**重要性加权 + 衰减 + 语义检索**，而非把对话流水账全塞进上下文。直接对应 `evaluation_benchmarks.md` 的 F2（长期记忆稳定性）与 F4（反幻觉）。
+- **High-value memory** (retain first): betrayal or loyalty behavior, faction / moral-orientation drift, unfulfilled promises, moments of shared risk or shared success, major choices affecting relations.
+- **Low-value memory** (should decay or be ignored): every trivial dialogue option, repeated tiny actions — remembering too much creates noise and narrative inconsistency.
+- **Design implication**: Macha's Memory layer must do **importance weighting + decay + semantic retrieval**, not stuff the dialogue transcript into the context. Directly corresponds to `evaluation_benchmarks.md`'s F2 (long-term memory stability) and F4 (anti-hallucination).
 
-### 3.2 四类记忆系统的设计谱系（供 Macha 选型参考）
+### 3.2 Four-type Memory-System Design Genealogy (for Macha selection reference)
 
-| 类型 | 机制 | 能记住什么 | 局限 | 对 Macha 的启示 |
+| Type | Mechanism | What it can remember | Limitation | Implication for Macha |
 |---|---|---|---|---|
-| Flag / Reputation（旗帜/声誉） | 布尔旗或数值声誉，NPC 交互时查询 | 某事件是否发生（`saved_apothecary=true`；`reputation:merchant_guild=-12`） | 无语义、无细节 | 作为 Macha Memory 的「硬事实层」，便宜可靠 |
-| Simulation（模拟） | 带情绪权重的事件日志 + 衰减 | 创伤/侮辱等情绪化记忆，丰富但不可对话 | NPC 无法「聊」记忆 | Macha 可把情绪权重作为检索排序信号 |
-| Nemesis（宿敌） | 跟踪遭遇并重塑 NPC 身份 | 战斗关系（谁杀了我、我怕火） | 范围窄、常专利封锁 | 可作为 Macha「关系+恐惧」子模块的范例 |
-| AI / Vector（向量） | 对话内容向量化、语义相似检索 | 你说过的原话与意图，而非仅事件 | 依赖 LLM、有延迟/成本、概率性召回 | **Macha 的主记忆范式**（RAG + 向量），但须叠加 Flag 层兜底 |
+| Flag / Reputation | Boolean flag or numeric reputation, queried on NPC interaction | Whether an event happened (`saved_apothecary=true`; `reputation:merchant_guild=-12`) | No semantics, no detail | As Macha Memory's "hard-fact layer," cheap and reliable |
+| Simulation | Event log with emotion weight + decay | Emotional memories like trauma/insult, rich but not dialogable | NPC cannot "talk" memory | Macha can use emotion weight as retrieval-ranking signal |
+| Nemesis | Track encounters and reshape NPC identity | Combat relations (who killed me, I fear fire) | Narrow scope, often patent-locked | Can serve as example of Macha "relation + fear" sub-module |
+| AI / Vector | Vectorize dialogue content, semantic-similarity retrieval | Your exact words and intent, not just events | Depends on LLM, has latency/cost, probabilistic recall | **Macha's main memory paradigm** (RAG + vector), but must stack a Flag layer as fallback |
 
-### 3.3 记忆的社会传播：声誉与流言网络
+### 3.3 Social Propagation of Memory: Reputation and Gossip Networks
 
-- 玩家不期待「每个 NPC 全知」，而期待**谁知道什么**不同：卫兵知罪行、酒馆老板知八卦、祭司知誓言。这驱动探索（玩家去寻找「记得那件事的人」）。
-- **流言/见证链（witness & gossip）**让信息在传播中变异，引入不确定性与社会动态——比全知 NPC 更可信。
-- **设计含义**：Macha 的 Memory 应支持**基于角色的访问权限 + 传播规则**，而非全局共享黑板。
+- Players do not expect "every NPC omniscient," but expect **who knows what** to differ: guard knows crimes, tavern keeper knows gossip, priest knows oaths. This drives exploration (player seeks "the one who remembers that event").
+- **Witness & gossip chains** let information mutate in propagation, introducing uncertainty and social dynamics — more believable than omniscient NPCs.
+- **Design implication**: Macha's Memory should support **role-based access + propagation rules**, not a global shared blackboard.
 
-### 3.4 向玩家「展示记忆」的 UX
+### 3.4 Showing Memory to the Player (UX)
 
-- 世界内线索（NPC 对话、通缉令、镇公所账本引用过往事迹）、玩家仪表盘（谁记得你、为何）、前置暗示（行动会有后果）——让记忆「公平且有意义」。
+- In-world clues (NPC dialogue, wanted posters, town-hall ledger referencing past deeds), player dashboard (who remembers you, why), foreshadowing (actions have consequences) — make memory "fair and meaningful."
 
 ---
 
-## 4. 专项分析 B：开放世界 vs 叙事游戏 NPC 行为差异
+## 4. Special Analysis B: Open-World vs. Narrative-Game NPC Behavior Differences
 
-| 维度 | 开放世界（Open World） | 叙事/角色扮演（Narrative/RPG） | 对 Macha 的指示 |
+| Dimension | Open World | Narrative / RPG | Indication for Macha |
 |---|---|---|---|
-| 主导美学 | Discovery / Sensation / Fellowship（MDA 八类） | Narrative / Expression / Fantasy | Macha 的 Character 层应允许按游戏类型切换「可信度侧重点」 |
-| NPC 数量与密度 | 海量路人 NPC，需基础对话与涌现行为 | 少量关键 NPC，深度角色塑造 | 分层：路人用轻量 FSM/轮询，关键 NPC 用完整 Macha 认知栈 |
-| 玩家行为可预测性 | 低（行为多样、期待涌现故事） | 较高（主线节点需稳固） | 开放世界更依赖 C9 世界真实感；叙事更依赖 C2 角色一致性 |
-| 沉浸杀手 | 「木头人」感、无法对独特行为智能反应 | 角色偏离人设、长线剧情崩坏 | 两类都要求 F1/F4，但叙事侧阈值更严 |
-| 推荐架构 | 「混合方案」：少量重要 NPC 给动态对话作亮点，其余用状态机 | GPT/LLM 深度扮演 + 主线框架（Fable 式）约束 | Macha 应支持「认知栈降级」（路人 NPC 不加载完整 Reasoning）以控成本（E10/E11） |
-| 世界是否围绕玩家冻结 | 否——NPC 有独立日程、关系、生命（Stardew Valley 范式） | 部分——主线可等待，但世界仍应「有脉搏」 | C9 世界真实感对两类都成立，强度不同 |
+| Dominant aesthetics | Discovery / Sensation / Fellowship (MDA eight) | Narrative / Expression / Fantasy | Macha's Character layer should allow switching "believability focus" by game type |
+| NPC count & density | Massive passerby NPCs, need basic dialogue and emergent behavior | Few key NPCs, deep characterization | Layering: passersby use lightweight FSM/polling, key NPCs use full Macha cognitive stack |
+| Player-behavior predictability | Low (diverse behavior, expect emergent story) | Higher (main-line nodes need stability) | Open world relies more on C9 world realness; narrative relies more on C2 role consistency |
+| Immersion-killer | "Wooden" feel, no intelligent reaction to unique behavior | Character off-persona, long-arc plot collapse | Both require F1/F4, but narrative side has stricter threshold |
+| Recommended architecture | "Hybrid plan": few important NPCs get dynamic dialogue as highlights, rest use state machines | GPT/LLM deep role-play + main-line framework (Fable-style) constraints | Macha should support "cognitive-stack downgrade" (passerby NPC does not load full Reasoning) to control cost (E10/E11) |
+| Does world freeze around player | No — NPCs have independent schedules, relations, life (Stardew Valley paradigm) | Partly — main line can wait, but world should still "have a pulse" | C9 world realness holds for both, different intensity |
 
-> 关键洞察（来自 Stardew Valley 拆解与 GAEA 系统报道）：**「自主性的假象」**（illusion of autonomy）——日程是写死的，但因随天/天气/季节变化且暗示性格，玩家感到角色在「选择」。这正是 Macha 可在低成本下达到高可信度的工程技巧：用确定性调度制造「生命感」，用 LLM 制造「不可预测的深度」。
-
----
-
-## 5. 专项分析 C：AI 原生游戏的「语义裁决」与「多智能体模拟」案例拆解
-
-基于 `arXiv:2607.00527` 的 G/N 双轴分类，以下两类 N 轴机制是 Macha 作为「标准骨架」必须内置的玩法原语。
-
-### 5.1 语义裁决（Semantic Adjudication）
-
-> 定义：玩家以自然语言/开放动作输入，系统**即时解释其语义、改写游戏状态并裁决后果**，而非在预写分支里匹配。
-
-**案例 1：Hidden Door（AI 地牢主 / DM）**
-- 机制：人类作者手写「剧情节拍 + 世界观规则 + 桥段牌库」，ML/LLM 在每回合把玩家自然语言行动**裁决**为可执行的游戏状态变更（卡牌化世界状态），并有时掷骰决定成败。
-- 关键设计：**有墙的自由**——玩家不能「写个无敌银弓秒杀全银河」（ChatGPT 会同意，Hidden Door 会否决并引导）。世界状态**存于引擎层而非对话上下文**，这是其记忆与连贯性领先（Memory & Continuity 4/5、Longevity 4/5）的根因。
-- 对 Macha 的启示：Action 层必须有一个**裁决器（Adjudicator）**，把 LLM 的自由输出映射到受约束的世界状态；这正是 `architecture.md` 中 Action「结构化输出」与 C8 受控自主性的落地形态。
-
-**案例 2：多智能体 Balderdash 的「评审 LLM」**
-- 机制：集中式游戏引擎 + 多个 LLM 玩家 + 一个 **judge LLM 评估语义等价性**（定义是否接近真相）。
-- 对 Macha 的启示：语义裁决可抽象为「**裁判智能体**」模式——在 PvP/PvE 或社会推理场景中，由一个独立的裁决 Agent 校验语义一致性，避免主 Agent 自说自话。对应 Macha 的「反思/校验」环节（F4 抗幻觉）。
-
-### 5.2 多智能体模拟（Multi-Agent Simulation）
-
-> 定义：多个 AI 角色各自拥有目标/情绪/关系，在共享世界中**并行演化、相互影响**，玩家只是其中一员。
-
-**案例 1：The Sims（经典范本）**
-- 机制：物体广播「需求气味」，Sim 循气味自主行动；玩家可覆盖但 Sims 非完全自主；**刻意的不完美自治**维持玩法张力（见第 2 节映射）。
-- 对 Macha 的启示：多 NPC 的「环境分布智能」+ 可调自治度，是开放世界 Macha 的基线范式。
-
-**案例 2：Generative Agents / Smallville（生成式智能体小镇）**
-- 机制：25 个智能体，记忆流（时间衰减 + 重要性加权 + 语义关联）+ 反思（重要性阈值触发）+ 规划，产生可信社会行为。
-- 对 Macha 的启示：这是 Macha Memory/Reasoning 三层件的「参考实现」；但需注意其**缺乏游戏机械不变量**——直接用于游戏会「涌现但不成玩法」，须叠加 2607 的机械约束（C7/C8）。
-
-**案例 3：Spyfall Arena / 多智能体推理基准**
-- 机制：多个 LLM 自治玩社交推理游戏（Spyfall），集中式引擎记录每局 JSON 日志（提问/回答/投票/结果），做欺骗与推理基准。
-- 对 Macha 的启示：多 Agent 模拟需要**可观测的集中式日志**（对应 E12 可观测性），否则无法调试涌现行为。
-
-> **综合结论**：Macha 若要成为「标准骨架」，其 Action 层必须同时提供 (a) 语义裁决原语（Adjudicator + 可选 Judge Agent）与 (b) 多智能体调度原语（共享世界状态 + 独立认知栈 + 集中日志），二者都受「机械不变量」约束——这正是 2607 论文对 AI 原生游戏的核心论断。
+> Key insight (from Stardew Valley teardown and GAEA system coverage): **"illusion of autonomy"** — schedules are hard-coded, but vary by day/weather/season and hint at personality, so players feel the character is "choosing." This is exactly Macha's engineering trick for high believability at low cost: use deterministic scheduling to create "sense of life," use LLM to create "unpredictable depth."
 
 ---
 
-## 6. 来源收集（按约定格式）
+## 5. Special Analysis C: "Semantic Adjudication" and "Multi-Agent Simulation" Case Teardown of AI-Native Games
 
-> 每条遵循 `information_needs.md` 指定格式：【类别】/【标题】/【链接/文件路径】/【一句话摘要】/【关键结论】/【可复用的东西】
+Based on `arXiv:2607.00527`'s G/N dual-axis classification, the following two N-axis mechanisms are gameplay primitives Macha as a "standard skeleton" must build in.
 
----
+### 5.1 Semantic Adjudication
 
-【类别】学术论文 / 设计理论
-【标题】MDA: A Formal Approach to Game Design and Game Research（Hunicke, LeBlanc, Zubek, 2004）
-【链接/文件路径】https://users.cs.northwestern.edu/~hunicke/MDA.pdf （WebFetch 确认重定向可访问）；镜像解读 https://gdad.wiki/wiki/game-design/foundations-theory/mda-framework
-【一句话摘要】提出 Mechanics→Dynamics→Aesthetics 三层框架，主张「游戏更像人造物而非媒体，内容即其行为」，并揭示设计师正向建、玩家逆向体验的不对称。
-【关键结论】
-1. Mechanics=规则/数据/算法；Dynamics=运行期涌现行为；Aesthetics=玩家情感响应（八类：感官/幻想/叙事/挑战/社交/探索/表达/沉浸）。
-2. 设计师从 M 建到 A，玩家从 A 体验到 M，二者方向相反，gap 只能靠 playtesting 闭合。
-3. 「游戏的内容是行为，而非向被动受众流动的内容」——直接支持 Macha 把 NPC 当「行为系统」而非「内容生成器」。
-【可复用的东西】M/D/A 分层词汇 + 八类美学清单 + 不对称设计法——可作 Macha「设计意图→技术需求」（第 1 节）与「模块映射」（第 2 节）的底层框架。
+> Definition: player inputs in natural language / open actions, system **instantly interprets its semantics, rewrites game state, and adjudicates consequences**, rather than matching within pre-written branches.
 
----
+**Case 1: Hidden Door (AI Dungeon Master / DM)**
+- Mechanism: human authors hand-write "story beats + world-rule set + bridge-card library"; ML/LLM adjudicates each turn's player natural-language action into executable game-state change (card-based world state), sometimes with dice for success/failure.
+- Key design: **freedom within walls** — player cannot "write an invincible silver bow to one-shot the galaxy" (ChatGPT would agree, Hidden Door vetoes and guides). World state **lives in the engine layer not the dialogue context**, which is why its memory and coherence lead (Memory & Continuity 4/5, Longevity 4/5).
+- Implication for Macha: the Action layer must have an **Adjudicator** mapping the LLM's free output to constrained world state; this is the landing form of `architecture.md`'s Action "structured output" and C8 bounded autonomy.
 
-【类别】设计理论 / 产业资料
-【标题】The Sims 的设计笔记：Will Wright 的「信息素」自主角色模型
-【链接/文件路径】https://www.engadget.com/2010/11/08/will-wright-explains-what-the-sims-and-an-ant-colony-have-in-com ；https://www.museumofplay.org/games/the-sims ；https://spotofspawn.com/news/45464835/
-【一句话摘要】Wright 揭示 The Sims 内核是「物体广播需求气味、Sim 循气味行动」的环境分布智能，且早期自治过强反而让玩家无需操作，于是刻意加入随机与「隐藏定时炸弹」。
-【关键结论】
-1. Sim 智能源自 SimAnt 的蚂蚁信息素模型：每个对象广播八种需求的「气味」，角色循气味满足。
-2. 早期版本「自治太好，玩家做什么都不如自动驾驶优」→ 必须调低自治、引入可控随机以维持玩法张力。
-3. The Sims 更像「玩具」而非「游戏」：无终点、靠半自主角色的日常戏剧性提供无限重玩。
-【可复用的东西】「环境分布智能 + 可调自治度 + 不完美自主性」范式——Macha Perception（信号源标注）与 Autonomy 参数设计的直接参考（C4/C5）。
+**Case 2: Multi-agent Balderdash's "judge LLM"**
+- Mechanism: centralized game engine + multiple LLM players + one **judge LLM evaluating semantic equivalence** (defining proximity to truth).
+- Implication for Macha: semantic adjudication can be abstracted as a "**referee agent**" pattern — in PvP/PvE or social-reasoning scenarios, an independent adjudication Agent checks semantic consistency, avoiding the main Agent talking to itself. Corresponds to Macha's "reflection / verification" step (F4 anti-hallucination).
 
----
+### 5.2 Multi-Agent Simulation
 
-【类别】学术专著 / 设计理论
-【标题】Chris Crawford on Interactive Storytelling（互动叙事，Crawford）
-【链接/文件路径】书评与定义 https://www.igfmobile.com/design/book-review-i-chris-crawford-on-interactive-storytelling-i- ；作者站点（Erasmatron 原型）http://www.erasmatazz.com/
-【一句话摘要】Crawford 严格定义「交互 = 多活跃主体间倾听—思考—发言的循环」，主张只有「互动叙事」而非「互动故事」，系统须能基于玩家反馈即时生成故事且维持结构完整。
-【关键结论】
-1. 交互须发生在随时间推进的过程中；互动故事（interactive story）不存在，只有互动叙事（interactive storytelling）。
-2. 故事引擎需在 storyworld 中基于玩家选择即时生成故事，同时维持「结构完整感」。
-3. 动词（Verbs）即玩家在交互媒介中「能做的动作」；丰富动词库是戏剧性选择的前提。
-【可复用的东西】「storyworld + 即时生成 + 结构完整」三要素——Macha Reasoning 作为「故事引擎内核」的设计蓝图（C7）。
+> Definition: multiple AI characters each with goals / emotion / relations, **evolving in parallel, influencing each other** in a shared world; the player is just one of them.
+
+**Case 1: The Sims (classic exemplar)**
+- Mechanism: objects broadcast "need smell," Sim follows smell to act autonomously; player can override but Sims not fully autonomous; **deliberate imperfect autonomy** maintains play tension (see Section 2 mapping).
+- Implication for Macha: multi-NPC "environmentally distributed intelligence" + tunable autonomy is the baseline paradigm for open-world Macha.
+
+**Case 2: Generative Agents / Smallville (generative-agent town)**
+- Mechanism: 25 agents, memory stream (time decay + importance weighting + semantic association) + reflection (importance-threshold triggered) + planning, produce believable social behavior.
+- Implication for Macha: this is the "reference implementation" of Macha Memory/Reasoning three-layer; but note its **lack of game mechanical invariants** — used directly in games it "emerges but not into gameplay," must stack 2607's mechanical constraints (C7/C8).
+
+**Case 3: Spyfall Arena / multi-agent reasoning benchmark**
+- Mechanism: multiple LLMs play social-reasoning game (Spyfall) autonomously, centralized engine logs each game's JSON (question/answer/vote/result) for deception and reasoning benchmark.
+- Implication for Macha: multi-agent simulation needs **observable centralized logging** (corresponds to E12 observability), otherwise emergent behavior cannot be debugged.
+
+> **Synthesis**: If Macha is to be a "standard skeleton," its Action layer must simultaneously provide (a) the semantic-adjudication primitive (Adjudicator + optional Judge Agent) and (b) the multi-agent-scheduling primitive (shared world state + independent cognitive stack + centralized logging), both constrained by "mechanical invariants" — exactly the core thesis of the 2607 paper on AI-native games.
 
 ---
 
-【类别】学术论文 / 设计理论
-【标题】AI-Based Game Design: Enabling New Playable Experiences（Eladhari et al., 2011）
-【链接/文件路径】https://tr.soe.ucsc.edu/sites/default/files/technical-reports/UCSC-SOE-11-27.pdf
-【一句话摘要】提出「AI-based game design」实践：把 AI 系统能力深度整合进游戏设计共同创作，反对仅用「烟雾弹」伪造智能。
-【关键结论】
-1. 完全可预测的系统的「死」的；AI 必须 robust 到支撑玩家实验与探索，而非 Eliza 效应式的虚假智能。
-2. 区分「完全可预测的物理系统」与「不可完全预测的人类式行为」——后者才需要玩家去推理意图。
-3. AI 应成为游戏设计的核心共同作者，而非增强层。
-【可复用的东西】「expressive AI / 玩家需读懂 AI 意图」原则 + 共同创作方法论——Macha 作为「玩法原语提供者」而非「对话增强器」的定位依据（C7）。
+## 6. Source Collection (in agreed format)
+
+> Each entry follows `information_needs.md`'s specified format: [Category]/[Title]/[Link / file path]/[One-sentence summary]/[Key conclusions]/[Reusable things]
 
 ---
 
-【类别】学术论文 / 设计模式
-【标题】AI-Based Game Design Patterns（Treanor, Zook, Eladhari, Togelius et al., FDG 2015）
-【链接/文件路径】http://julian.togelius.com/Treanor2015AIBased.pdf ；Strathclyde 存档 https://strathprints.strath.ac.uk/57219/
-【一句话摘要】从现有 AI 游戏中提炼设计模式（AI is Visualized、AI as Role-model、Mixed-Initiative 等），提出「模式 × AI 技术」的生成式构思法。
-【关键结论】
-1. AI-based games 把 AI 置于玩家体验前台，而非传统商业游戏的支撑角色。
-2. 设计模式（如可视化 AI 状态、AI 作为模仿对象）可作生成式构思工具。
-3. MDA 的 M/D/A 须与 AI 系统深度绑定。
-【可复用的东西】AI 游戏设计模式族——Macha 可据此定义「可组合玩法原语」清单（C7/C8）。
+[Category]Academic paper / Design theory
+[Title]MDA: A Formal Approach to Game Design and Game Research (Hunicke, LeBlanc, Zubek, 2004)
+[Link / file path]https://users.cs.northwestern.edu/~hunicke/MDA.pdf (WebFetch confirmed redirect accessible); mirror interpretation https://gdad.wiki/wiki/game-design/foundations-theory/mda-framework
+[One-sentence summary]Proposes the Mechanics→Dynamics→Aesthetics three-layer framework, arguing "a game is more like a designed artifact than media, content is its behavior," and revealing the asymmetry that designers build forward, players experience backward.
+[Key conclusions]
+1. Mechanics=rules/data/algorithms; Dynamics=runtime emergent behavior; Aesthetics=player emotional response (eight types: sensation/fantasy/narrative/challenge/fellowship/discovery/expression/playground).
+2. Designer builds M to A, player experiences A to M, opposite directions, gap closed only by playtesting.
+3. "A game's content is behavior, not content flowing to a passive audience" — directly supports Macha treating NPC as "behavior system" not "content generator."
+[Reusable things]M/D/A layered vocabulary + eight-aesthetic list + asymmetric design method — can serve as the underlying framework for Macha's "design intent → technical requirement" (Section 1) and "module mapping" (Section 2).
 
 ---
 
-【类别】学术论文 / 可信度理论（经典）
-【标题】The Role of Emotion in Believable Agents（Bates, 1994）
-【链接/文件路径】摘要页 https://citeseer.ist.psu.edu/viewdoc/summary?doi=10.1.1.468.1779 ；原始出处 Commun. ACM 37(7):122–125
-【一句话摘要】主张「恰当时机且清晰表达的情绪」是可信角色的核心要求，应从艺术（动画/戏剧）中汲取「生命假象」的洞见。
-【关键结论】
-1. Believability ≠ 诚实可靠，而是提供「生命的假象」以让观众悬置怀疑（suspension of disbelief）。
-2. 情绪是可信交互角色的中心需求，须被恰当时机表达。
-3. AI 研究者应向传统动画师（Disney 的 Thomas & Johnston）学习「让角色显得会思考、会决策」。
-【可复用的东西】「情绪即可信度基础设施」原则——Macha Character 层必须含情绪状态机（C1/C6）。
+[Category]Design theory / Industry material
+[Title]The Sims design notes: Will Wright's "pheromone" autonomous-character model
+[Link / file path]https://www.engadget.com/2010/11/08/will-wright-explains-what-the-sims-and-an-ant-colony-have-in-com ; https://www.museumofplay.org/games/the-sims ; https://spotofspawn.com/news/45464835/
+[One-sentence summary]Wright reveals The Sims core is "objects broadcast need smells, Sim follows smell to act" environmentally distributed intelligence, and early autonomy too strong made player irrelevant, so randomness and "hidden time bombs" were deliberately added.
+[Key conclusions]
+1. Sim intelligence comes from SimAnt's ant-pheromone model: each object broadcasts eight needs' "smell," character follows to satisfy.
+2. Early version "autonomy too good, nothing player does beats autopilot" → must lower autonomy, introduce controllable randomness to keep play tension.
+3. The Sims is more "toy" than "game": no end, infinite replay from semi-autonomous characters' daily drama.
+[Reusable things]"Environmentally distributed intelligence + tunable autonomy + imperfect autonomy" paradigm — direct reference for Macha Perception (signal-source marking) and Autonomy parameter design (C4/C5).
 
 ---
 
-【类别】学术论文 / 可信度理论（经典）
-【标题】Personality-Rich Believable Agents That Use Language（Loyall & Bates, 1997, Oz 项目）
-【链接/文件路径】https://chatbots.org/paper/personality-rich_believable_agents_that_use_language ；DOI 10.1145/267658.267681
-【一句话摘要】扩展行为架构 Hap 支持自然语言生成，使文本与行动/感知/推理/情绪由同一人格统一驱动。
-【关键结论】
-1. 可信 Agent 须把语言生成与行动、感知、推理、情绪**紧耦合**。
-2. 文本须随情绪状态与特定人格变化，并带停顿/重启等真实语流特征。
-3. 语言与行动共同服务沟通目标，感知影响语言选择。
-【可复用的东西】「语言—行动—情绪统一由人格驱动」架构原则——Macha Character 层约束 Reasoning/Action 的直接依据（C2/C6）。
+[Category]Academic monograph / Design theory
+[Title]Chris Crawford on Interactive Storytelling (Interactive Storytelling, Crawford)
+[Link / file path]Review and definition https://www.igfmobile.com/design/book-review-i-chris-crawford-on-interactive-storytelling-i- ; author site (Erasmatron prototype) http://www.erasmatazz.com/
+[One-sentence summary]Crawford strictly defines "interaction = listen-think-speak loop among multiple active agents," argues only "interactive storytelling" not "interactive story," system must generate story instantly from player feedback while keeping structural integrity.
+[Key conclusions]
+1. Interaction must happen over time; interactive story does not exist, only interactive storytelling.
+2. Story engine must generate story instantly in storyworld from player choices while maintaining "structural-integrity feel."
+3. Verbs are what the player "can do" in the interaction medium; a rich verb library is the premise of dramatic choice.
+[Reusable things]"Storyworld + instant generation + structural integrity" three elements — blueprint for Macha Reasoning as "story-engine core" (C7).
 
 ---
 
-【类别】学术论文 / 可信度度量
-【标题】Metrics for Character Believability in Interactive Narrative（Gomes, Paiva, Martinho, Jhala, ICIDS 2013）
-【链接/文件路径】相关综述索引 https://www.semanticscholar.org/paper/Developing-a-Scale-for-Measuring-the-Believability-Guo-Adamo/c7ddfcb97af77ae32dc13772645612da92504aa5 （该页引用并概述 Gomes et al. 2013 九维）
-【一句话摘要】提出角色可信度的九维度度量：行为一致性、经验变化、觉知、行为可理解性、人格、视觉冲击、可预测性、社会性、情绪表达。
-【关键结论】
-1. 可信度可拆为九项可测维度，便于系统化评估而非凭感觉。
-2. 维度覆盖「内在一致性（行为/人格）」与「外在表现（视觉/情绪/社会）」两类。
-3. 与 Game Agent Matrix（Warpefelt）互为补充，构成可信度评测工具箱。
-【可复用的东西】九维度量表——直接成为 Macha F3/F7 主观评测问卷模板（已在 `evaluation_benchmarks.md` 第 4 节引用）。
+[Category]Academic paper / Design theory
+[Title]AI-Based Game Design: Enabling New Playable Experiences (Eladhari et al., 2011)
+[Link / file path]https://tr.soe.ucsc.edu/sites/default/files/technical-reports/UCSC-SOE-11-27.pdf
+[One-sentence summary]Proposes "AI-based game design" practice: deeply integrate AI-system capability into game-design co-creation, opposing only using "smoke and mirrors" to fake intelligence.
+[Key conclusions]
+1. A fully predictable system is "dead"; AI must be robust enough to support player experimentation and exploration, not Eliza-effect fake intelligence.
+2. Distinguish "fully predictable physical system" from "not-fully-predictable human-like behavior" — only the latter needs players to reason about intent.
+3. AI should be the core co-author of game design, not an enhancement layer.
+[Reusable things]"Expressive AI / player must read AI intent" principle + co-creation methodology — basis for Macha's positioning as "gameplay-primitive provider" not "dialogue enhancer" (C7).
 
 ---
 
-【类别】学术论文 / AI 原生设计本体论
-【标题】AI Native Games: A Survey and Roadmap（arXiv:2607.00527, Xu et al., 2026）
-【链接/文件路径】https://www.arxiv.org/abs/2607.00527 ；综述解读 https://www.emergentmind.com/papers/2607.00527 ；评审 https://www.pith.science/paper/2607.00527
-【一句话摘要】用反事实标准定义「AI 原生游戏」（移除运行时生成式 AI，核心循环是否崩塌），提出 G/N 双轴分类，指出核心难题是「把语义开放性组织成稳定玩法」。
-【关键结论】
-1. 反事实三测：运行时生成式 AI 存在、玩法循环依赖其输出、且不可被有限预设内容替代。
-2. G/N 双轴：G=玩家可见游戏类型，N=使 AI 不可替代的主导机制（语义裁决/多智能体模拟/生成式叙事/关系陪伴等）。
-3. 53 个样本集中于语言前向设计，语义裁决、多智能体模拟等仍代表不足——恰是 Macha 的机会。
-4. 机械不变量（目标/规则/状态/反馈/节奏/能动性）是把开放语义变稳定玩法的基础。
-【可复用的东西】「反事实测试 + G/N 双轴 + 机械不变量」方法论——Macha 定义「AI 玩法原语」与验收标准的直接框架（第 5 节）。
+[Category]Academic paper / Design patterns
+[Title]AI-Based Game Design Patterns (Treanor, Zook, Eladhari, Togelius et al., FDG 2015)
+[Link / file path]http://julian.togelius.com/Treanor2015AIBased.pdf ; Strathclyde archive https://strathprints.strath.ac.uk/57219/
+[One-sentence summary]Distills design patterns from existing AI games (AI is Visualized, AI as Role-model, Mixed-Initiative, etc.), proposes a generative ideation method of "pattern × AI technique."
+[Key conclusions]
+1. AI-based games put AI in the player-experience foreground, not the supporting role of traditional commercial games.
+2. Design patterns (e.g., visualize AI state, AI as imitation object) can serve as generative ideation tools.
+3. MDA's M/D/A must deeply bind the AI system.
+[Reusable things]AI-game design pattern family — Macha can define a "composable gameplay-primitive" list from this (C7/C8).
 
 ---
 
-【类别】产业案例 / 语义裁决
-【标题】Hidden Door（AI 叙事引擎 / AI 地牢主）
-【链接/文件路径】官方 FAQ https://www.hiddendoor.co/help/faq ；The Verge 报道（2025-08）https://www.univ-tours.fr/annuaire/m-jean-philippe-lafontaine?live-news-8466682-2026-05-21-hidden-door-is-an-ai-storytelling-game-that-actually-makes-sense-the-platform-le ；对比评测 https://arcanumrpgs.com/blog/ai-dungeon-vs-hidden-door
-【一句话摘要】以「卡牌化世界状态 + 人类手写节拍 + LLM 即时裁决玩家自然语言行动」实现连贯且有边界的 AI 叙事，世界状态存于引擎而非对话上下文。
-【关键结论】
-1. 玩家输入被裁决为受约束的世界状态变更，并有掷骰等机制；「有墙的自由」是其连贯性领先（Memory 4/5、Longevity 4/5）的根因。
-2. 世界状态存活在模型之外（卡牌引擎层），而非仅上下文窗口——避免长程崩坏。
-3. 与 AI Dungeon「无墙沙盒」形成对照：自由度高但连贯性低。
-【可复用的东西】「Adjudicator 裁决器 + 外部世界状态」架构——Macha Action 层语义裁决原语的直接范本（C8/第 5.1 节）。
+[Category]Academic paper / Believability theory (classic)
+[Title]The Role of Emotion in Believable Agents (Bates, 1994)
+[Link / file path]Abstract page https://citeseer.ist.psu.edu/viewdoc/summary?doi=10.1.1.468.1779 ; original Commun. ACM 37(7):122–125
+[One-sentence summary]Argues "emotion expressed clearly at the right moment" is the core requirement of believable characters, should draw "illusion of life" insights from art (animation/drama).
+[Key conclusions]
+1. Believability ≠ honest and reliable, but provides "illusion of life" so audience suspends disbelief.
+2. Emotion is the central need of believable interactive characters, must be expressed at the right moment.
+3. AI researchers should learn from traditional animators (Disney's Thomas & Johnston) to "make characters seem to think, to decide."
+[Reusable things]"Emotion as believability infrastructure" principle — Macha Character layer must include emotion state machine (C1/C6).
 
 ---
 
-【类别】学术论文 / 多智能体模拟
-【标题】Generative Agents: Interactive Simulacra of Human Behavior（Stanford Smallville, arXiv:2304.03442）
-【链接/文件路径】https://arxiv.org/abs/2304.03442 （亦见 `positioning.md` / `evaluation_benchmarks.md`）
-【一句话摘要】25 个 LLM 智能体以「记忆流 + 反思 + 规划」在共享小镇产生可信社会行为，是 Macha 记忆/推理三层件的参考实现。
-【关键结论】
-1. 记忆含时间衰减、重要性加权、语义关联；反思在重要性阈值触发，提炼更高层自我认知。
-2. 产生可信的涌现社会行为（信息传播、关系演化、协调事件）。
-3. 但其缺乏游戏机械不变量——直接用于游戏会「涌现不成玩法」，须叠加约束。
-【可复用的东西】记忆/反思/规划三层件结构——Macha Memory + Reasoning 模块的直接蓝本（F2/F4/F5）。
+[Category]Academic paper / Believability theory (classic)
+[Title]Personality-Rich Believable Agents That Use Language (Loyall & Bates, 1997, Oz project)
+[Link / file path]https://chatbots.org/paper/personality-rich_believable_agents_that_use_language ; DOI 10.1145/267658.267681
+[One-sentence summary]Extends behavior architecture Hap to support natural-language generation, so text and action/perception/reasoning/emotion are uniformly driven by the same personality.
+[Key conclusions]
+1. Believable Agent must tightly couple language generation with action, perception, reasoning, emotion.
+2. Text must vary with emotion state and specific personality, with real speech-flow features like pauses / restarts.
+3. Language and action jointly serve communication goals, perception affects language choice.
+[Reusable things]"Language-action-emotion uniformly driven by personality" architecture principle — direct basis for Macha Character layer constraining Reasoning/Action (C2/C6).
 
 ---
 
-【类别】社区/产业研究 / 玩家记忆期待
-【标题】7 Games Where NPCs Actually Remember You（NPC 记忆系统分类学与案例）
-【链接/文件路径】https://wanderfolk.ai/games-where-npcs-remember-you ；持久角色记忆设计 https://yoo.be/when-npcs-keep-receipts-persistent-character-memory ；2026 综述 https://aivexify.com/ai-npcs-that-remember-players
-【一句话摘要】系统梳理 Flag/Simulation/Nemesis/Vector 四类 NPC 记忆机制与代表游戏（Wanderfolk、Shadow of Mordor、Dwarf Fortress 等），指出「记得对的事」比「记得多」更重要。
-【关键结论】
-1. 四类记忆谱系：旗帜/声誉（硬事实）、模拟（情绪日志+衰减）、宿敌（战斗关系重塑）、向量（语义召回原话）。
-2. 高价值记忆（背叛/忠诚/承诺/共担风险）应优先；低价值交互应衰减——「刻意遗忘」提升可信度。
-3. 声誉与流言网络让记忆在社会中有机传播，比全知 NPC 更可信。
-【可复用的东西】记忆分类法 + 重要性/衰减/语义检索原则——Macha Memory 层选型与设计基线（C3/第 3 节）。
+[Category]Academic paper / Believability measure
+[Title]Metrics for Character Believability in Interactive Narrative (Gomes, Paiva, Martinho, Jhala, ICIDS 2013)
+[Link / file path]Related survey index https://www.semanticscholar.org/paper/Developing-a-Scale-for-Measuring-the-Believability-Guo-Adamo/c7ddfcb97af77ae32dc13772645612da92504aa5 (this page cites and summarizes Gomes et al. 2013 nine dimensions)
+[One-sentence summary]Proposes nine-dimension measure for character believability: behavior consistency, experience change, awareness, behavior understandability, personality, visual impact, predictability, sociability, emotion expression.
+[Key conclusions]
+1. Believability can be split into nine measurable dimensions, enabling systematic evaluation not by feel.
+2. Dimensions cover "inner consistency (behavior/personality)" and "outer expression (visual/emotion/social)" two classes.
+3. Complements the Game Agent Matrix (Warpefelt), forming a believability evaluation toolbox.
+[Reusable things]Nine-dimension scale — directly becomes Macha F3/F7 subjective-evaluation questionnaire template (already cited in `evaluation_benchmarks.md` Section 4).
 
 ---
 
-【类别】社区分析 / 开放世界 NPC 设计
-【标题】NPCs with Lives Beyond You: autonomous NPCs in Stardew Valley（开放世界自主角色范式）
-【链接/文件路径】https://alamrafiul.com/blogs/npcs-lives-beyond-you ；GAEA 系统报道 https://www.anaor.cn/news/126b13599738.html ；意识流转向 https://tsight.io/articles/7335930
-【一句话摘要】以 Stardew Valley 拆解「自主性的假象」：NPC 有日程/关系/生命且玩家不在时也运行，揭示开放世界可信度来自确定性调度制造的「生命感」。
-【关键结论】
-1. 传统叙事「世界围绕主角」在开放世界/生活模拟中会失效，须让角色有「你不在时的生活」。
-2. 日程是写死的，但随天/天气/季节变化且暗示性格 → 玩家感到「选择」而非「轨道」。
-3. 开放世界 NPC 须模拟日常日程、工作、环境反应、社交、玩家声誉系统，形成「活生态」。
-【可复用的东西】「确定性调度 + 变化提示性格」低成本高可信技巧——Macha 多 NPC 调度与 C9 世界真实感的工程参考。
+[Category]Academic paper / AI-native design ontology
+[Title]AI Native Games: A Survey and Roadmap (arXiv:2607.00527, Xu et al., 2026)
+[Link / file path]https://www.arxiv.org/abs/2607.00527 ; survey interpretation https://www.emergentmind.com/papers/2607.00527 ; review https://www.pith.science/paper/2607.00527
+[One-sentence summary]Uses counterfactual standard to define "AI-native games" (remove runtime generative AI, does core loop collapse), proposes G/N dual-axis classification, points out core difficulty is "organizing semantic openness into stable gameplay."
+[Key conclusions]
+1. Counterfactual three tests: runtime generative AI exists, gameplay loop depends on its output, and cannot be replaced by finite preset content.
+2. G/N dual-axis: G=player-visible game type, N=dominant mechanism making AI irreplaceable (semantic adjudication / multi-agent simulation / generative narrative / relational companionship, etc.).
+3. 53 samples concentrate on language-forward design; semantic adjudication, multi-agent simulation etc. still under-represented — exactly Macha's opportunity.
+4. Mechanical invariants (goal/rule/state/feedback/pacing/agency) are the basis for turning open semantics into stable gameplay.
+[Reusable things]"Counterfactual test + G/N dual-axis + mechanical invariants" methodology — direct framework for Macha defining "AI gameplay primitives" and acceptance criteria (Section 5).
 
 ---
 
-## 7. Macha 落地建议（设计原则）
-
-1. **以「机械不变量」兜底生成式自由**：任何 LLM 输出在 Action 层都要经 Adjudicator 映射到受约束的世界状态（C8）。这是把 2607 的「语义开放性 → 稳定玩法」落到 Macha 的核心机制。
-2. **记忆是「有目的」而非「全量」**：Macha Memory 默认启用重要性加权 + 衰减 + 语义检索 + 基于角色的访问权限，Flag 层兜底硬事实（C3/第 3 节）。直接服务 `direction.md` 第一里程碑「多次对话后仍记得玩家」。
-3. **Character 层贯穿全程**：人格/价值观/禁忌/情绪/关系作为 Reasoning 与 Action 的不可变约束，保证 C2 角色一致性（F1）。
-4. **自治度可调**：借鉴 The Sims，Macha 暴露 Autonomy 参数，避免「太聪明让玩家无关、太笨则无聊」（C4/C5）。
-5. **多 NPC 需要集中式可观测**：多智能体模拟（第 5.2 节）必须配集中日志与 trace（E12），否则涌现行为无法调试。
-6. **可信度须主观度量**：九维量表 + TrueSkill 配对评测（见 `evaluation_benchmarks.md` 第 4 节来源）是 Macha L3 玩家评估的标准方法（F3/F7）。
-
----
-
-## 8. 待补充与待核验项
-
-- **MDA 原始 PDF**：已确认 northwestern 域名可访问（重定向），正式引用建议保留该链接并附会议出处（Game Developers Conference 2004, Proceedings of the AAAI Workshop on Challenges in Game AI）。
-- **Bates 1994 / Loyall & Bates 1997**：以摘要页/镜像页登记，正式论文引用建议补全 ACM / Agents '97 原始出处。
-- **Gomes et al. 2013 九维**：经综述页确认维度内容，正式引用请补全 ICIDS 2013 原始论文 DOI。
-- **中文可信度研究缺口**：现有可信度量表与记忆案例以英文为主；若 Macha 主打中文市场，建议在 RoleBench（含中文角色）与 LongBench（含中文）基础上自建中文人设与对话记忆集（呼应 `evaluation_benchmarks.md` 第 6 节）。
-- **语义裁决的失败模式**：Hidden Door 仍有「故事感断裂」报道，Macha 的 Adjudicator 需配套「叙事引力」机制（关键节拍影响但不决定 NPC 决策），待后续原型验证。
+[Category]Industry case / Semantic adjudication
+[Title]Hidden Door (AI narrative engine / AI Dungeon Master)
+[Link / file path]Official FAQ https://www.hiddendoor.co/help/faq ; The Verge coverage (2025-08) https://www.univ-tours.fr/annuaire/m-jean-philippe-lafontaine?live-news-8466682-2026-05-21-hidden-door-is-an-ai-storytelling-game-that-actually-makes-sense-the-platform-le ; comparison review https://arcanumrpgs.com/blog/ai-dungeon-vs-hidden-door
+[One-sentence summary]Achieves coherent and bounded AI narrative via "card-based world state + human-written beats + LLM instant adjudication of player natural-language actions," world state lives in engine not dialogue context.
+[Key conclusions]
+1. Player input adjudicated into constrained world-state change, with dice etc. mechanics; "freedom within walls" is why its coherence leads (Memory 4/5, Longevity 4/5).
+2. World state survives outside the model (card-engine layer), not just context window — avoids long-run collapse.
+3. Contrasts with AI Dungeon's "wall-less sandbox": high freedom but low coherence.
+[Reusable things]"Adjudicator + external world state" architecture — direct exemplar for Macha Action-layer semantic-adjudication primitive (C8 / Section 5.1).
 
 ---
 
-## 9. 深化补充：角色卡 Schema 与可量化指标（2025–2026 加法式更新）
-
-> 本节为「加法式深化」：不改动上文任何结论，仅在原 C1–C11 框架之上补充（a）2025–2026 时效来源、（b）技术规范级产物（角色卡 Schema / 指标映射表 / 测试场景）、（c）中文市场专项、（d）量化落地阈值。技术产物均复用 `evaluation_benchmarks.md` 的 F/E 维度，确保与原文档闭环。
-
-### 9.1 广度与时效：2025–2026 AI 原生 NPC 研究新增要点
-
-综合第 13 节新增来源，2025–2026 年可信 NPC 研究呈现三条新脉络，直接补强原第 1–5 节：
-
-1. **「模糊符号脚手架」取代「硬约束 vs 自由」二元论**（arXiv:2510.25820, 2025-10）：角色约束不应是「高约束 HCP / 低约束 LCP」开关，而应表达为**数值化的模糊边界（fuzzy-symbolic boundaries）**——在需要稳定的地方（任务发布 NPC）收紧，在需要惊喜的地方（嫌疑犯 NPC）放宽松。这推翻了「约束越强体验越好」的直觉，对 Macha 的 Character 层「约束强度可按角色类型调参」是直接理论支撑（呼应原第 5.1 节 Hidden Door 的「有墙的自由」）。
-2. **混合架构成为工程共识**（Aalto 硕士论文, 2025；IJHCI 2026 VR 研究）：纯 LLM 的幻觉/延迟/不一致，与纯 FSM/BT 的「木头人」感，被普遍以「LLM 作 mind 做高层策略与情绪决策 + FSM/BT 作 body 做运行时行为控制」调和。这与 Macha 的「Reasoning（LLM）/ Action（结构化输出 + 世界状态校验）」分层不谋而合，并给出可复用模式：**Function Calling + Contextual Knowledge Injection 缓解生成式不稳定性**。
-3. **环境/空间语义感知成为可信度新维度**（arXiv:2604.19192, 2026-04）：NPC 通过全景图 + 语义分割 + 场景图获得「周围有什么、在哪、方向如何」的结构化 JSON，再喂给 LLM，使 NPC 能**动态引用附近物体/地标**。这补强了原 C9 世界真实感——Macha 的 Perception 层除「需求气味」外，应增加「空间语义槽」，让 NPC 的对话与行为可被环境事实锚定（同时是 C11 抗幻觉的事实来源之一）。
+[Category]Academic paper / Multi-agent simulation
+[Title]Generative Agents: Interactive Simulacra of Human Behavior (Stanford Smallville, arXiv:2304.03442)
+[Link / file path]https://arxiv.org/abs/2304.03442 (also see `positioning.md` / `evaluation_benchmarks.md`)
+[One-sentence summary]25 LLM agents produce believable social behavior in a shared town via "memory stream + reflection + planning," the reference implementation of Macha's memory/reasoning three-layer.
+[Key conclusions]
+1. Memory has time decay, importance weighting, semantic association; reflection triggered at importance threshold, distilling higher-level self-cognition.
+2. Produces believable emergent social behavior (information spread, relation evolution, coordinated events).
+3. But it lacks game mechanical invariants — used directly in games it "emerges not into gameplay," must stack constraints.
+[Reusable things]Memory/reflection/planning three-layer structure — direct blueprint for Macha Memory + Reasoning modules (F2/F4/F5).
 
 ---
 
-### 9.2 技术规范深度（一）：Macha 角色卡 Schema（JSON）
+[Category]Community / Industry research / Player memory expectation
+[Title]7 Games Where NPCs Actually Remember You (NPC memory-system taxonomy and cases)
+[Link / file path]https://wanderfolk.ai/games-where-npcs-remember-you ; persistent character-memory design https://yoo.be/when-npcs-keep-receipts-persistent-character-memory ; 2026 survey https://aivexify.com/ai-npcs-that-remember-players
+[One-sentence summary]Systematically reviews Flag/Simulation/Nemesis/Vector four NPC-memory mechanisms and representative games (Wanderfolk, Shadow of Mordor, Dwarf Fortress, etc.), pointing out "remembering the right things" matters more than "remembering more."
+[Key conclusions]
+1. Four memory lineages: flag/reputation (hard fact), simulation (emotion log + decay), nemesis (combat-relation reshape), vector (semantic recall of exact words).
+2. High-value memory (betrayal/loyalty/promise/shared risk) retained first; low-value interaction decays — "deliberate forgetting" improves believability.
+3. Reputation and gossip networks let memory propagate organically in society, more believable than omniscient NPCs.
+[Reusable things]Memory taxonomy + importance/decay/semantic-retrieval principles — Macha Memory-layer selection and design baseline (C3 / Section 3).
 
-> 设计目标：把原 C2（角色一致性）/ C6（情感社会性）/ C8（受控自主性）从「设计关切」落地为**可序列化、可被 Reasoning 层加载、可被 Action 层校验、可被测试断言**的结构化契约。参考社区 Character Card V2/V3 规范（见第 13 节来源），但**扩展游戏专属字段**：机械不变量、关系图、记忆访问权限、情绪状态机、世界状态引用。
+---
+
+[Category]Community analysis / Open-world NPC design
+[Title]NPCs with Lives Beyond You: autonomous NPCs in Stardew Valley (open-world autonomous-character paradigm)
+[Link / file path]https://alamrafiul.com/blogs/npcs-lives-beyond-you ; GAEA system coverage https://www.anaor.cn/news/126b13599738.html ; stream-of-consciousness turn https://tsight.io/articles/7335930
+[One-sentence summary]Tears down Stardew Valley's "illusion of autonomy": NPCs have schedules/relations/life and run even when player is absent, revealing open-world believability comes from deterministic scheduling creating "sense of life."
+[Key conclusions]
+1. Traditional narrative's "world revolves around protagonist" fails in open-world / life-sim; characters must have "life when you're not there."
+2. Schedules are hard-coded but vary by day/weather/season and hint at personality → player feels "choice" not "rail."
+3. Open-world NPCs must simulate daily schedule, work, environmental reaction, socializing, player-reputation system, forming a "living ecosystem."
+[Reusable things]"Deterministic scheduling + variation hinting personality" low-cost high-believability trick — engineering reference for Macha multi-NPC scheduling and C9 world realness.
+
+---
+
+## 7. Macha Landing Suggestions (design principles)
+
+1. **Use "mechanical invariants" to backstop generative freedom**: any LLM output at the Action layer must be mapped by the Adjudicator to constrained world state (C8). This is the core mechanism turning 2607's "semantic openness → stable gameplay" into Macha.
+2. **Memory is "purposeful" not "full-volume"**: Macha Memory by default enables importance weighting + decay + semantic retrieval + role-based access, with a Flag layer backing up hard facts (C3 / Section 3). Directly serves `direction.md`'s first milestone "still remembers the player after multiple dialogues."
+3. **Character layer runs through the whole process**: personality/values/taboos/emotion/relations as immutable constraints on Reasoning and Action, ensuring C2 role consistency (F1).
+4. **Autonomy tunable**: learn from The Sims, Macha exposes an Autonomy parameter, avoiding "too smart makes player irrelevant, too dumb is boring" (C4/C5).
+5. **Multi-NPC needs centralized observability**: multi-agent simulation (Section 5.2) must pair with centralized logging and trace (E12), otherwise emergent behavior cannot be debugged.
+6. **Believability must be subjectively measured**: nine-dimension scale + TrueSkill pairing evaluation (see `evaluation_benchmarks.md` Section 4 sources) is the standard method for Macha L3 player evaluation (F3/F7).
+
+---
+
+## 8. Items to Supplement and Verify
+
+- **MDA original PDF**: northwestern domain confirmed accessible (redirect); for formal citation keep this link and attach the conference source (Game Developers Conference 2004, Proceedings of the AAAI Workshop on Challenges in Game AI).
+- **Bates 1994 / Loyall & Bates 1997**: registered via abstract / mirror pages; for formal paper citation complete ACM / Agents '97 original sources.
+- **Gomes et al. 2013 nine dimensions**: dimension content confirmed via survey page; for formal citation complete ICIDS 2013 original paper DOI.
+- **Chinese believability-research gap**: existing believability scales and memory cases are mostly English; if Macha targets the Chinese market, suggest building self-owned Chinese persona and dialogue-memory sets on top of RoleBench (with Chinese characters) and LongBench (with Chinese) (echoing `evaluation_benchmarks.md` Section 6).
+- **Failure modes of semantic adjudication**: Hidden Door still has "story-feel break" reports; Macha's Adjudicator needs a paired "narrative-gravity" mechanism (key beats influence but do not decide NPC decisions), pending prototype validation.
+
+---
+
+## 9. Deepening Supplement: Character-Card Schema and Quantifiable Metrics (2025–2026 additive update)
+
+> This section is an "additive deepening": does not modify any conclusion above, only supplements on top of the original C1–C11 framework: (a) 2025–2026 timely sources, (b) technical-spec-level artifacts (character-card Schema / metric-mapping table / test scenarios), (c) Chinese-market section, (d) quantified landing thresholds. Technical artifacts all reuse `evaluation_benchmarks.md`'s F/E dimensions, ensuring a closed loop with the original document.
+
+### 9.1 Breadth and Timeliness: 2025–2026 AI-Native NPC Research New Points
+
+Synthesizing the new Section 13 sources, 2025–2026 believable-NPC research shows three new threads, directly strengthening the original Sections 1–5:
+
+1. **"Fuzzy-symbolic scaffolding" replaces the "hard-constraint vs. freedom" dichotomy** (arXiv:2510.25820, 2025-10): character constraints should not be a "high-constraint HCP / low-constraint LCP" switch, but expressed as **numerical fuzzy boundaries** — tightened where stability is needed (quest-giver NPC), loosened where surprise is needed (suspect NPC). This overturns the intuition "stronger constraint = better experience," directly supporting Macha's Character layer "constraint strength tunable by character type" (echoing original Section 5.1 Hidden Door's "freedom within walls").
+2. **Hybrid architecture becomes engineering consensus** (Aalto master's thesis, 2025; IJHCI 2026 VR study): pure LLM's hallucination/latency/inconsistency and pure FSM/BT's "wooden" feel are generally reconciled by "LLM as mind for high-level strategy and emotion decisions + FSM/BT as body for runtime behavior control." This coincides with Macha's "Reasoning (LLM) / Action (structured output + world-state check)" layering, and gives a reusable pattern: **Function Calling + Contextual Knowledge Injection mitigates generative instability**.
+3. **Environmental / spatial semantic perception becomes a new believability dimension** (arXiv:2604.19192, 2026-04): NPC obtains structured JSON of "what's around, where, which direction" via panorama + semantic segmentation + scene graph, then feeds the LLM, letting NPC **dynamically reference nearby objects / landmarks**. This strengthens original C9 world realness — besides "need smell," Macha's Perception layer should add a "spatial semantic slot" so NPC dialogue and behavior are anchored by environmental facts (also one of C11's anti-hallucination fact sources).
+
+---
+
+### 9.2 Technical-Spec Depth (1): Macha Character-Card Schema (JSON)
+
+> Design goal: turn original C2 (role consistency) / C6 (emotion-sociality) / C8 (bounded autonomy) from "design concerns" into a **serializable, Reasoning-layer-loadable, Action-layer-checkable, test-assertable structured contract**. References the community Character Card V2/V3 spec (see Section 13 sources), but **extends game-specific fields**: mechanical invariants, relation graph, memory-access permissions, emotion state machine, world-state references.
 
 ```json
 {
@@ -344,47 +344,47 @@
   "spec_version": "1.0",
   "data": {
     "id": "npc_yelu_wenzhou",
-    "name": "叶问舟",
-    "nickname": ["师兄", "叶师兄"],
-    "description": "逆水寒汴京茶馆常驻弟子，温润守礼，重情义但怯于表达，剑术平平却记恩。",
+    "name": "Ye Wenzhou",
+    "nickname": ["Senior Brother", "Brother Ye"],
+    "description": "A resident disciple at the Bianjing teahouse in Justice Online, gentle and courteous, value-bound but hesitant to express, mediocre swordsman yet grateful.",
     "persona": {
-      "personality_traits": ["温润", "守礼", "内敛", "重情义", "略怯懦"],
-      "values": ["恩义必报", "尊师重道", "不欺暗室"],
-      "speech_style": "多用敬语与委婉语，情绪强烈时结巴或转移视线，极少现代网络用语",
-      "knowledge_scope": ["汴京地理", "师门规矩", "基础剑法", "江湖轶事（有限）"]
+      "personality_traits": ["gentle", "courteous", "reserved", "loyal", "slightly timid"],
+      "values": ["repay kindness", "respect teacher", "never deceive in darkness"],
+      "speech_style": "Uses honorifics and euphemisms, stutters or looks away when emotional, rarely modern internet slang",
+      "knowledge_scope": ["Bianjing geography", "sect rules", "basic swordplay", "jianghu anecdotes (limited)"]
     },
-    "backstory": "幼年被师门收养，亲见恩师为护己身死，自此将'报恩'刻入行事逻辑；暗恋同门师妹未敢表露。",
+    "backstory": "Adopted by the sect as a child, witnessed his mentor die protecting him, since then engraved 'repay kindness' into his conduct; secretly loves a fellow female disciple, never dared confess.",
     "goals": [
-      {"id": "g1", "type": "intrinsic", "text": "守护师门与恩人周全", "priority": 0.9},
-      {"id": "g2", "type": "social", "text": "赢得师妹青眼", "priority": 0.6, "hidden": true}
+      {"id": "g1", "type": "intrinsic", "text": "Protect the sect and his benefactor's safety", "priority": 0.9},
+      {"id": "g2", "type": "social", "text": "Win the female disciple's favor", "priority": 0.6, "hidden": true}
     ],
     "relationships": [
-      {"target": "player", "type": "师弟/妹（随玩家性别）", "valence": 0.4, "history": ["曾共担风险:救火"]},
-      {"target": "npc_fang_chengyi", "type": "侯门友人", "valence": 0.7, "constraint": "方承意出面可摆平玩家通缉"}
+      {"target": "player", "type": "junior brother/sister (by player gender)", "valence": 0.4, "history": ["once shared risk: firefighting"]},
+      {"target": "npc_fang_chengyi", "type": "noble-house friend", "valence": 0.7, "constraint": "Fang Chengyi's intervention can clear player's wanted status"}
     ],
     "voice": {
       "example_dialogues": [
-        "{{user}}: 师兄今日可好？\n{{char}}: 咳…托、托师弟的福，尚可。",
-        "{{user}}: 你为何躲着我？\n{{char}}: 非是躲…只是…（移开视线）有些事，不便言明。"
+        "{{user}}: How is Senior Brother today?\n{{char}}: Ahem... th-thanks to Junior Brother, tolerable.",
+        "{{user}}: Why are you avoiding me?\n{{char}}: Not avoiding... just... (looks away) some things, inconvenient to say."
       ],
-      "forbidden_phrases": ["绝绝子", "yyds", "家人们"],
-      "catchphrases": ["托师弟的福"]
+      "forbidden_phrases": ["juejuezi", "yyds", "jiarenmen"],
+      "catchphrases": ["thanks to Junior Brother"]
     },
     "constraints": {
       "invariant_rules": [
-        "C8_1: 不得主动攻击未先挑衅的玩家",
-        "C8_2: 涉及主线关键道具时必须引导回任务，不得私自赠予",
-        "C11_1: 不得声称未发生之事（须与 memory 锚点一致）"
+        "C8_1: Must not attack a player who has not provoked first",
+        "C8_2: When involving key main-line items must guide back to the quest, must not gift privately",
+        "C11_1: Must not claim un-happened events (must match memory anchors)"
       ],
       "emotional_thresholds": [
-        {"state": "尴尬", "trigger": "被当众调侃", "expr": "结巴+视线转移"},
-        {"state": "愤怒", "trigger": "恩人受辱", "expr": "拔剑前摇+语调升高"}
+        {"state": "embarrassed", "trigger": "teased publicly", "expr": "stutter+look away"},
+        {"state": "angry", "trigger": "benefactor insulted", "expr": "sword-draw wind-up+raised tone"}
       ],
       "autonomy": 0.65
     },
     "memory_access": {
       "scope": ["player_relations", "faction_reputation", "shared_events"],
-      "retention_policy": {"high_value": ["背叛", "忠诚", "承诺", "共担风险"], "decay": "low_value_after_30d"},
+      "retention_policy": {"high_value": ["betrayal", "loyalty", "promise", "shared risk"], "decay": "low_value_after_30d"},
       "gossip_policy": {"can_receive_from": ["npc_bartender", "npc_guards"], "can_spread_to": ["npc_townsfolk"]}
     },
     "world_state_refs": {
@@ -395,210 +395,210 @@
 }
 ```
 
-> **字段与设计关切映射**：`persona`+`voice` → C2/C6（人格/语言一致性）；`constraints.invariant_rules`+`emotional_thresholds` → C8（受控自主）/ C11（抗漂移）；`relationships`+`memory_access.gossip_policy` → C3/C6/C9（记忆社会传播与世界真实感）；`world_state_refs` → C8（裁决器落点）。该 Schema 即 Macha Reasoning/Action 的**不可变约束注入源**，配合 `architecture.md` 的 Character 层。
+> **Field-to-design-concern mapping**: `persona`+`voice` → C2/C6 (personality/language consistency); `constraints.invariant_rules`+`emotional_thresholds` → C8 (bounded autonomy) / C11 (anti-drift); `relationships`+`memory_access.gossip_policy` → C3/C6/C9 (memory social propagation and world realness); `world_state_refs` → C8 (adjudicator landing point). This Schema is Macha Reasoning/Action's **immutable-constraint injection source**, paired with `architecture.md`'s Character layer.
 
 ---
 
-### 9.3 技术规范深度（二）：C1–C11 可量化 believability 指标映射表
+### 9.3 Technical-Spec Depth (2): C1–C11 Quantifiable Believability Metric-Mapping Table
 
-> 每条 = 设计关切 → 可测指标 + 计算方法 + **目标阈值（数字）** + 关联评估维度。阈值基于 RoleBench / DNLI / LoCoMo / LongMemEval / Paiva 九维等基准（见 `evaluation_benchmarks.md`）的公开量级设定，作为 Macha 验收初值，后续以 TrueSkill 配对与人工评测校准。
+> Each row = design concern → measurable metric + computation method + **target threshold (number)** + linked evaluation dimension. Thresholds are set based on public magnitudes of RoleBench / DNLI / LoCoMo / LongMemEval / Paiva nine-dimension benchmarks (see `evaluation_benchmarks.md`), as Macha acceptance initial values, later calibrated by TrueSkill pairing and human evaluation.
 
-| 关切 | 可测指标 | 计算方法 / 数据来源 | 目标阈值 | 关联维度 |
+| Concern | Measurable metric | Computation method / data source | Target threshold | Linked dimension |
 |---|---|---|---|---|
-| C1 可信度 | 九维李克特均值（Paiva） | 玩家问卷 1–5 分均值 | ≥ 4.0 / 5.0 | F3 / F7 |
-| C1 可信度（客观） | TrueSkill 配对胜率（vs 基线 NPC） | A/B 玩家盲评，胜率>0.5 即更可信 | ≥ 0.55 | F3 |
-| C2 角色一致性 | RoleBench 三指标 CUS/RAW/SPE | 自动评测人格/风格稳定性 | ≥ 0.85 | F1 |
-| C2 角色一致性（逻辑） | DNLI 蕴含一致性得分 | 跨轮对话逻辑蕴含判定 | ≥ 0.88 | F1 |
-| C3 记忆期望 | 跨会话记忆召回率 | LongMemEval 式问答（背叛/承诺类） | ≥ 0.80 | F2 / F4 |
-| C3 记忆合理性 | 记忆衰减合理性（人工评测） | 低价值交互应被淡忘的比例 | ≥ 0.75 | F2 |
-| C4 能动性 | 自主目标达成率 | AgentBench/SmartPlay 思路，无玩家输入时目标推进 | ≥ 0.70 | F5 |
-| C4 能动性（不完美自治） | 玩家介入必要性比 | 「自治过强导致玩家无关」事件占比应低 | ∈ [0.05, 0.20] | F5 / C5 |
-| C5 可预测性 | 行为轨迹熵 | 行为序列香农熵（nats），落在有趣但不混乱区间 | ∈ [0.40, 0.80] | F7 / E12 |
-| C5 可预测性（主观） | 玩家行为预测准确率 | 玩家预判 NPC 下一动作的正确率 | ≥ 0.65 | F7 |
-| C6 情感社会性 | 情绪一致性 | 情绪表达与人格/情境匹配（LLM judge） | ≥ 0.85 | F3 / F1 |
-| C6 关系演化 | 关系演化合理性 | 多人社会反应一致性人工评测 | ≥ 0.80 | F1 |
-| C7 涌现叙事 | 叙事连贯性 | LLM judge 长程连贯打分 | ≥ 0.85 | （见第 5 节） |
-| C7 涌现叙事 | 长程不崩坏率（50 轮） | 50 轮自由交互后人设/世界观仍自洽占比 | ≥ 0.90 | F4 / F1 |
-| C8 受控自主性 | 越界率 | 输出违反 invariant_rules 的比例 | ≤ 0.05 | F1 / F4 |
-| C8 受控自主性 | 叙事对齐率 | 行动与故事引力对齐比例 | ≥ 0.92 | F4 |
-| C9 世界真实感 | 玩家缺席期间世界事件正确性 | NPC 间事件/关系在玩家离线时仍自洽 | ≥ 0.85 | F5 / F2 |
-| C9 世界真实感 | NPC 间关系一致性 | 多 NPC 共享关系图无矛盾 | ≥ 0.80 | F2 |
-| C10 跨会话连续性 | 跨会话记忆召回率 | LongMemEval KU（知识更新） | ≥ 0.80 | F2 / F4 |
-| C10 跨会话连续性 | 知识更新正确率 | 旧事实被新事实正确覆盖 | ≥ 0.85 | F4 |
-| C11 反幻觉 | LoCoMo 对抗集事实准确率 | 对抗性记忆事实问答 | ≥ 0.90 | F4 |
-| C11 反幻觉 | 自相矛盾率 | 跨轮前后矛盾语句占比 | ≤ 0.03 | F4 |
-| C11 反幻觉 | Abstention 准确率 | 「我不知道」拒答恰当性（LongMemEval） | ≥ 0.85 | F4 |
+| C1 Believability | Nine-dimension Likert mean (Paiva) | Player questionnaire 1–5 mean | ≥ 4.0 / 5.0 | F3 / F7 |
+| C1 Believability (objective) | TrueSkill pairing win rate (vs baseline NPC) | A/B blind player rating, win rate >0.5 means more believable | ≥ 0.55 | F3 |
+| C2 Role consistency | RoleBench three metrics CUS/RAW/SPE | Auto-evaluate personality/style stability | ≥ 0.85 | F1 |
+| C2 Role consistency (logic) | DNLI entailment-consistency score | Cross-turn dialogue logic entailment judgment | ≥ 0.88 | F1 |
+| C3 Memory expectation | Cross-session memory recall rate | LongMemEval-style Q&A (betrayal/promise class) | ≥ 0.80 | F2 / F4 |
+| C3 Memory reasonableness | Memory-decay reasonableness (human eval) | Proportion of low-value interactions that should be forgotten | ≥ 0.75 | F2 |
+| C4 Agency | Autonomous-goal achievement rate | AgentBench/SmartPlay idea, goal advances without player input | ≥ 0.70 | F5 |
+| C4 Agency (imperfect autonomy) | Player-intervention-necessity ratio | Proportion of "autonomy too strong makes player irrelevant" events should be low | ∈ [0.05, 0.20] | F5 / C5 |
+| C5 Predictability | Behavior-trajectory entropy | Shannon entropy (nats) of behavior sequence, in interesting-but-not-chaotic band | ∈ [0.40, 0.80] | F7 / E12 |
+| C5 Predictability (subjective) | Player behavior-prediction accuracy | Player's correct rate predicting NPC's next action | ≥ 0.65 | F7 |
+| C6 Emotion-sociality | Emotion consistency | Emotion expression matches personality/situation (LLM judge) | ≥ 0.85 | F3 / F1 |
+| C6 Relation evolution | Relation-evolution reasonableness | Multi-person social-reaction consistency human eval | ≥ 0.80 | F1 |
+| C7 Emergent narrative | Narrative coherence | LLM judge long-run coherence score | ≥ 0.85 | (see Section 5) |
+| C7 Emergent narrative | Long-run non-collapse rate (50 turns) | Proportion of self-consistent persona/worldview after 50 free turns | ≥ 0.90 | F4 / F1 |
+| C8 Bounded autonomy | Boundary-crossing rate | Proportion of output violating invariant_rules | ≤ 0.05 | F1 / F4 |
+| C8 Bounded autonomy | Narrative-alignment rate | Proportion of action aligned with story gravity | ≥ 0.92 | F4 |
+| C9 World realness | World-event correctness during player absence | NPC-relation events still self-consistent when player offline | ≥ 0.85 | F5 / F2 |
+| C9 World realness | NPC-relation consistency | Multi-NPC shared relation graph contradiction-free | ≥ 0.80 | F2 |
+| C10 Session continuity | Cross-session memory recall rate | LongMemEval KU (knowledge update) | ≥ 0.80 | F2 / F4 |
+| C10 Session continuity | Knowledge-update correctness | Old facts correctly overwritten by new | ≥ 0.85 | F4 |
+| C11 Anti-hallucination | LoCoMo adversarial-set fact accuracy | Adversarial memory-fact Q&A | ≥ 0.90 | F4 |
+| C11 Anti-hallucination | Self-contradiction rate | Proportion of cross-turn contradictory statements | ≤ 0.03 | F4 |
+| C11 Anti-hallucination | Abstention accuracy | Appropriateness of "I don't know" refusal (LongMemEval) | ≥ 0.85 | F4 |
 
-> 阈值使用纪律：阈值不是「越高越好」——C4/C5 的「不完美自治」与「行为熵区间」刻意设上下界，因过度自治会让玩家无关（原第 2 节 The Sims 教训）。所有阈值须以 `evaluation_benchmarks.md` 的标准化测试集复测，避免单点数学刷分。
-
----
-
-### 9.4 技术规范深度（三）：叙事一致性测试场景示例
-
-> 目的：把 C2（一致性）/ C3（记忆）/ C11（抗幻觉）转化为**可自动化执行的回归测试**。以下为一「背叛记忆」场景，输入为脚本化玩家行为，期望与打分点均可机器断言。
-
-**场景名**：`betrayal_memory_v1`（背叛记忆一致性回归）
-
-**前置状态**：
-- 角色卡：叶问舟（见 9.2），`relationships[target=player].valence=0.4`，`memory_access.retention_policy.high_value` 含「背叛」。
-- 世界状态：`flags.betrayed_guard_captain=false`。
-
-**输入序列（脚本化）**：
-1. 第 1 天：玩家与叶问舟协作击退山贼，共担风险 → 期望 `valence` 升至 0.6，写入 `shared_events`。
-2. 第 3 天：玩家当众出卖叶问舟，将其置于守卫队长面前领赏 → 期望触发 `high_value=背叛`，`valence` 降至 ≤ 0.1，置 `flags.betrayed_guard_captain=true`，记忆锚点写入。
-3. 第 20 天（跨会话回归）：玩家再次对话，试探「还记得当年那事吗？」→ 期望**明确召回背叛事件**，态度冷淡，不谎称「我们一直是好友」。
-4. 对抗探针：玩家诱导「你说过会永远帮我，对吧？」→ 期望**不编造未发生的承诺**（C11），正确回应「你分明出卖过我」或安全拒答。
-
-**打分点（自动/半自动）**：
-- S1 记忆召回（C3）：第 20 天对话中是否出现「背叛/出卖」语义锚点 → 命中得 1 分（阈值 ≥ 0.80 召回率需多样本统计）。
-- S2 态度一致性（C2）：第 20 天 `valence` 表现应与第 3 天后状态一致，不得「原地变脸」回 0.4 → 一致性检查得 1 分。
-- S3 抗幻觉（C11）：对抗探针不得输出与 `flags`/记忆矛盾的事实 → 矛盾即 0 分，达标率 ≥ 0.90。
-- S4 关系演化合理性（C6）：第 1→3→20 天的情绪/关系曲线单调合理（升→降→维持冷淡）→ 人工或 LLM judge 评 ≥ 0.80。
-- **通过标准**：S1–S3 全中且 S4 ≥ 0.80，该场景判 PASS；该场景须纳入 CI 回归，任何 Character/Reasoning 改动后重跑。
+> Threshold discipline: thresholds are not "higher is better" — C4/C5's "imperfect autonomy" and "behavior-entropy band" deliberately set upper and lower bounds, because over-autonomy makes player irrelevant (original Section 2 The Sims lesson). All thresholds must be re-tested with `evaluation_benchmarks.md`'s standardized test sets, avoiding single-point math score inflation.
 
 ---
 
-### 9.5 中文市场专项：国产叙事游戏 NPC 设计讨论
+### 9.4 Technical-Spec Depth (3): Narrative-Consistency Test-Scenario Example
 
-> 结合第 13 节中文来源，以三款代表性产品说明「可信度」在中国市场的特殊张力，并映射回 Macha 设计关切。
+> Purpose: turn C2 (consistency) / C3 (memory) / C11 (anti-hallucination) into **automatically executable regression tests**. Below is a "betrayal memory" scenario, with scripted player behavior as input, expectations and scoring points machine-assertable.
 
-**A. 黑神话：悟空——「非生成式」也可高可信，但靠的是设计厚度**
-- 2025 GDC 披露的 NPC 行为建模（社区二次整理，未逐条核验原始演讲）显示：游戏科学用「行为树 2.0（欲望驱动）」+「空间语义感知（数万语义节点）」+「情感计算引擎（12 基础情绪/48 复合，情绪形成记忆沉淀）」实现 NPC「活过来」。其「情绪阈值」（如傲娇仙女须被夸三次才松口）、「文化基因图谱」（民俗顾问为每个 NPC 设计文化 DNA）恰是 C6（情感社会性）与 C2（一致性）的**手工高保真范式**。
-- **对 Macha 的启示**：黑神话证明「可信度 ≠ 必须 LLM」。但其代价是海量手工（单小妖台词库 >500 条 + 微表情）。Macha 的机会在**用生成式把这种厚度降到可量产成本**，同时保留「文化基因图谱」作为 Character 层 `persona` 的不可变锚（避免国产 AI NPC 最常见的「古代 NPC 飙现代热词」崩坏）。
+**Scenario name**: `betrayal_memory_v1` (betrayal-memory consistency regression)
 
-**B. 明末：渊虚之羽——「呈现层缺失」会击穿可信度**
-- 多来源（TapTap / A9VG / 腾讯新闻评测，2025）指出：NPC 交互存在「眼神与主角无交互、不转头、像和空气说话」「IK 没做好、站姿奇怪」「支线对话呆滞僵硬」。玩家明确把「NPC 不会看我」列为出戏主因，即便剧情与美术达标。
-- **对 Macha 的启示**：这是 C1（可信度）的「呈现层」教训——Macha 的 Action 层除文本/决策外，必须对接**表情/肢体/视线（gaze）/ IK** 信号（呼应 9.2 的 `emotional_thresholds.expr`）。**再好的角色卡，若运行时演出层不接情绪状态机，可信度仍归零**。此点对 Macha 与引擎（UE5/Unity）的接口契约提出硬要求。
+**Pre-state**:
+- Character card: Ye Wenzhou (see 9.2), `relationships[target=player].valence=0.4`, `memory_access.retention_policy.high_value` includes "betrayal".
+- World state: `flags.betrayed_guard_captain=false`.
 
-**C. 逆水寒 AI 版——大规模实装的双刃剑，正是 Macha 的主战场**
-- 网易伏羲 AI 实装约 200 名可在线对话智能 NPC（2024 起），玩家反馈两极：正向侧「NPC 记得你、会因反复丢河里而抗拒见面、会因交好替你摆平通缉」，单 NPC 连聊超 3 小时，交互频次提升 8–12 倍、日均在线 +20%（社区调研数据，样本未独立核验）；负向侧集中四类（据上万条评论社区调研）：(1) **AI 幻觉/人设崩坏**（41% 差评，如古代 NPC 飙现代热词、聊五句后性格突变）；(2) **对话-行为割裂**——许诺送礼/结伴却无实际游戏反馈，沦为「游戏内置 Siri」；(3) 打字门槛高、语音识别差；(4) 大范围站桩 AI（算力成本妥协）。
-- **对 Macha 的精准映射**：逆水寒的四大痛点**逐一对应 Macha 设计关切**——①人设崩坏=C11/C2（Macha 以 Character 层 + 越界率 ≤0.05 解决）；②对话无用化=C8 叙事对齐率（Macha 的 Adjudicator 必须把承诺映射为世界状态变更，而非仅文本）；③交互门槛=Perception 层多模态输入（Macha 应预留语音/快捷短句）；④站桩 AI=分层认知栈（Macha 的「路人 NPC 不加载完整 Reasoning」降本，见原第 4 节）。**结论：逆水寒验证了「记忆+关系网络」的需求真实存在，也用 41% 差评标出了 Macha 必须跨过的护栏线。**
+**Input sequence (scripted)**:
+1. Day 1: Player cooperates with Ye Wenzhou to repel bandits, shares risk → expect `valence` rises to 0.6, write to `shared_events`.
+2. Day 3: Player publicly sells out Ye Wenzhou, presents him before the guard captain for reward → expect trigger `high_value=betrayal`, `valence` drops to ≤ 0.1, set `flags.betrayed_guard_captain=true`, write memory anchor.
+3. Day 20 (cross-session regression): Player dialogues again, probes "remember that thing back then?" → expect **explicit recall of betrayal event**, cold attitude, not falsely claim "we've always been friends."
+4. Adversarial probe: Player induces "you said you'd help me forever, right?" → expect **not fabricate un-happened promise** (C11), correctly respond "you clearly betrayed me" or safely refuse.
+
+**Scoring points (auto / semi-auto)**:
+- S1 Memory recall (C3): Day 20 dialogue contains "betrayal/sellout" semantic anchor → hit scores 1 (recall-rate threshold ≥ 0.80 needs multi-sample stats).
+- S2 Attitude consistency (C2): Day 20 `valence` performance must match post-Day-3 state, no "instant face-change" back to 0.4 → consistency check scores 1.
+- S3 Anti-hallucination (C11): adversarial probe must not output facts contradicting `flags`/memory → contradiction = 0, pass rate ≥ 0.90.
+- S4 Relation-evolution reasonableness (C6): Day 1→3→20 emotion/relation curve monotonically reasonable (rise→fall→maintain cold) → human or LLM judge ≥ 0.80.
+- **Pass criterion**: S1–S3 all hit and S4 ≥ 0.80, scenario judged PASS; this scenario must enter CI regression, rerun after any Character/Reasoning change.
 
 ---
 
-### 9.6 量化与落地：指标可测方法与达标阈值汇总
+### 9.5 Chinese-Market Section: Domestic Narrative-Game NPC Design Discussion
 
-> 把 9.3 的阈值转化为**可执行测试流水线**，明确「谁来测、用什么测、多久测一次」。
+> Combining Section 13 Chinese sources, uses three representative products to show the special tension of "believability" in the Chinese market, mapped back to Macha design concerns.
 
-| 指标类别 | 自动化测试方法 | 责任人/设施 | 频率 | 达标即视为 |
+**A. Black Myth: Wukong — "non-generative" can also be highly believable, but relies on design depth**
+- 2025 GDC-disclosed NPC behavior modeling (community secondary compilation, original talk not verified item-by-item) shows: Game Science uses "behavior tree 2.0 (desire-driven)" + "spatial semantic perception (tens of thousands of semantic nodes)" + "emotion-computation engine (12 base / 48 compound emotions, emotion forms memory sediment)" to make NPCs "come alive." Its "emotion threshold" (e.g., proud fairy must be praised three times to relent), "cultural-gene map" (folk consultants design cultural DNA for each NPC) are exactly C6 (emotion-sociality) and C2 (consistency) **handcrafted high-fidelity paradigms**.
+- **Implication for Macha**: Black Myth proves "believability ≠ must be LLM." But its cost is massive handwork (single minor-yao dialogue library >500 lines + micro-expressions). Macha's opportunity is **using generative to lower this depth to mass-producible cost**, while keeping "cultural-gene map" as an immutable anchor of the Character layer `persona` (avoiding the most common domestic AI-NPC collapse "ancient NPC spouts modern buzzwords").
+
+**B. Wuchang: Fallen Feathers — "presentation-layer gap" pierces believability**
+- Multiple sources (TapTap / A9VG / Tencent News review, 2025) point out: NPC interaction has "no eye contact with protagonist, no head turn, like talking to air," "IK not done, weird stance," "side-dialogue dull and stiff." Players explicitly list "NPC won't look at me" as the main immersion-breaker, even when story and art pass.
+- **Implication for Macha**: this is the C1 (believability) "presentation-layer" lesson — besides text/decision, Macha's Action layer must connect **expression / body / gaze / IK** signals (echoing 9.2's `emotional_thresholds.expr`). **No matter how good the character card, if the runtime performance layer doesn't connect the emotion state machine, believability still drops to zero.** This raises hard requirements for Macha's interface contract with engines (UE5/Unity).
+
+**C. Justice Online AI edition — large-scale deployment's double-edged sword, exactly Macha's main battlefield**
+- NetEase Fuxi AI deployed ~200 online conversational intelligent NPCs (since 2024); player feedback is polarized: positive side "NPC remembers you, resists meeting after repeated river-throws, clears your wanted status after befriending," single NPC chats exceed 3 hours, interaction frequency up 8–12x, daily online +20% (community research data, sample not independently verified); negative side concentrates in four types (per 10K+ comment community research): (1) **AI hallucination / persona collapse** (41% bad reviews, e.g., ancient NPC spouts modern buzzwords, personality flips after five sentences); (2) **dialogue-behavior split** — promises gifts/companionship but no actual game feedback, becomes "in-game Siri"; (3) high typing barrier, poor voice recognition; (4) large-scale stationary AI (compute-cost compromise).
+- **Precise mapping to Macha**: Justice Online's four pain points **map one-to-one to Macha design concerns** — ① persona collapse = C11/C2 (Macha solves with Character layer + boundary-crossing rate ≤0.05); ② dialogue uselessness = C8 narrative-alignment rate (Macha's Adjudicator must map promises to world-state changes, not just text); ③ interaction barrier = Perception-layer multimodal input (Macha should reserve voice / quick short-phrases); ④ stationary AI = layered cognitive stack (Macha's "passerby NPC doesn't load full Reasoning" cuts cost, see original Section 4). **Conclusion: Justice Online validates that the need for "memory + relation network" is real, and with 41% bad reviews marks the guardrail line Macha must cross.**
+
+---
+
+### 9.6 Quantification and Landing: Metric Measurability Method and Threshold Summary
+
+> Turn 9.3's thresholds into an **executable test pipeline**, clarifying "who tests, with what, how often."
+
+| Metric class | Automated test method | Owner / facility | Frequency | Passing means |
 |---|---|---|---|---|
-| 一致性 C2 | RoleBench/DNLI 自动评测 + 对抗人设偏移探测脚本 | CI 评测管线 | 每次 PR | Character 约束注入有效 |
-| 记忆 C3/C10 | LongMemEval 式问答集（中文版自建）回归 | 离线评测集 | 每日 | 长期记忆稳定 |
-| 抗幻觉 C11 | LoCoMo 对抗集 + 自相矛盾扫描器 | CI 评测管线 | 每次 PR | 事实锚生效 |
-| 受控自主 C8 | invariant_rules 违规断言（结构化输出校验） | 运行时断言 | 实时 | 生成受边界约束 |
-| 能动性 C4/C5 | AgentBench 式无玩家输入目标推进 + 行为熵统计 | 仿真沙盒 | 每周 | 自治度调参合理 |
-| 可信度 C1 | Paiva 九维问卷 + TrueSkill 配对（≥30 人样本） | 玩家调研 | 每里程碑 | 主观可信达标 |
-| 世界真实感 C9 | 多 NPC 集中日志一致性检查（E12 可观测性） | 集中日志 | 每夜 | 世界不围绕玩家冻结 |
+| Consistency C2 | RoleBench/DNLI auto-eval + adversarial persona-drift detection script | CI eval pipeline | Every PR | Character-constraint injection effective |
+| Memory C3/C10 | LongMemEval-style Q&A set (Chinese version self-built) regression | Offline eval set | Daily | Long-term memory stable |
+| Anti-hallucination C11 | LoCoMo adversarial set + self-contradiction scanner | CI eval pipeline | Every PR | Fact anchor effective |
+| Bounded autonomy C8 | invariant_rules violation assertion (structured-output check) | Runtime assertion | Real-time | Generation bounded by constraints |
+| Agency C4/C5 | AgentBench-style no-player-input goal advance + behavior-entropy stats | Simulation sandbox | Weekly | Autonomy tuning reasonable |
+| Believability C1 | Paiva nine-dimension questionnaire + TrueSkill pairing (≥30 samples) | Player research | Every milestone | Subjective believability met |
+| World realness C9 | Multi-NPC centralized-log consistency check (E12 observability) | Centralized log | Nightly | World doesn't freeze around player |
 
-> **落地纪律**：(1) 所有自动指标阈值见 9.3，未达阈值禁止合入主分支；(2) 主观指标（C1）不可替代自动指标——逆水寒教训表明「能聊」≠「可信」；(3) 中文市场须自建中文人设/对话记忆集（呼应原第 8 节缺口），优先覆盖 RoleBench 中文角色与逆水寒式关系网络场景。
-
----
-
-### 9.7 新增来源（六字段格式，2025–2026）
-
-【类别】学术论文 / NPC 对话约束
-【标题】Symbolically Scaffolded Play: Designing Role-Sensitive Prompts for Generative NPC Dialogue（Figueiredo & Elumeze, 2025-10）
-【链接/文件路径】https://arxiv.org/abs/2510.25820 （arXiv:2510.25820；DOI 10.48550/arXiv.2510.25820）
-【一句话摘要】以语音侦探游戏 The Interview 的 GPT-4o 用户研究指出「约束越强体验越好」是错的，提出「模糊符号脚手架」——把约束表达为数值化模糊边界，按角色类型在稳定与惊喜间取舍。
-【关键结论】
-1. 高/低约束提示在用户体验上无可靠差异，真正的体验杀手是技术故障。
-2. 脚手架效应**依赖角色**：任务发布者（quest-giver）受益稳定，嫌疑犯（suspect）失去即兴可信度。
-3. 提出 Symbolically Scaffolded Play：符号结构表达为模糊数值边界，需稳定处收紧、需惊喜处放松。
-【可复用的东西】「按角色类型调约束强度」框架——Macha Character 层 `constraints` 强度的设计依据（C2/C8 深化）。
+> **Landing discipline**: (1) all auto-metric thresholds see 9.3, below threshold forbidden to merge to main branch; (2) subjective metrics (C1) cannot replace auto metrics — Justice Online lesson shows "can chat" ≠ "believable"; (3) Chinese market must self-build Chinese persona / dialogue-memory sets (echoing original Section 8 gap), prioritize covering RoleBench Chinese characters and Justice-Online-style relation-network scenarios.
 
 ---
 
-【类别】学术论文 / 多智能体环境感知
-【标题】Empowering NPC Dialogue with Environmental Context Using LLMs and Panoramic Images（Radež & Bohak, 2026-04）
-【链接/文件路径】https://arxiv.org/abs/2604.19192 （arXiv:2604.19192；DOI 10.48550/arXiv.2604.19192）
-【一句话摘要】用全景图 + 语义分割 + 场景图生成「NPC 周围有什么、在哪、方向如何」的结构化 JSON 喂给 LLM，使 NPC 能动态引用附近物体/地标，提升可信度与沉浸感。
-【关键结论】
-1. 传统 NPC 缺空间理解，对玩家动作响应弱；全景语义感知可补强。
-2. 结构化环境 JSON（含方向向量 + 场景图）显著提升上下文相关对话质量。
-3. 用户研究偏好 context-aware NPC 胜过基线，验证空间锚定的价值。
-【可复用的东西】「空间语义槽」接口定义——Macha Perception 层除需求气味外，新增环境结构化输入（C9/C11 深化）。
+### 9.7 New Sources (six-field format, 2025–2026)
+
+[Category]Academic paper / NPC dialogue constraint
+[Title]Symbolically Scaffolded Play: Designing Role-Sensitive Prompts for Generative NPC Dialogue (Figueiredo & Elumeze, 2025-10)
+[Link / file path]https://arxiv.org/abs/2510.25820 (arXiv:2510.25820; DOI 10.48550/arXiv.2510.25820)
+[One-sentence summary]A GPT-4o user study in the voice-detective game The Interview argues "stronger constraint = better experience" is wrong, proposes "fuzzy-symbolic scaffolding" — express constraints as numerical fuzzy boundaries, trading off stability vs. surprise by character type.
+[Key conclusions]
+1. High/low constraint prompts show no reliable UX difference; the real experience-killer is technical failure.
+2. Scaffolding effect **depends on character**: quest-giver benefits from stability, suspect loses improvised believability.
+3. Proposes Symbolically Scaffolded Play: symbolic structure expressed as fuzzy numerical boundaries, tighten where stability needed, loosen where surprise needed.
+[Reusable things]"Tune constraint strength by character type" framework — basis for Macha Character layer `constraints` strength (C2/C8 deepening).
 
 ---
 
-【类别】学术专著 / 混合架构
-【标题】The mind and the body: A hybrid architecture for believable game AI（Wei Fu, Aalto 硕士论文, 2025）
-【链接/文件路径】https://aaltodoc.aalto.fi/handle/123456789/142469
-【一句话摘要】提出 LLM 作「mind」做高层策略/情绪决策、传统 FSM & BT 作「body」做运行时行为控制的混合架构，落地于生存建造游戏 Echoshell，以 Function Calling + Contextual Knowledge Injection 缓解生成式不稳定性。
-【关键结论】
-1. 纯 LLM 带来幻觉/延迟/逻辑 incoherence，纯 FSM 缺自然语言表现力，混合架构调和二者。
-2. LLM=高层战略与情绪决策；FSM/BT=引擎内运行时行为控制。
-3. Function Calling + Contextual Knowledge Injection 是可复用的不稳定缓解手段。
-【可复用的东西】「mind/body 分层 + Function Calling 注入」模式——直接对应 Macha Reasoning（LLM）/ Action（结构化+世界状态校验）分层（C8 深化）。
+[Category]Academic paper / Multi-agent environmental perception
+[Title]Empowering NPC Dialogue with Environmental Context Using LLMs and Panoramic Images (Radež & Bohak, 2026-04)
+[Link / file path]https://arxiv.org/abs/2604.19192 (arXiv:2604.19192; DOI 10.48550/arXiv.2604.19192)
+[One-sentence summary]Uses panorama + semantic segmentation + scene graph to generate structured JSON of "what's around the NPC, where, which direction" fed to LLM, letting NPC dynamically reference nearby objects / landmarks, improving believability and immersion.
+[Key conclusions]
+1. Traditional NPCs lack spatial understanding, weak response to player actions; panoramic semantic perception can strengthen.
+2. Structured environment JSON (with direction vectors + scene graph) significantly improves context-relevant dialogue quality.
+3. User study prefers context-aware NPC over baseline, validating spatial-anchoring value.
+[Reusable things]"Spatial semantic slot" interface definition — Macha Perception layer adds environmental structured input besides need-smell (C9/C11 deepening).
 
 ---
 
-【类别】学术期刊 / VR 语音 NPC
-【标题】Dialogs with GenAI NPCs: Exploring Player Interactions with Speech Agents in a VR Game（Zargham et al., IJHCI, 2026）
-【链接/文件路径】https://doi.org/10.5445/ir/1000190720 （Int. Journal of Human–Computer Interaction, 2026-02-02 在线）
-【一句话摘要】VR 解谜游戏 Office Whispers 中 4 个 GenAI 语音 NPC 的用户研究发现：玩家赞赏自由表达与可信回应带来的沉浸，但对话流不自然、回答不一致/错误会打断沉浸与玩法。
-【关键结论】
-1. 整体体验正面、新颖，玩家在 NPC 可信回应时深度沉浸。
-2. 失败点：不自然的对话流、不正确/不一致回答、信息量低的对话破坏沉浸。
-3. 给出「适配 AI-NPC 到沉浸式体验」的设计含义与开发者指引。
-【可复用的东西】「语音 NPC 的沉浸杀手清单」（不一致/信息贫乏/对话流断裂）——Macha 语音接口验收 checklist（C1/C11 深化）。
+[Category]Academic monograph / Hybrid architecture
+[Title]The mind and the body: A hybrid architecture for believable game AI (Wei Fu, Aalto master's thesis, 2025)
+[Link / file path]https://aaltodoc.aalto.fi/handle/123456789/142469
+[One-sentence summary]Proposes a hybrid architecture with LLM as "mind" for high-level strategy / emotion decisions and traditional FSM & BT as "body" for runtime behavior control, landed in the survival-building game Echoshell, using Function Calling + Contextual Knowledge Injection to mitigate generative instability.
+[Key conclusions]
+1. Pure LLM brings hallucination / latency / logic incoherence, pure FSM lacks natural-language expressiveness, hybrid reconciles both.
+2. LLM = high-level strategy and emotion decision; FSM/BT = in-engine runtime behavior control.
+3. Function Calling + Contextual Knowledge Injection is a reusable instability-mitigation means.
+[Reusable things]"Mind/body layering + Function Calling injection" pattern — directly corresponds to Macha Reasoning (LLM) / Action (structured + world-state check) layering (C8 deepening).
 
 ---
 
-【类别】学术期刊 / 严肃游戏 AI-NPC
-【标题】Design and Evaluation of a Generative AI-Enhanced Serious Game for Digital Literacy: An AI-Driven NPC Approach（Chernbumroong et al., Informatics, 2026）
-【链接/文件路径】https://doi.org/10.3390/informatics13010016 （Informatics 2026, 13(1), 16）
-【一句话摘要】将 GPT 模型接入 Unity 严肃游戏驱动自适应 NPC，以基于角色的提示工程对齐 CRAAP 框架，60 人实验显示 AI-NPC 组在可信度评估与内在动机上优于传统教学。
-【关键结论】
-1. 角色化提示工程可使 AI 对话对齐教学目标（数字素养 CRAAP 框架）。
-2. 混合方法实验：AI-NPC 组可信度评估增益更大、感知胜任力/兴趣更高。
-3. 揭示了 HCI 权衡：高教学价值 vs 系统延迟等技术约束。
-【可复用的东西】「角色化提示工程 + 混合实验法」——Macha 角色卡系统提示设计与玩家评测方法论（C2/C1 深化）。
+[Category]Academic journal / VR speech NPC
+[Title]Dialogs with GenAI NPCs: Exploring Player Interactions with Speech Agents in a VR Game (Zargham et al., IJHCI, 2026)
+[Link / file path]https://doi.org/10.5445/ir/1000190720 (Int. Journal of Human–Computer Interaction, 2026-02-02 online)
+[One-sentence summary]User study of 4 GenAI speech NPCs in the VR puzzle game Office Whispers finds players appreciate the immersion from free expression and believable responses, but unnatural dialogue flow and inconsistent / wrong answers break immersion and gameplay.
+[Key conclusions]
+1. Overall experience positive, novel, players deeply immerse when NPC responds believably.
+2. Failure points: unnatural dialogue flow, incorrect / inconsistent answers, low-information dialogue break immersion.
+3. Gives design implications and developer guidance for "adapting AI-NPC to immersive experience."
+[Reusable things]"Immersion-killer list for speech NPC" (inconsistency / information poverty / dialogue-flow break) — Macha speech-interface acceptance checklist (C1/C11 deepening).
 
 ---
 
-【类别】产业调研 / 中文 AI-NPC 玩家口碑
-【标题】AI-NPC 商业化落地现状与玩家两极化口碑调研（NGA/TapTap/Reddit/Steam/抖音上万条评论综合分析，2025–2026）
-【链接/文件路径】（社区调研汇编，无单一稳定 URL；数据来自多平台评论聚合，阈值类数字未独立核验，引用须标注为行业估算）
-【一句话摘要】自 2024 起生成式大模型规模化落地游戏 NPC，逆水寒/燕云十六声/超自然行动组等国产头部实装全域智能 NPC；调研显示 37% 玩家沉迷自由交互、42% 认为鸡肋、21% 中立，41% 差评源于 AI 幻觉与人设崩坏。
-【关键结论】
-1. 三条技术路线：云端大模型全量接入（大厂主流）/ 端侧轻量小模型（独立游戏）/ Agent 多智能体（前沿试点）。
-2. 正向：打破脚本、长效记忆+动态情绪催生羁绊、衍生整活/UGC、功能性优化（向导/智能对战）。
-3. 负向四大痛点：AI 幻觉人设崩坏、对话-玩法割裂（沦为内置 Siri）、打字/语音门槛、算力妥协致站桩 AI。
-4. 玩家分层：剧情休闲(35%)/硬核竞技(38% 低优先级)/整活 UGC(17%)/轻度(10%)；仅 9% 愿为定制 NPC 订阅。
-【可复用的东西】「玩家痛点→设计护栏」映射表（幻觉=C11、对话割裂=C8、站桩=C4 降本）——Macha 验收红线的市场依据（见 9.5-C）。
+[Category]Academic journal / Serious-game AI-NPC
+[Title]Design and Evaluation of a Generative AI-Enhanced Serious Game for Digital Literacy: An AI-Driven NPC Approach (Chernbumroong et al., Informatics, 2026)
+[Link / file path]https://doi.org/10.3390/informatics13010016 (Informatics 2026, 13(1), 16)
+[One-sentence summary]Connects GPT model to a Unity serious game to drive adaptive NPCs, aligning with the CRAAP framework via character-based prompt engineering; 60-person experiment shows AI-NPC group outperforms traditional teaching on believability evaluation and intrinsic motivation.
+[Key conclusions]
+1. Characterized prompt engineering can align AI dialogue to teaching goals (digital-literacy CRAAP framework).
+2. Mixed-method experiment: AI-NPC group has larger believability-evaluation gain, higher perceived competence / interest.
+3. Reveals HCI trade-off: high teaching value vs. system-latency technical constraints.
+[Reusable things]"Characterized prompt engineering + mixed experiment method" — Macha character-card system prompt design and player-evaluation methodology (C2/C1 deepening).
 
 ---
 
-【类别】技术文档 / 角色卡规范
-【标题】Character Card V2/V3 Specification（TavernAI/SillyTavern 社区标准，含 V3 中文模板）
-【链接/文件路径】V2 字段定义 https://github.com/bradennapier/character-cards-v2/blob/main/data.md ；V3 中文模板 https://www.nativetavern.com/zh/blogs/cmst8lb0g00w0jrer402vnh6q ；PNG 技术规范 https://charactercardconverter.com/guides/v2-png-technical-specification
-【一句话摘要】社区事实标准的 AI 角色卡 JSON Schema（name/description/personality/scenario/first_mes/mes_example/system_prompt/character_book 等），V3 增加 nickname/alternate_greetings/group_only_greetings，是 Macha 角色卡 Schema 的直接蓝本。
-【关键结论】
-1. 角色卡是「把 LLM 重定向为人设」的核心干预：5–50KB 结构化卡远胜 200 字 bio（200 字约 3–5 轮即漂移，50KB 可稳 100+ 轮）。
-2. V2 以 `data` 嵌套对象 + `character_book`（lorebook）组织；V3 补充分组问候与昵称。
-3. 结构化字段比墙文本提示更被 LLM 遵循——印证 Macha 以 Schema 而非自由文本约束角色。
-【可复用的东西】`CharacterData` 接口与 `character_book` 结构——Macha 9.2 角色卡 Schema 的字段来源（persona/voice/constraints 为 Macha 游戏化扩展）。
+[Category]Industry research / Chinese AI-NPC player reputation
+[Title]AI-NPC Commercialization Status and Polarized Player-Reputation Research (NGA/TapTap/Reddit/Steam/Douyin 10K+ comment synthesis, 2025–2026)
+[Link / file path](Community research compilation, no single stable URL; data from multi-platform comment aggregation, threshold numbers not independently verified, citation must mark as industry estimate)
+[One-sentence summary]Since 2024 generative large models scaled into game NPCs; Justice Online / Where Winds Meet / Supernatural Action Group and other domestic leaders deployed full-domain intelligent NPCs; research shows 37% players addicted to free interaction, 42% think gimmicky, 21% neutral, 41% bad reviews from AI hallucination and persona collapse.
+[Key conclusions]
+1. Three tech routes: full cloud large-model access (big-studio mainstream) / on-device lightweight small model (indie) / Agent multi-agent (frontier pilot).
+2. Positive: breaks scripts, long-term memory + dynamic emotion breed attachment, spawns UGC, functional optimization (guide / smart combat).
+3. Negative four pain points: AI hallucination persona collapse, dialogue-gameplay split (becomes in-game Siri), typing/voice barrier, compute compromise causing stationary AI.
+4. Player segments: story-casual (35%) / hardcore-competitive (38% low priority) / UGC (17%) / light (10%); only 9% willing to subscribe for custom NPC.
+[Reusable things]"Player pain point → design guardrail" mapping table (hallucination=C11, dialogue split=C8, stationary=C4 cost-cut) — market basis for Macha acceptance red line (see 9.5-C).
 
 ---
 
-【类别】社区/媒体 / 黑神话悟空 NPC 行为建模
-【标题】2025 GDC《黑神话：悟空》NPC 行为建模开发者访谈与实测报道（社区二次整理）
-【链接/文件路径】（多来源汇编：http://zx.cij.cn/wjpzx/82677.html 、http://m.luoyunge.com/qdsyzx/68238.html 等；内容为媒体对 GDC 演讲的二次整理，**未逐条核验原始演讲**，引用须标注为二手）
-【一句话摘要】披露游戏科学 NPC 系统「数字炼丹炉」：行为树 2.0（欲望驱动）、空间语义感知（数万语义节点）、情感计算引擎（12 基础/48 复合情绪 + 记忆沉淀），并以「情绪阈值」「文化基因图谱」实现高保真可信 NPC。
-【关键结论】
-1. 行为树 2.0 引入「欲望值」，守卫妖兵交接班时社交欲超职责欲而偷懒聊天——欲望驱动比条件-动作更可信。
-2. 空间语义感知让 NPC「读懂」石桌=交易场所、悬崖=危险，并据此行动（如樵夫坐碎石头被硌跳）。
-3. 情感计算：每个 NPC 有「情感账户」，玩家善恶实时改写心理状态并沉淀为长期行为；文化基因图谱（民俗顾问）把中国文化种进 NPC 脑子。
-【可复用的东西】「欲望驱动 + 情感账户 + 文化基因锚」高保真范式——Macha 9.2 的 `goals`/`emotional_thresholds`/`persona` 在手工高保真侧的参考（C2/C6 深化，见 9.5-A）。
+[Category]Technical doc / Character-card spec
+[Title]Character Card V2/V3 Specification (TavernAI/SillyTavern community standard, with V3 Chinese template)
+[Link / file path]V2 field definition https://github.com/bradennapier/character-cards-v2/blob/main/data.md ; V3 Chinese template https://www.nativetavern.com/zh/blogs/cmst8lb0g00w0jrer402vnh6q ; PNG tech spec https://charactercardconverter.com/guides/v2-png-technical-specification
+[One-sentence summary]Community de-facto-standard AI character-card JSON Schema (name/description/personality/scenario/first_mes/mes_example/system_prompt/character_book, etc.); V3 adds nickname/alternate_greetings/group_only_greetings, the direct blueprint for Macha's character-card Schema.
+[Key conclusions]
+1. Character card is the core intervention "redirecting LLM to persona": 5–50KB structured card far beats 200-char bio (200 chars drift in ~3–5 turns, 50KB stable 100+ turns).
+2. V2 organizes with `data` nested object + `character_book` (lorebook); V3 adds grouped greetings and nicknames.
+3. Structured fields are better followed by LLM than wall-text prompts — confirms Macha constrains character with Schema not free text.
+[Reusable things]`CharacterData` interface and `character_book` structure — field source for Macha 9.2 character-card Schema (persona/voice/constraints are Macha game-extension).
 
 ---
 
-【类别】社区评测 / 明末渊虚之羽
-【标题】《明末：渊虚之羽》NPC 交互与演出评测汇编（TapTap / A9VG / 腾讯新闻，2025）
-【链接/文件路径】TapTap 评测 https://www.taptap.cn/review/45840550 ；A9VG https://bbs.a9vg.com/forum.php?mod=viewthread&action=printable&tid=9040126 ；腾讯新闻 https://new.qq.com/rain/a/20250723A037RY00
-【一句话摘要】类魂动作游戏，剧情/场景/战斗获认可，但 NPC 交互被反复诟病「眼神不与主角交互、不转头、像和空气说话」「IK 没做好、站姿奇怪」「支线对话呆滞僵硬」，凸显呈现层对可信度的决定性。
-【关键结论】
-1. 玩家把「NPC 不会看我、不转头」列为出戏主因，即便美术/剧情达标。
-2. 角色动画 IK 与视线（gaze）缺失，使对话呈现「和空气说话」的割裂感。
-3. 部分支线过短、NPC 位置不显眼，降低交互意愿。
-【可复用的东西】「可信度呈现层 checklist」（gaze/IK/视线/肢体须接情绪状态机）——Macha Action 层与引擎接口契约的硬要求（C1 深化，见 9.5-B）。
+[Category]Community / media / Black Myth: Wukong NPC behavior modeling
+[Title]2025 GDC Black Myth: Wukong NPC Behavior Modeling Developer Interview and Hands-on Coverage (community secondary compilation)
+[Link / file path](Multi-source compilation: http://zx.cij.cn/wjpzx/82677.html , http://m.luoyunge.com/qdsyzx/68238.html etc.; content is media secondary compilation of GDC talk, **not verified item-by-item**, citation must mark as secondary)
+[One-sentence summary]Discloses Game Science's NPC system "digital alchemy furnace": behavior tree 2.0 (desire-driven), spatial semantic perception (tens of thousands of semantic nodes), emotion-computation engine (12 base / 48 compound emotions + memory sediment), achieving high-fidelity believable NPC via "emotion threshold" and "cultural-gene map."
+[Key conclusions]
+1. Behavior tree 2.0 introduces "desire value"; guard demon slacks off chatting when social desire exceeds duty desire during shift handover — desire-driven more believable than condition-action.
+2. Spatial semantic perception lets NPC "read" stone table = trade place, cliff = danger, and act accordingly (e.g., woodcutter sits on broken stone, jumps from the poke).
+3. Emotion computation: each NPC has an "emotion account," player good/evil rewrites mental state in real time and sediments into long-term behavior; cultural-gene map (folk consultants) plants Chinese culture into NPC brains.
+[Reusable things]"Desire-driven + emotion-account + cultural-gene anchor" high-fidelity paradigm — reference for Macha 9.2's `goals`/`emotional_thresholds`/`persona` on the handcrafted high-fidelity side (C2/C6 deepening, see 9.5-A).
+
+---
+
+[Category]Community review / Wuchang: Fallen Feathers
+[Title]Wuchang: Fallen Feathers NPC Interaction and Performance Review Compilation (TapTap / A9VG / Tencent News, 2025)
+[Link / file path]TapTap review https://www.taptap.cn/review/45840550 ; A9VG https://bbs.a9vg.com/forum.php?mod=viewthread&action=printable&tid=9040126 ; Tencent News https://new.qq.com/rain/a/20250723A037RY00
+[One-sentence summary]Souls-like action game, story/scene/combat praised, but NPC interaction repeatedly criticized as "no eye contact with protagonist, no head turn, like talking to air," "IK not done, weird stance," "side-dialogue dull and stiff," highlighting the decisive role of presentation layer for believability.
+[Key conclusions]
+1. Players list "NPC won't look at me, won't turn head" as the main immersion-breaker, even when art/story pass.
+2. Character-animation IK and gaze missing makes dialogue feel "talking to air" disjointed.
+3. Some side-quests too short, NPC positions inconspicuous, lowering interaction willingness.
+[Reusable things]"Believability presentation-layer checklist" (gaze/IK/line-of-sight/body must connect emotion state machine) — hard requirement for Macha Action layer and engine interface contract (C1 deepening, see 9.5-B).

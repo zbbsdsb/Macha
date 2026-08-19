@@ -1,21 +1,21 @@
-# 论文笔记索引
+# Paper Notes Index
 
-## 活跃讨论
+## Active Discussions
 
-| 文件 | 内容 | 状态 |
+| File | Content | Status |
 |---|---|---|
-| [what-we-desire-in-game-agents.md](what-we-desire-in-game-agents.md) | 玩家渴望的游戏 Agent 是什么：六个问题、四种关系原型 | 活跃 |
-| [field-superposition-formalization.md](field-superposition-formalization.md) | “场域叠加”的形式化讨论稿 | 保留，待团队讨论 |
-| [conclusions-desired-agent.md](conclusions-desired-agent.md) | 关于“渴望的 Agent”的当前阶段结论 | 活跃，v0.1 |
+| [what-we-desire-in-game-agents.md](what-we-desire-in-game-agents.md) | What the player desires in a game agent: six questions, four relationship archetypes | Active |
+| [field-superposition-formalization.md](field-superposition-formalization.md) | Formal discussion draft of "field superposition" | Retained, pending team discussion |
+| [conclusions-desired-agent.md](conclusions-desired-agent.md) | Current-stage conclusions on the "desired agent" | Active, v0.1 |
 
-## 已归档
+## Archived
 
-| 文件 | 内容 | 归档说明 |
+| File | Content | Archiving Note |
 |---|---|---|
-| [four-papers-boundary-and-fusion.md](four-papers-boundary-and-fusion.md) | 四篇论文的边界试探与五层融合尝试 | 2026-08-16 归档：结论已吸收进“活跃讨论”；不再单独更新 |
+| [four-papers-boundary-and-fusion.md](four-papers-boundary-and-fusion.md) | Boundary probing of four papers and a five-layer fusion attempt | Archived 2026-08-16: conclusions absorbed into "Active Discussions"; no longer updated separately |
 
-## 归档规则
+## Archiving Rules
 
-- 讨论形成结论后，原笔记不删除，改为“已归档”。
-- 归档文件只保留可追溯价值，不再作为主要推进依据。
-- 新结论必须写入活跃文件，而不是继续修改归档文件。
+- Once a discussion yields conclusions, the original note is not deleted but changed to "archived."
+- Archived files retain only traceability value and are no longer the primary basis for advancing work.
+- New conclusions must be written into active files, not by continuing to modify archived files.
