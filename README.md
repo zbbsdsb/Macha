@@ -28,15 +28,19 @@ Macha/
 ├── .gitignore
 ├── requirements.txt
 ├── pyproject.toml
-├── reference/                 # PDFs of the four core papers
-├── papers/                    # Papers and idea drafts written by the team
+├── reference/                 # Read-only: PDFs of the four core papers
+├── research/                  # Throwaway exploration: scratch probes + case experiments
+│   ├── scratch/               #   lowest permanence, e.g. reviews of others' frameworks
+│   └── experiments/           #   case-validation drafts not yet accepted as conclusions
+├── papers/                    # Formal output: the paper + reasoning notes
+│   ├── notes/                 #   team reasoning & conclusions (precursors to the paper)
+│   └── 2026-crossing-the-game-agent-gap.md
 ├── announcements/             # Public experiment announcements
-├── docs/
+├── docs/                      # Formal documents: research positioning, architecture, roadmap
 │   ├── research/
-│   │   ├── positioning.md     # Positioning of the four papers and our entry point
-│   │   └── direction.md       # Preliminary technical direction and project proposal
-│   ├── architecture.md        # Target architecture sketch
-│   └── roadmap.md             # Development roadmap
+│   ├── architecture.md
+│   └── roadmap.md
+├── site/                      # Deployment source for the Macha site / paper showcase
 ├── src/
 │   └── macha/
 │       ├── __init__.py
@@ -47,11 +51,24 @@ Macha/
 │           ├── perception.py
 │           ├── reasoning.py
 │           └── action.py
-├── examples/
-│   └── hello_agent.py
+├── examples/                  # Living case set backing the paper's case studies
 └── tests/
     └── test_smoke.py
 ```
+
+### Four Layers + One Read-Only Reference
+
+| Layer | Where | Nature |
+|---|---|---|
+| 研究试错 | `research/` | Throwaway, expandable, unwritten; nothing here is a conclusion |
+| 论文落地 | `papers/` | The only outward formal output; defends against deviation |
+| 正式文档 | `docs/` | Stable, for humans / future developers |
+| 部署站点 | `site/` | Statically hostable website build over `docs/` + paper |
+| 只读参考 | `reference/` | Four core paper PDFs, never modified |
+
+**Lifecycle rule:** work starts in `research/` or `papers/notes/`; once it matures into a
+team-accepted conclusion it is promoted into `papers/notes/` (with a status update), and
+a conclusion that enters the paper body marks its notes entry `archived`.
 
 ---
 
