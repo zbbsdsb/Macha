@@ -56,7 +56,7 @@ Macha/
     └── test_smoke.py
 ```
 
-### Four Layers + One Read-Only Reference
+### Four Layers + One Reference Store
 
 | Layer | Where | Nature |
 |---|---|---|
@@ -64,7 +64,7 @@ Macha/
 | 论文落地 | `papers/` | The only outward formal output; defends against deviation |
 | 正式文档 | `docs/` | Stable, for humans / future developers |
 | 部署站点 | `site/` | Statically hostable website build over `docs/` + paper |
-| 只读参考 | `reference/` | Four core paper PDFs, never modified |
+| 材料收录 | `reference/` | A running collection of source papers/material we draw on; not authoritative, grows over time |
 
 **Lifecycle rule:** work starts in `research/` or `papers/notes/`; once it matures into a
 team-accepted conclusion it is promoted into `papers/notes/` (with a status update), and
@@ -93,6 +93,7 @@ pytest
 ## Documentation Navigation
 
 - [Repository Initialization Checklist](docs/initialization.md)
+- [Team R&D Workflow (Hard Rules)](docs/team-workflow.md)
 - [Research Positioning and Paper Differences](docs/research/positioning.md)
 - [Preliminary Technical Direction](docs/research/direction.md)
 - [Team Information Collection Checklist](docs/research/information_needs.md)
