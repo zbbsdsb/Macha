@@ -8,6 +8,9 @@ team encounters new material.
 
 ## Current Contents
 
+See [index.md](index.md) for the PDF → dossier mapping. PDFs are identified by their
+arXiv id (e.g. `2304.03442v2.pdf`).
+
 - `2304.03442v2.pdf`
 - `2402.18659v5.pdf`
 - `2404.02039v5.pdf`

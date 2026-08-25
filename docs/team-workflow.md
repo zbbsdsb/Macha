@@ -75,7 +75,7 @@ collected → reading → summarized → extracted (conclusions pulled out)
   decision; `field superposition`, `relationship gap` are under active definition and not yet locked.
 
 ### B2. Structural Constraint — `[RATIFIED]`
-- The outline (`papers/notes/05-macha-question-tree.md`) is frozen at its current shape for
+- The outline (`papers/notes/accepted/05-macha-question-tree.md`) is frozen at its current shape for
   structure disputes; new structure questions go to the "open forks", not ad-hoc re-writes.
 - A section is **claimed** before it is written (one owner). No two people draft the same
   section independently.
@@ -85,19 +85,19 @@ collected → reading → summarized → extracted (conclusions pulled out)
   may be cited in the paper. Unrecorded citations are ground for review rejection.
 - The four initial papers are material, **not** authorities: the paper must not treat them
   as "the" canonical set. Their boundary is discussed in
-  `papers/notes/four-papers-boundary-and-fusion.md`.
+  `papers/notes/drafts/four-papers-boundary-and-fusion.md`.
 
 ### B4. Claim Threshold — `[RATIFIED]`
 A sentence makes it into the paper body only if it is supported by at least one of:
   1. a citable source (with provenance), or
-  2. a team-ratified conclusion (recorded in `papers/notes/`), or
+  2. a team-ratified conclusion (recorded in `papers/notes/accepted/`), or
   3. an explicit, labeled assumption.
 
 Unsupported assertions are flagged `[ASSUMPTION]` inline until resolved — never silently asserted.
 
 ### B5. Versioning & Archiving — `[RATIFIED]`
 - When a notes conclusion is promoted into the paper body, the originating notes entry is
-  marked `archived` with a pointer to the paper location.
+  marked `archived` (moved to `papers/notes/archive/`) with a pointer to the paper location.
 - The paper file is the single source of truth for its content; notes are history, not an
   alternate truth.
 - No two active conclusions may disagree; a contradiction requires a recorded resolution.

@@ -48,7 +48,7 @@
 
 ## III. Already Formed a Working Conclusion, But Not Yet Formally Entered the Paper
 
-These contents exist in `papers/notes/conclusions-desired-agent.md` and have not yet been written into the paper body:
+These contents exist in `papers/notes/archive/conclusions-desired-agent.md` and have not yet been written into the paper body:
 
 1. What the player desires is not an agent, but the world's response;
 2. What the player desires is a "believable, changeable other that leaves consequences";
@@ -93,18 +93,18 @@ The rest remains in the state of "working notes" or "discussion drafts," and nee
 > Updated: 2026-08-24
 > The seven-domain literature sweep is complete. All dossiers live in
 > `research/literature/` and are mapped to paper claims in
-> `00-literature-map-paper-gaps.md`. This layer is evidence, not yet paper content.
+> `../../research/literature/00-literature-map-paper-gaps.md`. This layer is evidence, not yet paper content.
 
 | Dossier | Domain | Serves paper claim | Status |
 |---|---|---|---|
-| [00-literature-map-paper-gaps.md](../research/literature/00-literature-map-paper-gaps.md) | Synthesis | claim→dossier map + gap analysis | STORED |
-| [01-formal-models-social-relations.md](../research/literature/01-formal-models-social-relations.md) | Formal models | §6 computational model | STORED |
-| [02-longitudinal-measurement.md](../research/literature/02-longitudinal-measurement.md) | Measurement | §9 falsifiability | STORED |
-| [03-HRI-relationship-tradition.md](../research/literature/03-HRI-relationship-tradition.md) | HRI tradition | gap positioning | STORED (HOLD: RE-VERIFY tier pending) |
-| [04-BDI-modern-agent-architecture.md](../research/literature/04-BDI-modern-agent-architecture.md) | BDI + agent arch | §6 R↔S coexistence | STORED |
-| [05-game-studies-interactive-narrative.md](../research/literature/05-game-studies-interactive-narrative.md) | Game studies | §7 formal properties | STORED |
-| [06-philosophy-phenomenology-relation.md](../research/literature/06-philosophy-phenomenology-relation.md) | Philosophy | §8 projection objection | STORED |
-| [07-failure-modes-negative-results.md](../research/literature/07-failure-modes-negative-results.md) | Failure modes | §10 self-attack | STORED |
+| [00-literature-map-paper-gaps.md](../../research/literature/00-literature-map-paper-gaps.md) | Synthesis | claim→dossier map + gap analysis | STORED |
+| [01-formal-models-social-relations.md](../../research/literature/01-formal-models-social-relations.md) | Formal models | §6 computational model | STORED |
+| [02-longitudinal-measurement.md](../../research/literature/02-longitudinal-measurement.md) | Measurement | §9 falsifiability | STORED |
+| [03-HRI-relationship-tradition.md](../../research/literature/03-HRI-relationship-tradition.md) | HRI tradition | gap positioning | STORED (HOLD: RE-VERIFY tier pending) |
+| [04-BDI-modern-agent-architecture.md](../../research/literature/04-BDI-modern-agent-architecture.md) | BDI + agent arch | §6 R↔S coexistence | STORED |
+| [05-game-studies-interactive-narrative.md](../../research/literature/05-game-studies-interactive-narrative.md) | Game studies | §7 formal properties | STORED |
+| [06-philosophy-phenomenology-relation.md](../../research/literature/06-philosophy-phenomenology-relation.md) | Philosophy | §8 projection objection | STORED |
+| [07-failure-modes-negative-results.md](../../research/literature/07-failure-modes-negative-results.md) | Failure modes | §10 self-attack | STORED |
 
 **Key findings that move Section IV items:**
 - IV.2 (relationship gap as framework): strongly supported — dossier 05 corrects the "Façade failed on NLU" misreading; dossier 04 shows no system uses R as a control variable (Macha's slot).

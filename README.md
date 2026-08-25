@@ -28,16 +28,24 @@ Macha/
 ├── .gitignore
 ├── requirements.txt
 ├── pyproject.toml
-├── reference/                 # Read-only: PDFs of the four core papers
-├── research/                  # Throwaway exploration: scratch probes + case experiments
+├── reference/                 # Running collection of source PDFs (not authoritative)
+│   ├── *.pdf                  #   PDFs by identifier, e.g. 2304.03442v2.pdf
+│   └── index.md               #   PDF → literature dossier / paper mapping
+├── research/                  # Trial-and-error layer: scratch probes + evidence dossiers
+│   ├── literature/            #   evidence dossiers (01–07) + literature-map
+│   ├── plans/                 #   methodology / collection plans (intelligence plan)
 │   ├── scratch/               #   lowest permanence, e.g. reviews of others' frameworks
 │   └── experiments/           #   case-validation drafts not yet accepted as conclusions
 ├── papers/                    # Formal output: the paper + reasoning notes
-│   ├── notes/                 #   team reasoning & conclusions (precursors to the paper)
+│   ├── notes/                 #   team reasoning & conclusions, layered by maturity
+│   │   ├── accepted/          #     team-ratified conclusions
+│   │   ├── drafts/            #     in-progress technical drafts
+│   │   └── archive/           #     superseded / historical thinking (traceability)
 │   └── 2026-crossing-the-game-agent-gap.md
 ├── announcements/             # Public experiment announcements
 ├── docs/                      # Formal documents: research positioning, architecture, roadmap
 │   ├── research/
+│   ├── retired/               #   superseded docs, kept for traceability
 │   ├── architecture.md
 │   └── roadmap.md
 ├── site/                      # Deployment source for the Macha site / paper showcase
@@ -66,9 +74,9 @@ Macha/
 | 部署站点 | `site/` | Statically hostable website build over `docs/` + paper |
 | 材料收录 | `reference/` | A running collection of source papers/material we draw on; not authoritative, grows over time |
 
-**Lifecycle rule:** work starts in `research/` or `papers/notes/`; once it matures into a
-team-accepted conclusion it is promoted into `papers/notes/` (with a status update), and
-a conclusion that enters the paper body marks its notes entry `archived`.
+**Lifecycle rule:** work starts in `research/` or `papers/notes/drafts/`; once it matures
+into a team-accepted conclusion it is promoted into `papers/notes/accepted/` (with a status
+update), and a conclusion that enters the paper body marks its notes entry `archive/`.
 
 ---
 
@@ -94,9 +102,11 @@ pytest
 
 - [Repository Initialization Checklist](docs/initialization.md)
 - [Team R&D Workflow (Hard Rules)](docs/team-workflow.md)
+- [Literature Intelligence Plan](research/plans/literature-intelligence-plan.md)
+- [Literature Map → Paper Gap Mapping](research/literature/00-literature-map-paper-gaps.md)
 - [Research Positioning and Paper Differences](docs/research/positioning.md)
 - [Preliminary Technical Direction](docs/research/direction.md)
-- [Team Information Collection Checklist](docs/research/information_needs.md)
+- [Team Information Collection Checklist (retired → see plans)](docs/retired/information_needs.md)
 - [Prototype Portrait](docs/prototype_portrait.md)
 - [Target Architecture](docs/architecture.md)
 - [Development Roadmap](docs/roadmap.md)
