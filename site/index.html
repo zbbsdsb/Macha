@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Macha — An open cognitive skeleton for game NPCs</title>
+<meta name="description" content="Macha is an open, engine-agnostic, model-agnostic cognitive standard skeleton for game NPCs. Travel the space: design goals, industry vision, architecture, deep dive, application plan and glossary." />
+<meta name="color-scheme" content="dark" />
+<meta property="og:title" content="Macha — An open cognitive skeleton for game NPCs" />
+<meta property="og:description" content="Not an NPC that can chat. A standard skeleton for NPCs that remember, stay themselves, and can be tested." />
+<meta property="og:type" content="website" />
+<link rel="stylesheet" href="assets/css/site.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='11' fill='none' stroke='%236EE7F9' stroke-width='2'/><circle cx='16' cy='16' r='3.5' fill='%236EE7F9'/></svg>" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<p class="fallback-note" hidden data-i18n="boot.webgl">WebGL is unavailable — showing the text-only route.</p>
+
+<!-- ══════════════════════════════════════════════ HUD -->
+<header class="hud hud--top">
+  <a class="brand" href="https://github.com/" aria-label="Macha">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">MACHA</span>
+    <span class="brand-sub" id="scene-name">Design Goals</span>
+  </a>
+  <div class="lang" role="group" aria-label="Language">
+    <button class="lang-btn is-active" data-lang="en" aria-pressed="true">EN</button>
+    <span class="lang-sep" aria-hidden="true">/</span>
+    <button class="lang-btn" data-lang="zh" aria-pressed="false">中文</button>
+  </div>
+</header>
+
+<div class="progress" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
+
+<nav class="rail" aria-label="Scenes">
+  <span class="rail-title" data-i18n="hud.nav">Scenes</span>
+  <ul class="rail-list">
+    <li><button class="dot is-active" data-goto="0"><span class="dot-num">01</span><span class="dot-label">Design Goals</span></button></li>
+    <li><button class="dot" data-goto="1"><span class="dot-num">02</span><span class="dot-label">Industry Vision</span></button></li>
+    <li><button class="dot" data-goto="2"><span class="dot-num">03</span><span class="dot-label">Core Architecture</span></button></li>
+    <li><button class="dot" data-goto="3"><span class="dot-num">04</span><span class="dot-label">Deep Dive</span></button></li>
+    <li><button class="dot" data-goto="4"><span class="dot-num">05</span><span class="dot-label">Application Plan</span></button></li>
+    <li><button class="dot" data-goto="5"><span class="dot-num">06</span><span class="dot-label">Glossary</span></button></li>
+  </ul>
+</nav>
+
+<footer class="hud hud--bottom">
+  <div class="telemetry" aria-hidden="true">
+    <span class="telemetry-tag" data-i18n="hud.telemetry">CAM</span>
+    <span id="cam-readout">POS — — —  ·  FOV 58</span>
+  </div>
+  <div class="travel">
+    <button class="travel-btn" id="prev" aria-label="Previous scene">←</button>
+    <span class="scene-no"><b id="scene-no">01</b><i>/06</i></span>
+    <button class="travel-btn" id="next" aria-label="Next scene">→</button>
+  </div>
+  <p class="hint" data-i18n="hud.hint">Scroll or drag to travel · ← → to step · 1–6 to jump</p>
+</footer>
+
+<!-- ══════════════════════════════════════════════ SCENES -->
+<main id="stage">
+
+  <!-- 01 · Origin — Design Goals -->
+  <article class="panel" data-panel="0">
+    <p class="kicker" data-i18n="s1.kicker">Scene 01 — Origin</p>
+    <h2 class="title" data-i18n="s1.title">Design Goals</h2>
+    <p class="lead" data-i18n="s1.lead">Macha is not an NPC that can chat. It is a standard skeleton for NPCs that remember, stay themselves, and can be tested.</p>
+
+    <div class="body">
+      <p data-i18n="s1.p1">We start from the player, not from the model. What breaks immersion is rarely a weak answer — it is an NPC that forgets, contradicts itself, or has no reason to refuse.</p>
+      <p data-i18n="s1.p2">So the first deliverable is not a game. It is a spec, a reference implementation, and a conformance suite small enough for one or two people to finish.</p>
+
+      <ul class="pillars">
+        <li><b data-i18n="s1.p.memory">Memory</b><span data-i18n="s1.p.memory.d">Experiences, relationships and causality that survive across sessions.</span></li>
+        <li><b data-i18n="s1.p.arch">Architecture</b><span data-i18n="s1.p.arch.d">An extensible, modular architecture instead of piled-up prompts.</span></li>
+        <li><b data-i18n="s1.p.char">Character</b><span data-i18n="s1.p.char.d">A stable, believable, evolving persona for every NPC.</span></li>
+      </ul>
+
+      <ul class="checks">
+        <li data-i18n="s1.li1">Standard, not product — open, engine-agnostic and model-agnostic.</li>
+        <li data-i18n="s1.li2">Measurable — memory, character consistency, latency, cost and observability are all testable.</li>
+        <li data-i18n="s1.li3">Swappable — change the model or the memory backend and the conformance tests still pass.</li>
+        <li data-i18n="s1.li4">Finishable — 1–2 developers, a few weeks, no engine plugin required.</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- 02 · Horizon — Industry Goals & Vision -->
+  <article class="panel" data-panel="1">
+    <p class="kicker" data-i18n="s2.kicker">Scene 02 — Horizon</p>
+    <h2 class="title" data-i18n="s2.title">Industry Goals &amp; Vision</h2>
+    <p class="lead" data-i18n="s2.lead">Redefine the relationship between player, NPC and world — and make that definition public.</p>
+
+    <div class="body">
+      <p data-i18n="s2.p1">Today every studio re-invents NPC cognition from scratch. There is no shared vocabulary for what a game agent is, and no shared way to prove one works.</p>
+      <p data-i18n="s2.p2">Macha aims to be that vocabulary: a thin, open standard that any engine and any model can implement, with evidence published in the open.</p>
+
+      <ul class="checks">
+        <li data-i18n="s2.li1">A shared vocabulary: what a game agent is, and what it must guarantee.</li>
+        <li data-i18n="s2.li2">A semi-permeable membrane: the world shapes the NPC, the NPC keeps its own interpretation.</li>
+        <li data-i18n="s2.li3">One standard, many worlds — the same interfaces across engines and models.</li>
+        <li data-i18n="s2.li4">Public evidence: experiments, results and failures published in the open.</li>
+      </ul>
+
+      <blockquote class="quote">
+        <p data-i18n="s2.quote">We are not trying to prove we can build a complex world. We are trying to prove what kind of relationship should exist between a player and an NPC — and why existing technology has never satisfied it.</p>
+        <cite data-i18n="s2.quote.by">Macha Team</cite>
+      </blockquote>
+    </div>
+  </article>
+
+  <!-- 03 · Core — Architecture  [stage ready, copy pending] -->
+  <article class="panel panel--pending" data-panel="2">
+    <p class="kicker" data-i18n="s3.kicker">Scene 03 — Core</p>
+    <h2 class="title" data-i18n="s3.title">Core Architecture</h2>
+    <p class="lead" data-i18n="s3.lead">Perception, Memory, Reasoning, Action — four layers, one contract.</p>
+    <div class="body">
+      <p class="pending">
+        <span class="pending-badge" data-i18n="pending.badge">Content in preparation</span>
+        <span data-i18n="pending.body">This scene is staged and ready. The writing is still in review — the structure below shows what will land here.</span>
+      </p>
+      <h3 class="stack-title" data-i18n="stack.label">Structure</h3>
+      <ul class="chips" data-stack="core"></ul>
+      <a class="cta" href="https://github.com/" data-i18n="pending.cta">Help write this scene</a>
+    </div>
+  </article>
+
+  <!-- 04 · Descent — Deep Dive  [stage ready, copy pending] -->
+  <article class="panel panel--pending" data-panel="3">
+    <p class="kicker" data-i18n="s4.kicker">Scene 04 — Descent</p>
+    <h2 class="title" data-i18n="s4.title">Deep Dive</h2>
+    <p class="lead" data-i18n="s4.lead">Field superposition, mental LOD, and the removal test.</p>
+    <div class="body">
+      <p class="pending">
+        <span class="pending-badge" data-i18n="pending.badge">Content in preparation</span>
+        <span data-i18n="pending.body">This scene is staged and ready. The writing is still in review — the structure below shows what will land here.</span>
+      </p>
+      <h3 class="stack-title" data-i18n="stack.label">Structure</h3>
+      <ul class="chips" data-stack="descent"></ul>
+      <a class="cta" href="https://github.com/" data-i18n="pending.cta">Help write this scene</a>
+    </div>
+  </article>
+
+  <!-- 05 · Field — Application Plan  [stage ready, copy pending] -->
+  <article class="panel panel--pending" data-panel="4">
+    <p class="kicker" data-i18n="s5.kicker">Scene 05 — Field</p>
+    <h2 class="title" data-i18n="s5.title">Application Plan</h2>
+    <p class="lead" data-i18n="s5.lead">Where Macha gets tested. Three slots are open.</p>
+    <div class="body">
+      <p class="pending">
+        <span class="pending-badge" data-i18n="pending.badge">Content in preparation</span>
+        <span data-i18n="pending.body">This scene is staged and ready. The writing is still in review — the structure below shows what will land here.</span>
+      </p>
+      <h3 class="stack-title" data-i18n="stack.label">Structure</h3>
+      <ul class="chips" data-stack="field"></ul>
+      <a class="cta" href="https://github.com/" data-i18n="pending.cta">Help write this scene</a>
+    </div>
+  </article>
+
+  <!-- 06 · Archive — Glossary  [stage ready, copy pending] -->
+  <article class="panel panel--pending" data-panel="5">
+    <p class="kicker" data-i18n="s6.kicker">Scene 06 — Archive</p>
+    <h2 class="title" data-i18n="s6.title">Glossary</h2>
+    <p class="lead" data-i18n="s6.lead">Every term Macha defines, in one ring.</p>
+    <div class="body">
+      <p class="pending">
+        <span class="pending-badge" data-i18n="pending.badge">Content in preparation</span>
+        <span data-i18n="pending.body">This scene is staged and ready. The writing is still in review — the structure below shows what will land here.</span>
+      </p>
+      <h3 class="stack-title" data-i18n="stack.label">Structure</h3>
+      <ul class="chips" data-stack="archive"></ul>
+      <a class="cta" href="https://github.com/" data-i18n="pending.cta">Help write this scene</a>
+    </div>
+  </article>
+
+</main>
+
+<!-- ══════════════════════════════════════════════ BOOT -->
+<div class="boot" id="boot">
+  <div class="boot-inner">
+    <h1 class="boot-title" data-i18n="boot.title">Macha</h1>
+    <p class="boot-tagline" data-i18n="boot.tagline">An open cognitive skeleton for game NPCs.</p>
+    <button class="boot-btn" id="boot-enter" data-i18n="boot.enter">Enter the space</button>
+    <p class="boot-hint" data-i18n="boot.hint">Drag to travel · scroll to drift · 1–6 to jump</p>
+  </div>
+</div>
+
+<noscript>
+  <style>
+    .boot, .hud, .rail, .progress { display: none !important; }
+    #stage { position: static; overflow: visible; }
+    .panel { position: static; opacity: 1; transform: none; display: block; margin: 4rem auto; max-width: 46rem; }
+  </style>
+</noscript>
+
+<script type="module" src="assets/js/main.js"></script>
+</body>
+</html>
