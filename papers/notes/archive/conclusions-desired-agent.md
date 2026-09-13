@@ -4,7 +4,7 @@
 > Status: Active
 > Prerequisites:
 > - [what-we-desire-in-game-agents.md](what-we-desire-in-game-agents.md)
-> - [four-papers-boundary-and-fusion.md](four-papers-boundary-and-fusion.md) (archived)
+> - [../drafts/four-papers-boundary-and-fusion.md](../drafts/four-papers-boundary-and-fusion.md) (archived)
 
 ---
 

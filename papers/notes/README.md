@@ -11,6 +11,11 @@ Dossiers backing the paper's literature layer live in `research/literature/`.
 | [accepted/paper-goal-and-world-architecture.md](accepted/paper-goal-and-world-architecture.md) | Paper goal vs. world architecture separation |
 | [accepted/paper-section-directions.md](accepted/paper-section-directions.md) | Candidate section directions A–G |
 | [accepted/paper-status.md](accepted/paper-status.md) | Overall paper writing status and next steps |
+| [accepted/decision-layer-first-sequencing.md](accepted/decision-layer-first-sequencing.md) | **Decision (RATIFIED 2026-09-13)**: build the Minecraft Layer before Macha Core |
+
+> Decision records (`decision-*.md`) live in `accepted/` as well: per
+> `../../docs/team-workflow.md`, a deviation from a ratified rule or plan requires a recorded
+> decision. They are project decisions, not paper conclusions.
 
 ## drafts/ — in-progress technical drafts
 
@@ -18,6 +23,7 @@ Dossiers backing the paper's literature layer live in `research/literature/`.
 |---|---|
 | [drafts/field-superposition-formalization.md](drafts/field-superposition-formalization.md) | Formal discussion draft of "field superposition" |
 | [drafts/four-papers-boundary-and-fusion.md](drafts/four-papers-boundary-and-fusion.md) | Boundary probing of four papers and a five-layer fusion attempt |
+| [drafts/environment-integration-layer.md](drafts/environment-integration-layer.md) | Layer architecture audit (A–G): Layer as an architectural primitive, Core↔Layer↔Environment boundaries, repo organization (PENDING) |
 
 ## archive/ — superseded / historical thinking (traceability only)
 

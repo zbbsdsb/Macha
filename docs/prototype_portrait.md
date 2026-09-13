@@ -28,7 +28,8 @@
 
 ## 3. Selected Approach
 
-**Final portrait: a combination of A + B + E, with C as an extension goal after Phase 1 is complete.**
+**Final portrait: a combination of A + B + E, with C as an extension goal after the cognitive core
+is complete (Phase 3 in the current roadmap — the Layer track runs first).**
 
 That is, the first prototype is not "a game," but a set of **"Macha Core v0.1 + Tavern Keeper reference probe + Macha Conformance v0"**.
 
@@ -126,6 +127,9 @@ v1 defines **Macha Level 1 Conformance**, with at least 12 automated checks:
 - No vector database.
 - No model training.
 - No Unity/Unreal plugins.
+- No environment **Layer** (Minecraft or otherwise): v1's environment is the CLI/text probe. A Layer
+  is a separate project that must be able to plug into Core without changing it — see
+  [`architecture.md`](architecture.md) §6–§7.
 - No cloud SaaS.
 - No "looks like a real person" companion-type NPC.
 

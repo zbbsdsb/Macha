@@ -5,7 +5,17 @@
 Macha is a research and engineering repository for next-generation game NPCs. Our goal is not to build an NPC "that can chat," but to construct an LLM-driven NPC framework with **long-term memory, believable reflection, dynamic planning, and multi-agent collaboration**.
 
 > Current status: repository initialization phase.  
-> Research foundation: the four core papers in `reference/`.
+> Research foundation: the four core papers in `reference/`.  
+> **Current sequencing (decided 2026-09-13): Layer-first, Core later** — the first verifiable
+> milestone is the Layer Protocol + a Stub Core + the Minecraft Layer, not the cognitive core.
+> See [Development Roadmap](docs/roadmap.md) and the
+> [decision record](papers/notes/accepted/decision-layer-first-sequencing.md).
+
+Macha is **two separable systems joined by one contract**: an environment-agnostic **Macha Core**
+(cognition), and an independent **Environment Integration Layer** per external world (Minecraft,
+Skyrim, Cyberpunk, Unreal, Unity, simulations, …). Minecraft is our first *Concrete Layer Test
+Case*, not the framework's identity. See [Target Architecture](docs/architecture.md) for the Layer
+boundary and its protocol.
 
 ---
 
@@ -33,7 +43,8 @@ Macha/
 │   └── index.md               #   PDF → literature dossier / paper mapping
 ├── research/                  # Trial-and-error layer: scratch probes + evidence dossiers
 │   ├── literature/            #   evidence dossiers (01–07) + literature-map
-│   ├── plans/                 #   methodology / collection plans (intelligence plan)
+│   ├── plans/                 #   methodology / collection plans (intelligence plan,
+│   │                          #   roadmap rework, Minecraft Layer validation)
 │   ├── scratch/               #   lowest permanence, e.g. reviews of others' frameworks
 │   └── experiments/           #   case-validation drafts not yet accepted as conclusions
 ├── papers/                    # Formal output: the paper + reasoning notes
@@ -59,6 +70,10 @@ Macha/
 │           ├── perception.py
 │           ├── reasoning.py
 │           └── action.py
+├── layers/                    # Environment Integration Layers (planned; see docs/architecture.md)
+│   ├── protocol/ runtime/ transport/   #   shared, environment-agnostic
+│   ├── minecraft/             #   Minecraft Layer (only module with paper-api)
+│   └── simulator/             #   fake environment (control condition)
 ├── examples/                  # Living case set backing the paper's case studies
 └── tests/
     └── test_smoke.py
@@ -78,6 +93,27 @@ Macha/
 into a team-accepted conclusion it is promoted into `papers/notes/accepted/` (with a status
 update), and a conclusion that enters the paper body marks its notes entry `archive/`.
 
+### Where Layers Live **[PENDING]**
+
+Environment Integration Layers are deliberately **not** part of the Core package tree. Planned shape
+(no directories created yet — the structure is specified in
+[`research/plans/minecraft-layer/04-project-structure.md`](research/plans/minecraft-layer/04-project-structure.md)):
+
+```text
+layers/                          # one Gradle build root, several modules
+├── protocol/  runtime/  transport/   # shared, environment-agnostic (pure JVM)
+├── minecraft/                   # Minecraft Layer — the only module with paper-api
+├── simulator/                   # fake environment — control condition (constraint C4)
+└── testclient/                  # vertical-slice test client
+```
+
+Later, when a Layer earns its own release cycle, `layers/minecraft/` moves out to become the
+standalone repo `macha-minecraft`.
+
+The rule that makes the split worth it: **adding a Layer must not require changing Macha Core.**
+Rationale and audit:
+[`papers/notes/drafts/environment-integration-layer.md`](papers/notes/drafts/environment-integration-layer.md) §E.
+
 ---
 
 ## Quick Start (Placeholder)
@@ -94,7 +130,8 @@ pip install -r requirements.txt
 pytest
 ```
 
-> Concrete runnable examples will be added after Phase 1 MVP completion.
+> Concrete runnable examples will be added after the Phase 3 cognitive-core MVP completion.
+> Phase 1–2 produce the Layer track (protocol, Stub Core, Minecraft + simulator Layers), not examples.
 
 ---
 
@@ -108,7 +145,9 @@ pytest
 - [Preliminary Technical Direction](docs/research/direction.md)
 - [Team Information Collection Checklist (retired → see plans)](docs/retired/information_needs.md)
 - [Prototype Portrait](docs/prototype_portrait.md)
-- [Target Architecture](docs/architecture.md)
+- [Target Architecture](docs/architecture.md) — includes the Environment Integration Layer boundary
+- [Environment Integration Layer (draft note)](papers/notes/drafts/environment-integration-layer.md)
+- [Minecraft Layer Validation Plan (draft, CN)](research/plans/minecraft-layer-validation-plan.md)
 - [Development Roadmap](docs/roadmap.md)
 
 ---

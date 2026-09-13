@@ -31,4 +31,24 @@ If you work on NPC architectures, Minecraft agents, game AI research, or modding
 
 ---
 
+## Update — 2026-09-13: what this track is for
+
+One clarification of scope, after calibrating our architecture.
+
+**Minecraft is not part of Macha.** This track is a **Concrete Layer Test Case**: we build one
+real *Environment Integration Layer* against Minecraft in order to validate the Layer abstraction
+itself — that a world can be connected through an independent Layer without changing Macha Core.
+
+- Target: `Macha Core + Minecraft Layer = a Minecraft-connected Macha`, with **zero Core changes**.
+- Not the target: a Minecraft-oriented Macha, or "Macha for Minecraft."
+- Success is measured by the boundary holding (capability probing, actions that can be refused,
+  consequences returned), not by how impressive the NPC looks in-game.
+- Future environments (Skyrim, Cyberpunk 2077, Unreal, Unity, simulations) should each be their own
+  Layer, implemented independently.
+
+Definitions: [Target Architecture](../docs/architecture.md) · validation plan:
+[`research/plans/minecraft-layer-validation-plan.md`](../research/plans/minecraft-layer-validation-plan.md).
+
+---
+
 *Macha Team*

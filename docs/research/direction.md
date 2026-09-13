@@ -18,12 +18,22 @@ A believable NPC needs at least:
 - **Planning**: generate the next action based on current goals, memory, and reflection.
 - **Action**: translate decisions into instructions or dialogue executable by the game engine.
 
-## First MVP (Suggested)
+## First MVP (Superseded 2026-09-13 — Now Phase 3)
+
+> **Sequencing changed.** The first verifiable milestone is now the **Layer track** — Layer
+> Protocol v0 + a non-cognitive **Stub Core** + a Minecraft Layer + a simulator Layer, judged by
+> V1–V5 — not this cognitive core MVP. See
+> [`../roadmap.md`](../roadmap.md) and the decision record
+> [`../../papers/notes/accepted/decision-layer-first-sequencing.md`](../../papers/notes/accepted/decision-layer-first-sequencing.md).
+> The text below is retained as the statement of the **Phase 3** cognitive-core MVP.
+
+The cognitive core (Phase 3) remains what it always was:
 
 - Implement a "minimal cognitive core" in Python.
 - Do not bind to any specific game engine; validate first in a command-line / text environment.
 - Provide an `Agent` interface, internally composed of four modules: `Memory`, `Reasoning`, `Perception`, `Action`.
 - Test with a simple simulation scenario: the NPC conducts 5 rounds of dialogue with the player, then converses again after an interval, and the NPC can still recall key facts.
+- **New:** it must also run unchanged against the Layers built in Phase 1–2 (`docs/roadmap.md`).
 
 ## Technology Selection Suggestions
 
@@ -35,6 +45,9 @@ A believable NPC needs at least:
 ## Non-Goals (Not in the First Version)
 
 - No full game engine integration.
+- No environment **Layer** implementation: the v1 environment is the CLI/text probe only. The
+  Macha ↔ Layer boundary is defined in [`../architecture.md`](../architecture.md) and realized in a
+  separate project, not inside Macha Core.
 - No large-scale multi-agent network.
 - No production-grade inference cost optimization.
 - No complex visual perception.

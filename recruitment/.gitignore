@@ -1,0 +1,9 @@
+# generated font cache and preview renders — not source
+.fontcache/
+.preview/
+
+# PNG flip-throughs of both editions (regenerate with render_preview.py)
+preview-*.png
+
+# build trace artefacts
+*.trace.pdf

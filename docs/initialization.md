@@ -48,4 +48,5 @@ pytest
 
 - [ ] Read `docs/research/positioning.md` and confirm the research direction.
 - [ ] Read `docs/research/direction.md` and confirm the first MVP scope.
-- [ ] Read `docs/roadmap.md` and claim a Phase 1 task.
+- [ ] Read `docs/roadmap.md` and claim a Phase 1 task (Layer Protocol v0 / Stub Core / environment
+      reconnaissance — the agreed sequencing is Layer-first).

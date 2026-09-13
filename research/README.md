@@ -12,8 +12,12 @@ deleted, rewritten, or proven wrong without ceremony. Nothing here is a delivera
 
 - `literature/` — the seven evidence dossiers (01–07) plus `00-literature-map-paper-gaps.md`;
   load-bearing material that a reviewer cannot dismiss. Read-only as evidence, forwardable to the paper.
-- `plans/` — methodology / collection plans that drive the literature sweep (e.g. the
-  literature intelligence plan).
+- `plans/` — methodology / collection plans and working proposals that are not yet ratified
+  (e.g. the literature intelligence plan, `roadmap-rework-draft.md`, and
+  `minecraft-layer-validation-plan.md`).
+  - `plans/minecraft-layer/` — the Minecraft Layer technical foundation
+    ([index](plans/minecraft-layer/README.md)): stack lock, file-level project structure, protocol v0,
+    observation/event set, build & boundary rules. Plan only; no code yet.
 - `scratch/` — quick probes, reviews of others' frameworks, "one look at how X does it"
   notes. Lowest permanence. Example: `aetherflow-*.md` live here.
 - `experiments/` — case-validation drafts that must run (e.g. the 3–5 game-NPC case
