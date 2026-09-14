@@ -10,14 +10,15 @@
 ```text
 Macha/                                  # 仓库根（Python 项目，禁止放 Gradle 文件）
 └── layers/                             # 【新增】独立 Gradle 构建根
-    ├── settings.gradle.kts             # include(":protocol", ":runtime", ":transport",
+    ├── settings.gradle.kts             # include(":kit:protocol", ":kit:runtime", ":kit:transport",
     │                                   #         ":minecraft", ":simulator", ":testclient")
-    ├── build.gradle.kts                # 共享配置（toolchain / Kotlin / 公共测试）
+    ├── build.gradle.kts                # 共享配置 + 边界守护任务（§7）
     ├── gradle.properties
     ├── gradle/{libs.versions.toml, wrapper/}
-    ├── .gitignore                      # build/ .gradle/ run/
-    ├── protocol/  runtime/  transport/ # 共享内核（纯 JVM）
-    ├── minecraft/                      # 唯一依赖 paper-api
+    ├── .gitignore                      # build/ .gradle/ .kotlin/ run/
+    ├── kit/                            # 共享内核（纯 JVM，零环境依赖）
+    │   └── protocol/  runtime/  transport/
+    ├── minecraft/                      # 唯一依赖 paper-api（环境子树）
     ├── simulator/                      # 假环境（C4 对照条件）
     ├── testclient/                     # 垂直切片测试客户端
     └── run/                            # 运行期产物（gitignored）
@@ -30,11 +31,15 @@ Macha/                                  # 仓库根（Python 项目，禁止放 
 
 ```kotlin
 rootProject.name = "macha-layers"
-include(":protocol", ":runtime", ":transport", ":minecraft", ":simulator", ":testclient")
+include(":kit:protocol", ":kit:runtime", ":kit:transport", ":minecraft", ":simulator", ":testclient")
 ```
 
-**为什么从第一天就是多模块**：`:protocol` / `:runtime` / `:transport` 会被**两个环境模块**
-（`:minecraft`、`:simulator`）共用，这是 V4 的前提；而把 `paper-api` 限定在 `:minecraft`，
+**为什么共享内核收进 `kit/`**：让"共享内核 vs 环境实现"在磁盘上可见——`layers/minecraft/` 与
+整个 `layers/kit/` 并列，而不是与 `protocol/` 平级。纯构建布局改动，Kotlin 包名不变
+（决策记录 `decision-layers-directory-layout.md`）。
+
+**为什么从第一天就是多模块**：`:kit:protocol` / `:kit:runtime` / `:kit:transport` 会被**两个环境
+模块**（`:minecraft`、`:simulator`）共用，这是 V4 的前提；而把 `paper-api` 限定在 `:minecraft`，
 使"Paper 不得渗入协议与运行时"成为**编译期**约束，而不是靠 lint 提醒（`04` §2）。
 
 包根统一 `dev.macha.layer.*`；完整文件清单见 [`04-project-structure.md`](04-project-structure.md)。
@@ -138,20 +143,21 @@ v0 不放 `commands`、不放 `permissions`（除非调试需要一条 `/macha s
 ## 7. 边界守护（Boundary Guard）
 
 **第一道防线是 Gradle 模块依赖（编译期）**：`paper-api` 只出现在 `:minecraft` 的 `build.gradle.kts`
-里，因此 `:protocol` / `:runtime` / `:transport` / `:simulator` 一旦引用 Bukkit 类型就**编译不过**。
-这比"扫描 import 再报警"强一个量级（`04` §2）。
+里，因此 `:kit:protocol` / `:kit:runtime` / `:kit:transport` / `:simulator` 一旦引用 Bukkit 类型就
+**编译不过**。这比"扫描 import 再报警"强一个量级（`04` §2）。
 
 **第二道防线是 import 扫描任务**（捕获模块内不该出现的环境字面量与类型引用）：
 
 1. **Paper 范围检查**：扫描 `layers/*/src/main/kotlin`，除 `minecraft/src/main/kotlin/**/plugin/`
    与 `**/adapter/` 之外，出现 `import org.bukkit` / `io.papermc` / `net.minecraft` → **构建失败**。
-2. **协议洁净检查**：扫 `layers/protocol/src`、`layers/runtime/src`、`layers/simulator/src`，
+2. **协议洁净检查**：扫 `layers/kit/protocol/src`、`layers/kit/runtime/src`、`layers/simulator/src`，
    禁止出现环境专有标识（`org.bukkit`、`Material`、`BlockData`、`World` 类型引用）；
    `minecraft:<verb>` 这类命名空间**字符串常量**允许存在（词表校验需要），但必须集中在
    `ActionVocabulary` / `ActionMapping` 两处。
 3. **Core 洁净检查**：扫仓库根的 `src/macha/**`，禁止出现任何 Minecraft/Kotlin/Gradle 相关
    标识（V2 的可自动检查部分）。
-4. 三个任务挂到 `check`（并建议在 CI 上跑）。
+4. 三个任务挂到 `check`（并建议在 CI 上跑）。**注意**：`kit/` 迁移完成后，任务里的目录列表
+   必须同步改成 `kit/protocol`、`kit/runtime`（见决策记录 §3 第 4 步），否则第二道防线会静默失守。
 
 > 这三个检查直接对应验证计划的 **V1/V2/V3**："接入期间 Core 零改动""Core 内不出现 Minecraft 概念"
 > "Layer 内不出现认知"。它们不是洁癖，而是让证伪判据可执行。

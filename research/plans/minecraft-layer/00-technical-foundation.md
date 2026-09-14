@@ -75,12 +75,23 @@ Macha/                          # 现有仓库（Python 为主）
 ├── src/macha/                  # Macha Core（Python）——本阶段不改
 ├── docs/ papers/ research/ …   # 现有文档层
 └── layers/                     # 【新增】环境接入层：一个 Gradle 构建根，多个模块
-    ├── settings.gradle.kts     #   :protocol :runtime :transport :minecraft :simulator :testclient
-    ├── protocol/ runtime/ transport/   # 共享内核（纯 JVM，零环境依赖）
-    ├── minecraft/              # 唯一依赖 paper-api 的模块
+    ├── settings.gradle.kts     #   :kit:protocol :kit:runtime :kit:transport
+    │                           #   :minecraft :simulator :testclient
+    ├── kit/                    # 共享内核（纯 JVM，零环境依赖）
+    │   └── protocol/ runtime/ transport/
+    ├── minecraft/              # 唯一依赖 paper-api 的模块（环境子树）
     ├── simulator/              # 假环境（约束 C4 的对照条件）
+    ├── testclient/             # 垂直切片测试客户端
     └── run/                    # 运行期产物（gitignored）
 ```
+
+> 为什么共享内核收进 `kit/`：`layers/protocol` 与 `layers/minecraft` 平级时，磁盘上看不出
+> "共享内核 vs 环境实现"这条中心区分；收进 `kit/` 后 Minecraft 是与整个共享内核并列的**独立子树**。
+> 纯构建布局改动，**Kotlin 包名不变**。决策记录：
+> `papers/notes/accepted/decision-layers-directory-layout.md`。
+
+> 2026-09-14 状态更新：团队已创建 `layers/` 骨架（6 个模块、边界守护任务齐备）；
+> 物理目录从"平铺"改为 `kit/` 分组是**尚未执行的机械迁移**，步骤见决策记录 §3。
 
 > 为什么是 `layers/` 而不是根级 `macha-minecraft/`：v0 按约束 **C4 必须同时存在 Minecraft 与
 > Simulator 两个 Layer**，两者共享 `protocol`/`runtime`/`transport`；`layers/` 这一层父目录用来
@@ -222,10 +233,10 @@ Minecraft
 | `org.jetbrains.kotlinx:kotlinx-serialization-json` | `implementation` | 协议 JSON 编解码；编译期需 `kotlin("plugin.serialization")` | 选它是因为**无反射**、Kotlin 原生、可空字段表达清晰；**不要**依赖服务器内部的 Gson（版本随服务器漂移） |
 | `org.java-websocket:Java-WebSocket:1.6.0` | `implementation` | WS 服务端（双向流） | 关键理由：**不依赖 Netty**，避免与 Paper 的 Netty 冲突；体积极小 |
 | JDK `com.sun.net.httpserver` | JDK 内置 | HTTP 控制面（健康检查、状态查询、单发动作） | 零依赖；避免为 HTTP 再引入 Web 框架 |
-| `org.jetbrains.kotlinx:kotlinx-coroutines-core`（可选） | `implementation` | 派发/节流/超时控制 | 仅在 `runtime/` 使用；若 v0 用简单队列即可，则**先不加** |
+| `org.jetbrains.kotlinx:kotlinx-coroutines-core`（可选） | `implementation` | 派发/节流/超时控制 | 仅在 `kit/runtime/` 使用；若 v0 用简单队列即可，则**先不加** |
 | `org.junit.jupiter:*` / `kotlin-test` | `testImplementation` | 纯 Kotlin 模块单测 | 不引入 MockBukkit：v0 的 Paper 侧用真服务器集成测试，避免 mock 与真实 API 漂移 |
 | `xyz.jpenilla.run-paper`（Gradle Plugin Portal） | 构建期 | 一键启动本地测试服务器（dev loop） | 版本在 scaffold 时从 Plugin Portal 取当前值；若它与 26.2 不兼容，退化方案是手工下载 §C.1 的 pin jar + 本地 `run/` 脚本 |
-| `com.gradleup.shadow` | 构建期 | 打包插件 fat jar 并 relocate 第三方包 | 只 shade 运行期必需项；relocate 前缀如 `dev.macha.minecraft.libs.*`，防止与服务器/其他插件冲突 |
+| `com.gradleup.shadow` | 构建期 | 打包插件 fat jar 并 relocate 第三方包 | 只 shade 运行期必需项；relocate 前缀如 `dev.macha.layer.libs.*`，防止与服务器/其他插件冲突 |
 
 **明确不需要**：任何 LLM SDK、向量库、agent 框架、Web 框架、数据库、消息队列、NMS 映射工具、
 Paper 之外的 Minecraft 依赖。
@@ -238,9 +249,10 @@ Paper 之外的 Minecraft 依赖。
 
 ```text
 layers/                                  # Gradle 构建根（不在仓库根）
-├── protocol/    共享：协议 v0 DTO / 编解码 / 版本协商 / 能力清单模型   ← 纯 JVM
-├── runtime/     共享：LayerRuntime（会话、派发、校验、节流、EnvironmentPort）← 纯 JVM
-├── transport/   共享：HTTP 控制面 + WebSocket 数据面                   ← 纯 JVM
+├── kit/                                  共享内核（纯 JVM，零环境依赖）
+│   ├── protocol/    协议 v0 DTO / 编解码 / 版本协商 / 能力清单模型
+│   ├── runtime/     LayerRuntime（会话、派发、校验、节流、EnvironmentPort）
+│   └── transport/   HTTP 控制面 + WebSocket 数据面
 ├── minecraft/   环境：Paper 插件入口 + 适配器（唯一依赖 paper-api）     ★ 唯一允许碰 Paper
 ├── simulator/   环境：假环境（C4 对照条件）                            ← 纯 JVM
 └── testclient/  工具：垂直切片测试客户端 + transcript 记录
@@ -250,12 +262,12 @@ layers/                                  # Gradle 构建根（不在仓库根）
 
 | 建议模块 | 处理 |
 |---|---|
-| `lifecycle/` | 拆进 `:minecraft/plugin/`（Bukkit 生命周期）+ `:runtime`（Layer 会话生命周期） |
-| `observation/` | **模型**进 `:protocol`（`Payloads.kt`）；**采集**进 `:minecraft/adapter/observe/` |
-| `events/` | **归一化**进 `:runtime`；**监听器**进 `:minecraft/adapter/events/` |
-| `actions/` | **词表与校验**在 `:runtime`；**执行**在 `:minecraft/adapter/action/` |
-| `entities/` | **视图**在 `:protocol`；**绑定/查找**在 `:minecraft/adapter/agent/` |
-| `protocol/` `transport/` | 保留为独立模块，且必须保持零环境依赖 |
+| `lifecycle/` | 拆进 `:minecraft/plugin/`（Bukkit 生命周期）+ `:kit:runtime`（Layer 会话生命周期） |
+| `observation/` | **模型**进 `:kit:protocol`（`Payloads.kt`）；**采集**进 `:minecraft/adapter/observe/` |
+| `events/` | **归一化**进 `:kit:runtime`；**监听器**进 `:minecraft/adapter/events/` |
+| `actions/` | **词表与校验**在 `:kit:runtime`；**执行**在 `:minecraft/adapter/action/` |
+| `entities/` | **视图**在 `:kit:protocol`；**绑定/查找**在 `:minecraft/adapter/agent/` |
+| `protocol/` `transport/` | 收进 `kit/`，保持零环境依赖 |
 
 **明确不建的空目录**：`world/`、`ai/`、`npc/`、`persistence/`、`ui/`、`command/`、
 层内 `docs/`（计划文档留在本目录，随拆仓再迁）。
@@ -286,7 +298,7 @@ layers/                                  # Gradle 构建根（不在仓库根）
 
 ### G.1 一旦出现下列任一情况，**停止并指出**（Minecraft 正在污染 Macha）
 
-1. `protocol/` 的 DTO 里出现 Bukkit/Paper 类型（`Location`、`World`、`Material`、`Entity`…）。
+1. `kit/protocol/` 的 DTO 里出现 Bukkit/Paper 类型（`Location`、`World`、`Material`、`Entity`…）。
 2. 协议**顶层信封**出现 Minecraft 专有概念（tick 作为必填顶层字段、chunk 坐标、维度 id 的硬编码枚举）。
 3. 动作词表里出现 `place_block` / `craft` / `break_block` 这类环境动词，**且被当作 Core 的通用词**。
    正确形态：通用词（`move` / `look` / `interact`）+ 带命名空间的环境特有词（`minecraft:place_block`）。
@@ -317,8 +329,9 @@ layers/                                  # Gradle 构建根（不在仓库根）
 | D5 | HTTP 与 WS 的端口与绑定地址 | `127.0.0.1:8765`（HTTP 控制面）与同端口的 WS 升级，或分端口 | 影响 `config.yml` 与安全边界 |
 | D6 | `run-paper` 版本与是否引入 | 引入；版本 scaffold 时从 Plugin Portal 取；不兼容则手工 jar | 影响 dev loop |
 | D7 | 事件订阅：v0 是否允许客户端选择性订阅 | 允许 `all` 与按 kind 列表订阅（实现成本低，且避免刷屏） | 影响 `event_subscribe` 是否进 v0 |
-| D8 | 仓库放置：`layers/` 还是根级 `macha-minecraft/` | 推荐 **`layers/`**（`04` §1 给了替换方案） | 影响仓库根形态与未来拆仓路径 |
-| D9 | 多 Gradle 模块 vs 单模块 + import 扫描 | 多模块（编译期边界）；退路见 `03` §7 | 影响构建复杂度与边界强度 |
+| D8 | ~~仓库放置：`layers/` 还是根级 `macha-minecraft/`~~ | **已定（2026-09-14）：`layers/` 单构建根；共享内核收进 `layers/kit/`** | 仓库根形态与未来拆仓路径 |
+| D9 | ~~多 Gradle 模块 vs 单模块 + import 扫描~~ | **已定：多 Gradle 模块**（编译期边界）；退路见 `03` §7 | 构建复杂度与边界强度 |
+| D10 | `layers/kit/` 的物理迁移（当前仍是平铺）+ `.kotlin/` 加入 `.gitignore` | 按决策记录 §3 的清单执行 | 影响团队 IDE 导入与构建 |
 
 ---
 

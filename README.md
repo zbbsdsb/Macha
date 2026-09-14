@@ -70,10 +70,13 @@ Macha/
 │           ├── perception.py
 │           ├── reasoning.py
 │           └── action.py
-├── layers/                    # Environment Integration Layers (planned; see docs/architecture.md)
-│   ├── protocol/ runtime/ transport/   #   shared, environment-agnostic
+├── layers/                    # Environment Integration Layers — one Gradle build root
+│   ├── kit/                   #   shared, environment-agnostic (pure JVM)
+│   │   └── protocol/ runtime/ transport/
 │   ├── minecraft/             #   Minecraft Layer (only module with paper-api)
-│   └── simulator/             #   fake environment (control condition)
+│   ├── simulator/             #   fake environment (control condition)
+│   └── testclient/            #   vertical-slice test client
+├── recruitment/               # Recruiting material (sources + built PDFs; caches ignored)
 ├── examples/                  # Living case set backing the paper's case studies
 └── tests/
     └── test_smoke.py
@@ -93,22 +96,26 @@ Macha/
 into a team-accepted conclusion it is promoted into `papers/notes/accepted/` (with a status
 update), and a conclusion that enters the paper body marks its notes entry `archive/`.
 
-### Where Layers Live **[PENDING]**
+### Where Layers Live
 
-Environment Integration Layers are deliberately **not** part of the Core package tree. Planned shape
-(no directories created yet — the structure is specified in
-[`research/plans/minecraft-layer/04-project-structure.md`](research/plans/minecraft-layer/04-project-structure.md)):
+Environment Integration Layers are deliberately **not** part of the Core package tree. The build root
+`layers/` exists; the shared core is grouped under `kit/` so the distinction "shared core vs
+environment implementation" is visible on disk ([decision record](papers/notes/accepted/decision-layers-directory-layout.md)):
 
 ```text
 layers/                          # one Gradle build root, several modules
-├── protocol/  runtime/  transport/   # shared, environment-agnostic (pure JVM)
+├── kit/                         # shared, environment-agnostic (pure JVM)
+│   └── protocol/  runtime/  transport/
 ├── minecraft/                   # Minecraft Layer — the only module with paper-api
 ├── simulator/                   # fake environment — control condition (constraint C4)
 └── testclient/                  # vertical-slice test client
 ```
 
+> Status 2026-09-14: the modules exist but are still flat (`layers/protocol` …). The mechanical
+> move into `kit/` is pending — steps in the decision record §3.
+
 Later, when a Layer earns its own release cycle, `layers/minecraft/` moves out to become the
-standalone repo `macha-minecraft`.
+standalone repo `macha-minecraft` (triggers: T1–T4 in the same record).
 
 The rule that makes the split worth it: **adding a Layer must not require changing Macha Core.**
 Rationale and audit:

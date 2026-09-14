@@ -316,18 +316,23 @@ world has ever needed.
 
 ---
 
-## 7. Repository Organization (Proposed) **[PENDING]**
+## 7. Repository Organization (Proposed)
 
 ```text
 macha/                    Macha Core + the Layer Protocol specification + conformance kit
-layers/                   in-repo Layer workspace — one build root, module per concern
-├── protocol/ runtime/ transport/   shared, environment-agnostic
+layers/                   in-repo Layer workspace — one build root
+├── kit/                  shared, environment-agnostic
+│   └── protocol/ runtime/ transport/
 ├── minecraft/            Minecraft Layer (only module with paper-api)
 ├── simulator/            fake environment — control condition
 └── testclient/           vertical-slice test client
 macha-minecraft/          later: layers/minecraft/ moved out as its own repo
 macha-skyrim/             later, independent
 ```
+
+> Layout decided 2026-09-14:
+> [`../papers/notes/accepted/decision-layers-directory-layout.md`](../papers/notes/accepted/decision-layers-directory-layout.md)
+> (`layers/kit/` grouping; split triggers T1–T4). The repo currently still has the modules flat.
 
 - The **specification** lives with Core (one owner, one source of truth) but is versioned
   separately from the Core implementation.

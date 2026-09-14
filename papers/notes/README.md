@@ -12,6 +12,7 @@ Dossiers backing the paper's literature layer live in `research/literature/`.
 | [accepted/paper-section-directions.md](accepted/paper-section-directions.md) | Candidate section directions A–G |
 | [accepted/paper-status.md](accepted/paper-status.md) | Overall paper writing status and next steps |
 | [accepted/decision-layer-first-sequencing.md](accepted/decision-layer-first-sequencing.md) | **Decision (RATIFIED 2026-09-13)**: build the Minecraft Layer before Macha Core |
+| [accepted/decision-layers-directory-layout.md](accepted/decision-layers-directory-layout.md) | **Decision (RATIFIED 2026-09-14)**: `layers/` build root, shared core under `kit/`; split triggers T1–T4 |
 
 > Decision records (`decision-*.md`) live in `accepted/` as well: per
 > `../../docs/team-workflow.md`, a deviation from a ratified rule or plan requires a recorded
