@@ -1,0 +1,22 @@
+# Macha Minecraft Layer — 配置（与 plugin/config/LayerConfig.kt 一一对应）
+# 铁律：字段改动必须先改 research/plans/minecraft-layer/ 下的计划文档（先文档后代码）。
+
+transport:
+  bind: 127.0.0.1
+  port: 8765
+  token: ""
+
+agent:
+  default_binding: nearest_zombie
+
+observation:
+  radius: 16.0
+  max_entities: 16
+  max_blocks: 32
+  push_interval_ticks: 20
+
+events:
+  subscribe_default: all
+
+log:
+  level: INFO

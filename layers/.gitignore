@@ -1,0 +1,18 @@
+# Macha Layers 构建根 — 隔离规则（00 §A.3 / 03 §1）
+# 构建产物与运行期目录一律不进仓库。
+
+# Gradle 构建产物
+**/build/
+.gradle/
+# Kotlin 编译缓存（F2：Kotlin 跑过一次构建就会写 .kotlin/）
+.kotlin/
+# 本地 Gradle 缓存与属性
+local.properties
+# 运行期产物：服务器目录、世界中、transcript 回放
+run/
+# IDE
+.idea/
+*.iml
+.vscode/
+# 回放与临时
+*.log

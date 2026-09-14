@@ -1,0 +1,7 @@
+name: MachaMinecraftLayer
+version: 0.1.0
+main: dev.macha.layer.minecraft.plugin.MachaMinecraftPlugin
+api-version: '26.2'
+load: POSTWORLD
+authors: [Macha]
+description: Macha Environment Layer bridge for a Paper server (protocol v0). Not an NPC mod.
