@@ -90,8 +90,10 @@ Macha/                          # 现有仓库（Python 为主）
 > 纯构建布局改动，**Kotlin 包名不变**。决策记录：
 > `papers/notes/accepted/decision-layers-directory-layout.md`。
 
-> 2026-09-14 状态更新：团队已创建 `layers/` 骨架（6 个模块、边界守护任务齐备）；
-> 物理目录从"平铺"改为 `kit/` 分组是**尚未执行的机械迁移**，步骤见决策记录 §3。
+> 2026-09-14 状态更新：团队已按本方案落地——`layers/kit/{protocol,runtime,transport}` + `minecraft/`、
+> `simulator/`、`testclient/`；边界守护已重指到 `kit/*` 并加了"扫到 0 个文件即失败"防呆（commit `ead3a3d`）。
+> 评审发现 F1–F6 全部修复，证据见 [`05-scaffold-review-2026-09-14.md`](05-scaffold-review-2026-09-14.md) §5。
+> 下一步计划见 [`06-next-step-plan.md`](06-next-step-plan.md)。
 
 > 为什么是 `layers/` 而不是根级 `macha-minecraft/`：v0 按约束 **C4 必须同时存在 Minecraft 与
 > Simulator 两个 Layer**，两者共享 `protocol`/`runtime`/`transport`；`layers/` 这一层父目录用来
@@ -331,7 +333,7 @@ layers/                                  # Gradle 构建根（不在仓库根）
 | D7 | 事件订阅：v0 是否允许客户端选择性订阅 | 允许 `all` 与按 kind 列表订阅（实现成本低，且避免刷屏） | 影响 `event_subscribe` 是否进 v0 |
 | D8 | ~~仓库放置：`layers/` 还是根级 `macha-minecraft/`~~ | **已定（2026-09-14）：`layers/` 单构建根；共享内核收进 `layers/kit/`** | 仓库根形态与未来拆仓路径 |
 | D9 | ~~多 Gradle 模块 vs 单模块 + import 扫描~~ | **已定：多 Gradle 模块**（编译期边界）；退路见 `03` §7 | 构建复杂度与边界强度 |
-| D10 | `layers/kit/` 的物理迁移（当前仍是平铺）+ `.kotlin/` 加入 `.gitignore` | 按决策记录 §3 的清单执行 | 影响团队 IDE 导入与构建 |
+| D10 | ~~`layers/kit/` 物理迁移 + `.kotlin/` 加入 `.gitignore`~~ | **已完成（commit `ead3a3d`）**；F1–F6 一并修复 | — |
 
 ---
 

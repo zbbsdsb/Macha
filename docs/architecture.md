@@ -332,7 +332,8 @@ macha-skyrim/             later, independent
 
 > Layout decided 2026-09-14:
 > [`../papers/notes/accepted/decision-layers-directory-layout.md`](../papers/notes/accepted/decision-layers-directory-layout.md)
-> (`layers/kit/` grouping; split triggers T1–T4). The repo currently still has the modules flat.
+> (`layers/kit/` grouping; split triggers T1–T4). The `kit/` regroup landed 2026-09-14
+> (commit `ead3a3d`), with the boundary guards re-pointed to `kit/*`.
 
 - The **specification** lives with Core (one owner, one source of truth) but is versioned
   separately from the Core implementation.

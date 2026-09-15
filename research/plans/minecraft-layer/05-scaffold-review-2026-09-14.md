@@ -97,3 +97,26 @@ val args: Map<String, JsonElement> = emptyMap()
 
 > **待执行**：`layers/kit/` 的物理迁移尚未做——完成前，`03` §7 的 `verifyEnvClean` 目录列表
 > 与文档描述不一致，第二道防线会静默失守。迁移步骤见决策记录 §3。
+
+---
+
+## 5. 处置结果（2026-09-14 复核，commit `ead3a3d`）
+
+| 项 | 状态 | 证据 |
+|---|---|---|
+| ①–⑥ 骨架与计划一致性 | 仍成立 | 迁移后目录树与 `04` §1 一致 |
+| F1 参数模型 | ✅ 已修 | `ActionCall.args: Map<String, JsonElement>` + `from(ActionPayload)`；新增 `ActionCallRoundTripTest`（3 例通过） |
+| F2 `.kotlin/` | ✅ 已修 | `layers/.gitignore` 含 `.kotlin/` |
+| F3 `gradle.properties` | ✅ 已修（如实处理） | 注释改为实情：说明 `warning.mode` **不是**依赖校验；lockfile 因本机无法访问 `services.gradle.org` 未启用，并留下启用命令。**遗留**：联网 CI 后须补 `verification-metadata.xml` |
+| F4 `api(...)` 过宽 | ✅ 已修 | `:minecraft`/`:simulator`/`:testclient` 改 `implementation`；`:kit:runtime`/`:kit:transport` 保留 `api`（其公共 API 暴露协议类型），理由已写进构建文件注释 |
+| F5 空模块/缺失子包 | ✅ 已修 | `simulator` 2 个文件、`testclient` 1 个文件（`mainClass` 对得上）；`adapter/` 已建 `agent`/`observe`/`events`/`action` 四个子包各 1 个骨架 |
+| F6 `stripComments` | ✅ 已修 | 改为跨行块注释状态机，保留行号映射（`layers/build.gradle.kts`） |
+| 迁移后守护失守风险 | ✅ 已消除 | `ktSources` → `**/src/main/kotlin/**/*.kt`；`verifyEnvClean` → `kit/protocol`/`kit/runtime`/`simulator`；两个任务均加"扫到 0 个文件即失败"防呆 |
+
+**构建证据（由本地 agent 产出，静态复核）**：8 个测试套件共 **20 例、0 失败**
+（protocol 8 / runtime 11 / transport 1）；产出 `minecraft-0.1.0-all.jar`（shadow，约 2.9 MB）
+及各模块 jar。
+
+**本次复核仍是静态复核**：我未在本机重跑 Gradle。**仍缺一项硬证据**：从未在真实 Paper 服务器上
+加载过插件（`layers/run/` 不存在、构建里也没有 run-paper），即 vertical slice 的 Step 1–8
+一步都未验证。→ 见 [`06-next-step-plan.md`](06-next-step-plan.md)。

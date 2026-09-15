@@ -156,8 +156,10 @@ v0 不放 `commands`、不放 `permissions`（除非调试需要一条 `/macha s
    `ActionVocabulary` / `ActionMapping` 两处。
 3. **Core 洁净检查**：扫仓库根的 `src/macha/**`，禁止出现任何 Minecraft/Kotlin/Gradle 相关
    标识（V2 的可自动检查部分）。
-4. 三个任务挂到 `check`（并建议在 CI 上跑）。**注意**：`kit/` 迁移完成后，任务里的目录列表
-   必须同步改成 `kit/protocol`、`kit/runtime`（见决策记录 §3 第 4 步），否则第二道防线会静默失守。
+4. 三个任务挂到 `check`（并建议在 CI 上跑）。
+   **已更新（commit `ead3a3d`）**：`ktSources` 改为 `**/src/main/kotlin/**/*.kt`，
+   `verifyEnvClean` 目录列表改为 `kit/protocol`、`kit/runtime`、`simulator`，
+   并给两个任务加了"扫到 0 个文件即抛异常"防呆；`stripComments` 已支持跨行块注释。
 
 > 这三个检查直接对应验证计划的 **V1/V2/V3**："接入期间 Core 零改动""Core 内不出现 Minecraft 概念"
 > "Layer 内不出现认知"。它们不是洁癖，而是让证伪判据可执行。

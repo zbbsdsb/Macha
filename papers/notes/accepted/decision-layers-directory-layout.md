@@ -50,7 +50,7 @@ its own source tree, and is the only module allowed to depend on `paper-api` (co
 
 Kotlin packages do **not** change (`dev.macha.layer.*`) — the regroup is a build-layout change only.
 
-## 3. Migration Checklist (mechanical; not yet executed)
+## 3. Migration Checklist (executed 2026-09-14 — commit `ead3a3d`)
 
 1. `git mv`-equivalent the three directories into `layers/kit/` (they are currently untracked, so a
    plain filesystem move suffices).

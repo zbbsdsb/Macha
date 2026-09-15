@@ -45,6 +45,7 @@ Macha/
 │   ├── literature/            #   evidence dossiers (01–07) + literature-map
 │   ├── plans/                 #   methodology / collection plans (intelligence plan,
 │   │                          #   roadmap rework, Minecraft Layer validation)
+│   ├── paths/                 #   parallel architecture paths for Core (frozen until reality tests them)
 │   ├── scratch/               #   lowest permanence, e.g. reviews of others' frameworks
 │   └── experiments/           #   case-validation drafts not yet accepted as conclusions
 ├── papers/                    # Formal output: the paper + reasoning notes
@@ -77,6 +78,8 @@ Macha/
 │   ├── simulator/             #   fake environment (control condition)
 │   └── testclient/            #   vertical-slice test client
 ├── recruitment/               # Recruiting material (sources + built PDFs; caches ignored)
+├── tools/                     # Non-Macha tooling
+│   └── stub-core/             #   Python stub counterpart for the Layer (NOT Macha Core)
 ├── examples/                  # Living case set backing the paper's case studies
 └── tests/
     └── test_smoke.py
@@ -111,8 +114,9 @@ layers/                          # one Gradle build root, several modules
 └── testclient/                  # vertical-slice test client
 ```
 
-> Status 2026-09-14: the modules exist but are still flat (`layers/protocol` …). The mechanical
-> move into `kit/` is pending — steps in the decision record §3.
+> **Landed 2026-09-14 (commit `ead3a3d`)**: the `kit/` regroup is done — `layers/kit/{protocol,runtime,transport}`
+> plus `minecraft/`, `simulator/`, `testclient/`; the boundary guards were re-pointed to `kit/*` and
+> hardened with a "zero files scanned ⇒ fail" check. 20 unit tests pass; the shadow plugin jar builds.
 
 Later, when a Layer earns its own release cycle, `layers/minecraft/` moves out to become the
 standalone repo `macha-minecraft` (triggers: T1–T4 in the same record).

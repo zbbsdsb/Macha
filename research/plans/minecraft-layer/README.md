@@ -22,7 +22,8 @@
 | 02 | [`02-observation-and-events.md`](02-observation-and-events.md) | 观测字段与观测窗口；事件最小集（9 类/四族）与选择判据 | — |
 | 03 | [`03-build-and-module-layout.md`](03-build-and-module-layout.md) | 版本锁定、打包策略、线程规则、测试策略、边界守护任务 | — |
 | 04 | [`04-project-structure.md`](04-project-structure.md) | **文件夹结构（file-level）**：仓库放置、Gradle 模块依赖图、每模块文件清单、拆仓路径 | Level 1–3 |
-| 05 | [`05-scaffold-review-2026-09-14.md`](05-scaffold-review-2026-09-14.md) | **骨架评审**：通过项 + F1–F6 发现（含参数模型不一致、`.kotlin/` 未忽略、迁移待执行） | — |
+| 05 | [`05-scaffold-review-2026-09-14.md`](05-scaffold-review-2026-09-14.md) | **骨架评审**：通过项 + F1–F6 发现与处置结果 | — |
+| 06 | [`06-next-step-plan.md`](06-next-step-plan.md) | **下一步计划**：dev loop → vertical slice 8 步 → Stub Core → 判据与风险 | — |
 
 推荐路线：**00 → 04 → 01 → 02 → 03**（先定范围与结构，再看协议与构建细节）；开工后先读 **05**。
 
@@ -62,7 +63,9 @@
 | `02-observation-and-events.md` | PENDING |
 | `03-build-and-module-layout.md` | PENDING |
 | `04-project-structure.md` | PENDING（§7 尚余 2 项待拍板） |
-| `05-scaffold-review-2026-09-14.md` | PENDING（F1–F6 待团队处理） |
+| `05-scaffold-review-2026-09-14.md` | F1–F6 **已全部修复并复核**（§5） |
+| `06-next-step-plan.md` | PENDING（下一步计划，含 3 项待拍板） |
 
-**当前实现状态（2026-09-14）**：`layers/` 已有 6 个模块骨架 + 边界守护任务，与计划一致；
-`kit/` 分组迁移与 `.kotlin/` 忽略尚未执行（决策记录 §3）。评审意见见 `05`。
+**当前实现状态（2026-09-14，commit `ead3a3d`）**：`layers/kit/{protocol,runtime,transport}` 与环境模块
+`minecraft`/`simulator`/`testclient` 已落地；边界守护重指到 `kit/*` 并加防呆；评审 F1–F6 全部修复
+（详见 `05` §5）。**尚未跑通任何一次真实 Paper 服务器上的 vertical slice**——下一步见 `06`。
