@@ -207,8 +207,30 @@ v0 不放 `commands`、不放 `permissions`（除非调试需要一条 `/macha s
 
 ## 11. 待回答
 
-1. `paper-api` 的准确坐标与 `api-version` 取值（scaffold 时按 Paper 26.2 实际发布确认）。
+1. ~~`paper-api` 的准确坐标与 `api-version` 取值~~（**M0 已确认**：`api-version: '26.2'` 在 Paper `26.2-123` 上被正常接受并加载，见下文附录）。paper-api 编译坐标以仓库实际发布为准。
 2. Gradle 9.7.1 vs 8.14.5 的最终选择（KGP 兼容矩阵）。
 3. Shadow 版本与 Gradle 9 的兼容性；relocate 前缀最终命名。
 4. 是否需要 `kotlinx-coroutines`，还是简单队列足够（倾向后者，少一个依赖）。
 5. transcript（M9）落盘格式与轮转策略。
+
+---
+
+## 附录：M0 起服实测注记（2026-09-15，Paper 26.2-123）
+
+用 `layers/scripts/run-server.ps1` 起真实 Paper 服务器、加载插件、拿到 healthz，实测结论如下。
+
+- **运行时 JDK**：Paper 26.2 需 **Java 25**；本机默认 PATH/JAVA_HOME 是 JDK 21，因此起服必须显式用
+  `C:\Users\chkev\.gradle\jdks\eclipse_adoptium-25-amd64-windows.2\bin\java.exe`（Temurin 25.0.4.1）。
+- **EULA 必坑（BOM）**：PowerShell 写 `eula.txt` 若带 UTF-8 BOM（`EF BB BF` 前缀），Paper 读首行 `eula=true`
+  会误判"未同意 EULA"而拒启。脚本改为每次用 `UTF8Encoding($false)` 无 BOM 重写 `eula.txt`。
+- **世界目录报错规避**：老/损坏的 `world/` 可能在 Windows 上无法删除且触发
+  `java.nio.file.NoSuchFileException: .\world\data\minecraft`。脚本通过 `level-name=macha_world`
+  让服务器用全新目录，彻底绕开该残留目录。
+- **`api-version: '26.2'`**：在 Paper `26.2-123` 上被接受，插件正常加载（无 `incompatible` 报错），
+  无需回退到旧 api-version。
+- **Relocate 未做**：fat jar 未做 Shadow relocate（见 §3），作为已知限制记录。
+- **验收输出**：
+  - 控制台：`Done (14.340s)! For help, type "help"` / `Done (12.761s)!`
+  - 插件：`Macha Minecraft Layer v0.1.0 up — protocol v0, transport 127.0.0.1:8765`
+  - `curl http://127.0.0.1:8765/healthz` → `{"ok":true,"protocol":"0"}`
+  - `curl http://127.0.0.1:8765/capabilities` → 4 条能力（move/look/interact/spawn_agent）

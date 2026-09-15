@@ -17,6 +17,7 @@ research/paths/
 
 ## 约定
 
+- **生成方法**：[`00-brainstorm-heuristics.md`](00-brainstorm-heuristics.md)（H1–H6，适用于整个 Macha）。
 - 命名：路径目录用 `NN-<name>`（NN 为两位序号）。
 - 路径本体（`README.md`）至少包含：**主张 · 结构 · 层级定位 · 已定 · 未定摘要 · 冻结或解冻条件 ·
   与其他路径的关系 · 反对意见**。

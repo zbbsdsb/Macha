@@ -7,6 +7,11 @@ shape.
 This is the authoritative ruleset for how the team works. Every rule below is blocking:
 deviation requires a recorded decision in `papers/notes/` first.
 
+> **See also:** [`research-methodology.md`](research-methodology.md) — the *upstream* process
+> (observation → question → hypothesis → experiment → evidence → claim). It supplies the **evidence
+> levels** and **pre-registration** that this document deliberately does not cover, and it changes
+> **none** of the rules here: B4's claim threshold still gates what may enter the paper.
+
 Scope marker: `[RATIFIED]` = team-agreed, binding. `[DRAFT]` = proposed, awaiting confirmation.
 
 ---

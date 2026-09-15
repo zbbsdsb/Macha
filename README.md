@@ -45,6 +45,9 @@ Macha/
 │   ├── literature/            #   evidence dossiers (01–07) + literature-map
 │   ├── plans/                 #   methodology / collection plans (intelligence plan,
 │   │                          #   roadmap rework, Minecraft Layer validation)
+│   ├── projects/              #   dated execution projects (how to get there + handover checklist)
+│   ├── questions/             #   one file per research question (status on line 1)
+│   ├── failures/              #   our own negative results, classified F1–F7
 │   ├── paths/                 #   parallel architecture paths for Core (frozen until reality tests them)
 │   ├── scratch/               #   lowest permanence, e.g. reviews of others' frameworks
 │   └── experiments/           #   case-validation drafts not yet accepted as conclusions
@@ -150,6 +153,8 @@ pytest
 
 - [Repository Initialization Checklist](docs/initialization.md)
 - [Team R&D Workflow (Hard Rules)](docs/team-workflow.md)
+- [Research Methodology v1.0](docs/research-methodology.md) — evidence levels, pre-registration, gates
+- [Research Methodology — Design Notes](docs/research-methodology-design.md) — audit, rejected designs, red team
 - [Literature Intelligence Plan](research/plans/literature-intelligence-plan.md)
 - [Literature Map → Paper Gap Mapping](research/literature/00-literature-map-paper-gaps.md)
 - [Research Positioning and Paper Differences](docs/research/positioning.md)

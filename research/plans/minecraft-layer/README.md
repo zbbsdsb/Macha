@@ -23,7 +23,7 @@
 | 03 | [`03-build-and-module-layout.md`](03-build-and-module-layout.md) | 版本锁定、打包策略、线程规则、测试策略、边界守护任务 | — |
 | 04 | [`04-project-structure.md`](04-project-structure.md) | **文件夹结构（file-level）**：仓库放置、Gradle 模块依赖图、每模块文件清单、拆仓路径 | Level 1–3 |
 | 05 | [`05-scaffold-review-2026-09-14.md`](05-scaffold-review-2026-09-14.md) | **骨架评审**：通过项 + F1–F6 发现与处置结果 | — |
-| 06 | [`06-next-step-plan.md`](06-next-step-plan.md) | **下一步计划**：dev loop → vertical slice 8 步 → Stub Core → 判据与风险 | — |
+| 06 | [`06-next-step-plan.md`](06-next-step-plan.md) | **下一步计划（目标成果导向）**：终点 = "能在服务器里与 NPC 交互"；里程碑 M0–M6 | §0–§8 |
 
 推荐路线：**00 → 04 → 01 → 02 → 03**（先定范围与结构，再看协议与构建细节）；开工后先读 **05**。
 

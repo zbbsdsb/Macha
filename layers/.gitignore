@@ -8,8 +8,15 @@
 .kotlin/
 # 本地 Gradle 缓存与属性
 local.properties
-# 运行期产物：服务器目录、世界中、transcript 回放
+# 运行期产物：Paper 服务器目录、世界、日志、transcript 回放
+# layers/run/minecraft/ 是服务器"家"目录（paper-*.jar / eula.txt / server.properties /
+# world/ / logs/ / plugins/ / libraries/ 全在里面）——**整个目录不进仓库**。
+# 版本化的只有"怎么起"的知识：layers/scripts/ + 计划文档。
 run/
+# 兜底：即便有人把服务器放到别处，这些运行期文件也不入库
+eula.txt
+server.properties
+paper-*.jar
 # IDE
 .idea/
 *.iml
