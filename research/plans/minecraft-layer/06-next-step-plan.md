@@ -41,7 +41,7 @@
 | ✅ 真的能用 | 协议 v0（信封/消息/词表/编解码，8 例单测）；runtime（`LayerRuntime`/派发/校验/节流/`EnvironmentPort`/`ClockPort`，11 例）；`HttpControlPlane`（JDK 内置 HttpServer：`/healthz`、`/capabilities`）；插件入口装配并打启动日志；**`minecraft-0.1.0-all.jar`（shadow，2.9 MB）已产出** |
 | 🕳 空壳（有签名无行为） | `WebSocketDataPlane`（`start()` 只置 `running = true`）→ **无 `hello`/`hello_ack`、无事件推送、无动作往返** |
 | ❌ 缺 | `HttpControlPlane` 未注册 `/action`（`01` §5 要求）；`PaperEnvironmentPort` 标注 `TODO(scaffold)`：观测/事件/动作未接入；`PaperObservationCollector`(9 行)、`PaperEventBridge`(9)、`ActionExecutor`(10)、`AgentRegistry`(5) 全为空壳 |
-| ❌ 从未发生 | **服务器零次启动**：无 `layers/scripts/`、无 `layers/run/`、盘上无 paper jar；`plugin.yml api-version: '26.2'` 未被服务器检验 |
+| ✅ 已发生（2026-09-15） | **服务器已启动并加载插件**：`layers/scripts/run-server.ps1` + `layers/run/minecraft/`；`Done (9.701s)`；`/healthz` 实测 `{"ok":true,"protocol":"0"}`；`api-version: '26.2'` 被接受（结论已回写 `03` §4 附录） |
 | ❌ 未开始 | Stub Core（`tools/stub-core/`，P1 已定）；能力探测 M4 / 可判定性 M8 / transcript M9 |
 
 ---
@@ -72,7 +72,7 @@ layers/
 ├── scripts/                     # ✅ 版本化：怎么起服的知识在这里
 │   └── run-server.ps1           #   下载 + sha256 校验 + eula + 启动（用 JDK 25 路径）
 └── run/minecraft/               # ❌ gitignored：服务器"家"目录，全部内容都不入库
-    ├── paper-26.2-123.jar       #   pin 版本 + sha256 校验
+    ├── paper-server.jar         #   落盘名（M0-E）；真正的锁是 sha256（见 00 §C.1）
     ├── eula.txt · server.properties
     ├── plugins/minecraft-0.1.0-all.jar
     ├── world/ · logs/ · libraries/ · versions/ · cache/
@@ -92,7 +92,7 @@ layers/
 | **JDK** | `PATH`/`JAVA_HOME` = **JDK 21**（Android OpenJDK）；Paper 26.2 需要 **Java 25** | **必须显式用** `C:\Users\chkev\.gradle\jdks\eclipse_adoptium-25-amd64-windows.2\bin\java.exe`（实测 = Temurin **25.0.4.1** LTS，由 foojay 在构建时下载）。脚本里写死/探测该路径，并写进 `layers/README.md` |
 | **首次启动需联网** | 64.5 MB 服务器 jar + Paper 运行时下载 `libraries/`、`versions/` | 首次启动留出时间；之后可离线 |
 | **客户端** | 要"看见"交互需要 **26.2 客户端** | 若暂无：M0–M4 用 `:testclient` 验证；**M5–M6 才必须真人进服**（记为本阶段外部依赖） |
-| `plugin.yml api-version: '26.2'` | **从未被服务器检验** | M0 第一件事就加载插件；被拒则按 Paper 报错改 `plugin.yml` 并**回写 `03` §4**（分钟级） |
+| `plugin.yml api-version: '26.2'` | ~~从未被服务器检验~~ → **已确认被接受**（Paper `26.2-123`，无 incompatible 报错，插件正常加载；见 `03` §4 附录） | 无需回退；若换 Paper 版本需重验 |
 | **实体自身 AI 会污染演示** | 僵尸会自己乱走，"它在回应我"会被噪声淹没 | M5 用**自身不乱跑**的实体（armor stand，或 `setAI(false)` 的僵尸）——这条必须先定 |
 | WS 数据面是空壳 | M1 的真实工作量在此 | 不做流控/鉴权，只做 `hello`/`hello_ack` + 单向推送 + 动作往返 |
 | `shadow relocate` 仍是 TODO | 与其它插件共存时可能类冲突 | 本阶段单插件测试可接受；写进 `layers/README.md` 限制说明 |

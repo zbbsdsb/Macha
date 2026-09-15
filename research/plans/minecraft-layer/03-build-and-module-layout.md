@@ -116,7 +116,8 @@ v0 不放 `commands`、不放 `permissions`（除非调试需要一条 `/macha s
 | key | 默认 | 说明 |
 |---|---|---|
 | `transport.bind` | `127.0.0.1` | 默认只回环，不外网暴露 |
-| `transport.port` | `8765` | HTTP + WS（或分端口，见 00 §H-D5） |
+| `transport.port` | `8765` | HTTP 控制面（healthz/capabilities/action）；分端口见 00 §H-D5 |
+| `transport.ws_port` | `8766` | WebSocket 数据面（`ws://…/ws`）；分端口（M1 定案） |
 | `transport.token` | 空 | 可选；v0 允许无鉴权（本地） |
 | `agent.default_binding` | `nearest_zombie` | v0 用现成生物作被测对象（00 §H-D4） |
 | `observation.radius` | `16.0` | 观测窗口 |

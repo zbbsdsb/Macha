@@ -3,7 +3,8 @@
 
 transport:
   bind: 127.0.0.1
-  port: 8765
+  port: 8765        # HTTP 控制面（healthz / capabilities / action）
+  ws_port: 8766     # WebSocket 数据面（ws://…/ws），分端口（00 §H-D5）
   token: ""
 
 agent:

@@ -193,7 +193,7 @@ Minecraft
 | Minecraft Java Edition | **26.2**（Chaos Cubed，2026-06-16 发布；协议 776；数据版本 4903） | 当前 Paper 稳定线的最新正式版；[Minecraft Wiki](https://minecraft.wiki/w/Java_Edition_26.2) |
 | Java（运行时与工具链） | **Java SE 25** | 26.2 的**最低** Java 版本即为 SE 25；低于此无法启动服务器 |
 | Paper | **26.2，build 123**（2026-09-09，STABLE） | [PaperMC Fill v3 API](https://fill.papermc.io/v3/projects/paper/versions/26.2/builds) 实测最新稳定构建 |
-| Paper jar 校验 | `paper-26.2-123.jar`<br>sha256 `7b7b3b43c009103e1971a0576c26f655a7dd9b56a0a2a4438e352c03a7fecd08` | 同一次 API 响应；写进 `03` 的可复现清单 |
+| Paper jar 校验 | 落盘文件名统一为 **`paper-server.jar`**（见 `04` §3.7 / `06`）；**真正的锁是 sha256** `7b7b3b43c009103e1971a0576c26f655a7dd9b56a0a2a4438e352c03a7fecd08`（M0-E，以脚本为准） | 同一次 API 响应；写进 `03` 的可复现清单 |
 | Kotlin | **2.4.20**（2026-09-07 工具版本；2.4 线支持至 2027-12-03） | [Kotlin releases](https://kotlinlang.org/docs/releases.html)；不选 12 月才发布的 2.5.0（EAP/未发布） |
 | Kotlin Gradle Plugin | **2.4.20**（与 Kotlin 同版本） | 同上 |
 | Gradle | **9.7.1**（2026-08-19） | [Gradle releases](https://gradle.org/releases/)；备选 **8.14.5**：若 KGP 2.4.20 的受支持 Gradle 上限不覆盖 9.7，则降到 8.14.5（scaffold 时用官方兼容矩阵确认，见 §H-D2） |
@@ -328,7 +328,7 @@ layers/                                  # Gradle 构建根（不在仓库根）
 | D2 | Gradle 9.7.1 还是 8.14.5 | 先试 9.7.1；KGP 兼容矩阵不支持就降 8.14.5 | 影响 wrapper 与构建脚本写法 |
 | D3 | 打包策略：shadow fat jar 还是 `plugin.yml` 的 `libraries` | **shadow + relocate**（离线可复现） | 影响插件体积与部署方式 |
 | D4 | agent 绑定方式：真实玩家 / 现成生物 / 自定义实体 | **现成生物**（如 armor stand 或僵尸）为 v0 被测对象 | 决定 M1 的实现难度；自定义实体属非目标 |
-| D5 | HTTP 与 WS 的端口与绑定地址 | `127.0.0.1:8765`（HTTP 控制面）与同端口的 WS 升级，或分端口 | 影响 `config.yml` 与安全边界 |
+| D5 | HTTP 与 WS 的端口与绑定地址 | `127.0.0.1:8765`（HTTP 控制面）与 `127.0.0.1:8766`（WS 数据面），**分端口**（M1 定案）。同端口的 WS 升级被否决：受限于已允许的依赖（`com.sun.net.httpserver` + Java-WebSocket），两个服务无法共用一个端口，除非自行实现 HTTP/WS 升级复用——违背"不加依赖/最小实现"红线 | 影响 `config.yml`（`transport.ws_port`）与安全边界 |
 | D6 | `run-paper` 版本与是否引入 | 引入；版本 scaffold 时从 Plugin Portal 取；不兼容则手工 jar | 影响 dev loop |
 | D7 | 事件订阅：v0 是否允许客户端选择性订阅 | 允许 `all` 与按 kind 列表订阅（实现成本低，且避免刷屏） | 影响 `event_subscribe` 是否进 v0 |
 | D8 | ~~仓库放置：`layers/` 还是根级 `macha-minecraft/`~~ | **已定（2026-09-14）：`layers/` 单构建根；共享内核收进 `layers/kit/`** | 仓库根形态与未来拆仓路径 |

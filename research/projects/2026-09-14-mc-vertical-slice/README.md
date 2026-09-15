@@ -17,7 +17,7 @@
 
 | # | 成果 | 预估 | 状态 |
 |---|---|---|---|
-| **M0** | 服务器活着 + 插件加载 + `/healthz` | 半天 | 🟡 部分（服务器 `Done (12.761s)` + 插件启动日志已见 `run/minecraft/logs/latest.log` 19:41:36 / 19:41:35；`/healthz` 原始输出待补） |
+| **M0** | 服务器活着 + 插件加载 + `/healthz` | 半天 | ✅ 2026-09-15（`Done (9.701s)`；插件 up 日志；`/healthz` 实测 `{"ok":true,"protocol":"0"}`；`/capabilities` 实测 4 条；`run/` 未入库。**遗留见 `plans/01` §M0 遗留修正**） |
 | **M1** | 能握手（`hello` → `hello_ack`） | +1–2 天 | ⬜ |
 | **M2** | 能看见（observation） | +1 天 | ⬜ |
 | **M3** | 能动手（`move`/`look` + `refused`） | +1–2 天 | ⬜ |

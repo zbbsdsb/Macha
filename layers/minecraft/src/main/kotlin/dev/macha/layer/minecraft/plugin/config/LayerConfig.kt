@@ -4,6 +4,7 @@ package dev.macha.layer.minecraft.plugin.config
 data class LayerConfig(
     val bind: String = "127.0.0.1",
     val port: Int = 8765,
+    val wsPort: Int = 8766,
     val token: String = "",
     val agentDefaultBinding: String = "nearest_zombie",
     val observationRadius: Double = 16.0,
@@ -24,6 +25,7 @@ data class LayerConfig(
             return LayerConfig(
                 bind = str("transport", "bind") ?: "127.0.0.1",
                 port = int("transport", "port", def = 8765),
+                wsPort = int("transport", "ws_port", def = 8766),
                 token = str("transport", "token") ?: "",
                 agentDefaultBinding = str("agent", "default_binding") ?: "nearest_zombie",
                 observationRadius = dbl("observation", "radius", def = 16.0),

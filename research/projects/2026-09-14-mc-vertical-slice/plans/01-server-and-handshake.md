@@ -37,6 +37,19 @@
 | 插件 `Unknown/missing dependency` 或加载失败 | `api-version: '26.2'` 被拒 | 按报错改 `plugin.yml` 的 `api-version`，重启验证，**回写 `03` §4** |
 | 端口占用 | 8765 被占 | 改 `config.yml` 的 `transport.port`，记录实际端口 |
 
+### M0 遗留修正（2026-09-15 复核发现，**M1 必须一并处理**）
+
+| # | 问题 | 证据 | 要求在 M1 之前/之内解决 |
+|---|---|---|---|
+| **A** | **能力清单在传输时被削平**：`/capabilities` 实测 `"args":{}` 全空，`preconditions` / `verifiability` / `cost` 全丢，`expected_effect` 仅 move 有值 | 原始 JSON：`[{"name":"move","args":{},"expected_effect":"position change"},{"name":"look","args":{},"expected_effect":""} …]`；`MachaMinecraftPlugin.capabilityManifestJson()` 是**手写 JSON 拼接** | 用已有的 `ProtocolV0.json` 序列化 `Capability`；补**往返测试**；`hello_ack` 不得沿用有损函数（否则违反 `01` §3.2 与 M4） |
+| **B** | **托管停服是强杀**：console.log 无 `Stopping server` / `Saving players`，靠 `Stop-Process -Force` | 停服后 console.log 无优雅关服标记 | 重定向 stdin 并喂 `stop`（或 RCON）；至少在 `layers/README.md` 写明世界损坏风险与备份方式 |
+| **C** | `server.properties` **每次启动被重写**，人工改动被静默丢弃 | `Ensure-Config` 无条件覆盖；盘上有 `server.properties.bak` | 改为"缺失时才写"，或加 `-ResetConfig` 开关 |
+| **D** | JDK 25 路径**硬编码到单机用户目录**，脚本已入库 | `$Jdk25 = 'C:\Users\chkev\...'` | 探测候选路径 + 支持 `$env:MACHA_JDK25` 覆盖 |
+| **E** | 命名漂移：脚本/盘上是 `paper-server.jar`，文档写 `paper-26.2-123.jar` | 对比 `00` §C.1 / `04` §3.7 | 统一（推荐文档向脚本看齐：sha256 才是真正的锁） |
+| **F** | 残留 `world_old/`、`.ready/.stop/.pid` 标记散落 | 服务器 home 目录 | 脚本收尾清理标记；`world_old` 加一行说明 |
+
+> `layers/README.md` §验证 目前把**期望输出**写在"验证"标题下；M1 起请区分**期望**与**实测**（附时间与原始 JSON）。
+
 ---
 
 ## M1 · 能握手（+1–2 天）

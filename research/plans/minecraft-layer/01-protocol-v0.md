@@ -227,10 +227,11 @@ Guardrail 决定确定性校验还是概率自洽）。
 | 通道 | 用途 | 端点（建议） |
 |---|---|---|
 | **HTTP** | 控制面：健康检查、协议版本、能力清单、单发动作（便于测试与非流式客户端） | `GET /healthz` · `GET /capabilities` · `POST /action` |
-| **WebSocket** | 数据面：`event` 与 `observation` 推送、`action`/`action_result` 往返、`hello`/`hello_ack` | `ws://127.0.0.1:8765/ws` |
+| **WebSocket** | 数据面：`event` 与 `observation` 推送、`action`/`action_result` 往返、`hello`/`hello_ack` | `ws://127.0.0.1:8766/ws`（分端口，见 00 §H-D5） |
 
 同一路 JSON 在两个通道上语义一致；`hello` 也可在 HTTP 上完成（无状态客户端）。
-绑定地址默认 `127.0.0.1`（不外网暴露）。
+绑定地址默认 `127.0.0.1`（不外网暴露）。HTTP 控制面默认 `8765`，WS 数据面默认 `8766`（分端口，
+M1 定案；受依赖限制两条通道不可共用一个端口）。
 
 **与 MCP 的关系**：v0 只**借形状**（JSON-RPC 风格、`tools/call` 式的动作调用），不追求 MCP 兼容。
 `docs/research/standards_interop.md` §188 主张 `ActionCall` 收敛到 Tool-Use 形状——本草案与该方向

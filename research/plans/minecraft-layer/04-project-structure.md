@@ -257,7 +257,7 @@ testclient/
 
 ```text
 layers/run/
-├── minecraft/                          # run-paper 的服务器目录（paper-26.2-123.jar、world/、plugins/）
+├── minecraft/                          # run-paper 的服务器目录（paper-server.jar、world/、plugins/）
 └── transcripts/                        # M9 回放文件（按日期 + 场景命名）
 ```
 
