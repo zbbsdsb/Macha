@@ -10,6 +10,10 @@
 > **整理目的**：报告 §4–§7 的"四条构建路径"散在 679 行 HTML 里、无法被 grep/引用/讨论；本文件把它们抽成
 > 项目内可检索的结构化条目，供路径二（内驱力）与 [`Q-01`](../../questions/Q-01-drive-signal.md) 使用。
 >
+> **本文件是研究综述，不是 Macha 的设计决策。** 报告四条路径的综述（§2–§9）必须与 Macha 的实际选择
+> 分开读——选择是：② + ③ **核心** / ④ **重要辅助** / ① **V1 非核心**（见 §10 顶部与
+> [决策记录](../../../papers/notes/accepted/decision-intrinsic-motivation-path.md)）。
+>
 > **证据状态**：**外部二手材料**（不适用 E0–E3，那是我们自己的实验等级）。按 `docs/team-workflow.md`
 > A2 / B3 与路径二 [`README.md`](README.md) §8 的处置：**进 `research/` 作材料，不进 `reference/`，
 > 不得直接作为论文引证**；引用前必须回溯原始论文（清单见 §11）。
@@ -313,6 +317,11 @@ Concordia 平台 · ANAC 竞赛（IJCAI/AAMAS）· MOASEI 竞赛（AAMAS 2025）
 ---
 
 ## 10. 与 Macha 路径二的关系（映射，不新增结论）
+
+> **已定（2026-09-25）**：Macha 采用 ② + ③ 为**核心**、④ 为**重要辅助**、① 为**研究参考（V1 非核心）**。
+> 这是 **Macha 的设计决策，不是本报告的研究结论**；规范文本见
+> [`../../../papers/notes/accepted/decision-intrinsic-motivation-path.md`](../../../papers/notes/accepted/decision-intrinsic-motivation-path.md)，
+> 工作版见 [`README.md`](README.md) §1.6。下表仍是**报告的综述映射**，其"报告没给的"一列不受决策影响。
 
 **对应关系**（路径二 `README.md` §3 的四个竞争设计 ↔ 报告的四条路径）：
 

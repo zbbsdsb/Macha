@@ -32,11 +32,15 @@ research/paths/
 | # | 路径 | 状态 | 评分 | 一句话 |
 |---|---|---|---|---|
 | 01 | [SepMay / IVY 生命周期（IC）](01-sepmay-ivy/README.md) | **PENDING（已冻结）** | **6.5/10**（[评估](01-sepmay-ivy/eval/2026-09-14-evaluation.md)） | 交互组织进有生死的生命周期单元，关闭时回流；IC 是数据组织层，不是认知层 |
-| 02 | [内驱力（Intrinsic Motivation）](02-intrinsic-motivation/README.md) | **ACTIVE（实验轨道，与 MC 主线并行）** | 待评估 | 五原语中 `independence` 的唯一机制候选；四个竞争设计跑在同一 Simulator Layer 上判别 |
+| 02 | [内驱力（Intrinsic Motivation）](02-intrinsic-motivation/README.md) | **ACTIVE（实验轨道，与 MC 主线并行）** | 待评估 | 五原语中 `independence` 的唯一机制候选；**构建路径已定**（[决策记录](../../papers/notes/accepted/decision-intrinsic-motivation-path.md)）：持久内部状态（认知架构 / Identity–Desire）+ 存在条件（稳态）为**核心**、社会性为**辅助**、信息论内在奖励**非 V1 核心** |
 
 另：路径一有 **6 条未定决策**（[open-decisions](01-sepmay-ivy/open-decisions.md)），
 其中 `D1 寿命类分档` 与 `D4 权重更新语义` 是它真正的两道门——**路径二的两个设计正好各回答一半**
 （H-B 学习进度 → D1；drive 落在回流"权重"那一路 → D4）。
+
+> 注（2026-09-25）：H-B（学习进度）属信息论内在奖励路径，按
+> [决策记录](../../papers/notes/accepted/decision-intrinsic-motivation-path.md) 已**非 V1 核心** →
+> "H-B → D1" 这条线索随之推迟；"drive 落在回流权重那一路 → D4" 不受影响。
 
 路径二的首个研究问题与预注册：[`../questions/Q-01-drive-signal.md`](../questions/Q-01-drive-signal.md)（**本仓第一次真正使用 question 机制**）。
 

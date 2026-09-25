@@ -208,8 +208,31 @@ send-back then updates it, which is why the loop can run on its own.
 > picture is static whenever nothing external arrives.
 
 A drive belongs neither to the external source (facts) nor to the Layer (which only reports facts, executes
-actions and refuses). Path, competing designs and open decisions:
+actions and refuses).
+
+**Decided path (RATIFIED 2026-09-25).** Macha's drive comes from **persistent internal state and existence
+conditions** — the cognitive-architecture (Identity–Desire) and homeostasis paths — **not** from
+information-theoretic curiosity / novelty / empowerment / learning-progress rewards, which are kept as a
+future extension. Internal state (belief / desire / intention / identity) produces **Drive / Tension**;
+Drive/Tension — not an external task — drives **goal generation**:
+
+```text
+World → Perception → Internal State → Drive/Tension → Goal Generation → Planning → Action → World Change → Internal State
+```
+
+**Drive ≠ goal**: a drive is a sustained internal pressure; a goal is generated in order to relieve it.
+Social motivation (relations, others' behaviour, cooperation, competition, norms) is an **auxiliary
+extension of this same system**, not a second system beside it.
+
+> Macha's NPC does not explore because the system requires it, nor is it driven by a curiosity reward: a
+> **long-term tension** produced by persistent internal state is turned into candidate goals by desire,
+> identity and social relations, and only then enters planning and action.
+
+Decision record: [`../papers/notes/accepted/decision-intrinsic-motivation-path.md`](../papers/notes/accepted/decision-intrinsic-motivation-path.md).
+Path, competing designs and open decisions:
 [`../research/paths/02-intrinsic-motivation/README.md`](../research/paths/02-intrinsic-motivation/README.md).
+**Status: design decision only — none of this is implemented** (§1.1 audit: `src/macha/` has no persistent
+state, no drive, no goal generation).
 
 **Open (not decided).** Admission has **no name or contract** on the Core side yet (the Layer side
 has `EnvironmentPort`). A minimal `Intake` — admit → dedupe/order → stamp provenance & uncertainty

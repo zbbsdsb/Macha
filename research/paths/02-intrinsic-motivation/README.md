@@ -1,6 +1,10 @@
 # 路径二：内驱力（Intrinsic Motivation）
 
 > **STATUS: ACTIVE（实验轨道）**——与 MC 主线（P0 → M1 → M2 → M4）**并行**，**不得阻塞**它。
+> **构建路径已定（2026-09-25）**：Path2（认知架构 / Identity–Desire）+ Path3（存在条件 / 稳态）为**核心**、
+> Path4（社会性）为**重要辅助**、Path1（信息论内在奖励）**非 V1 核心**（见 §1.6）
+> → 决策记录 [`../../../papers/notes/accepted/decision-intrinsic-motivation-path.md`](../../../papers/notes/accepted/decision-intrinsic-motivation-path.md)。
+> **本文件是设计/实验工作版；决策的规范文本在决策记录里，两者冲突时以决策记录为准。**
 > 层级：**Macha Core 侧**。drive 住在 **Core 侧的内部信息源**，Layer 只提供 affordance/观测/事件（Layer 零认知不变）。
 > 材料依据：`intrinsic-motivation-report/智能体内驱力调研报告.html`（**二手调研**，见 §8 处置）
 > —— 报告四条构建路径的结构化整理见 [`report-four-build-paths.md`](report-four-build-paths.md)
@@ -41,6 +45,41 @@
 **边界**：它**不在接收域**（那里只有事实与已提交状态），**更不在 Layer**（Layer 只报事实、执行动作、拒绝）
 ——只有一格算子 + 一格状态。
 
+## 1.6 当前采用的构建路径（已定 2026-09-25）
+
+> 规范文本在决策记录 [`../../../papers/notes/accepted/decision-intrinsic-motivation-path.md`](../../../papers/notes/accepted/decision-intrinsic-motivation-path.md)；
+> 本节是它的工作版。**本节不含任何实现**——`src/macha/` 仍是非认知骨架：没有持久内部状态、没有 drive、没有目标生成。
+
+**主链**：
+
+```text
+World → Perception → Internal State → Drive/Tension → Goal Generation → Planning → Action → World Change → Internal State
+```
+
+| 环节 | 在这一版里是什么 |
+|---|---|
+| **Internal State** | NPC 的持久内部状态，承载 **Belief / Desire / Intention / Identity** |
+| **Drive / Tension** | 由内部状态产生的**持续内部压力**（含存在条件：安全、资源、健康、饥饿、社会关系） |
+| **Goal Generation** | 由 Drive/Tension 推动生成具体目标——**不由外部任务生成** |
+
+**Drive ≠ Goal**：Drive 是持续的内部压力；Goal 是为了缓解这种压力而生成的具体目标。Drive / Desire /
+Intention / Goal 四者不得混写（术语边界见决策记录 §2）。
+
+**与报告四条路径的关系——这是我们的选择，不是报告的结论**：
+
+| 报告路径 | Macha 状态 |
+|---|---|
+| ① 信息论内在奖励（curiosity / novelty / empowerment / learning progress） | **研究参考，V1 非核心**（保留为未来扩展） |
+| ② 认知架构 / Identity–Desire | **核心** |
+| ③ 存在条件 / 稳态 | **核心** |
+| ④ 社会性内驱力 | **重要辅助**——同一系统的扩展，不是另起一套 |
+
+> Macha 的 NPC 不是"因为系统要求它探索，所以它探索"，也不是简单通过 curiosity reward 驱动行为。
+> Macha 希望建立的是一种由持久内部状态产生的**长期张力**（long-term tension），张力经过 Desire、
+> Identity、Social Relations 等结构转化为可能的目标，再进入规划与行动。
+
+**一句话**：**Macha 通过持久内部状态与存在条件产生长期张力，再由认知、身份和社会关系将张力转化为目标与行为。**
+
 ## 2. 唯一研究问题（可判定）
 
 > **在一个没有玩家、没有外部任务的世界里，什么信号能让 NPC 持续产生"非重复、可满足、不漂移"的目标？**
@@ -62,6 +101,11 @@
 | **P2-D** | **连接/关系驱动**（Relatedness，报告④） | **关系状态 R** 的偏离（想接触/想回避） | 产生"找玩家"行为，但**有界不粘人** | 无视玩家（independence 过强）或粘人/纠缠（contingency 被挤掉） |
 
 **共同的控制组（必须）**：`P2-0` = 无 drive（纯随机/纯反应）。任何设计若不能显著优于 P2-0，视为失败。
+
+> **状态（2026-09-25 决策）**：`P2-A` = 报告路径③（**核心**）· `P2-D` = 报告路径④（**重要辅助**）·
+> `P2-B` / `P2-C` 属报告路径①（**V1 非核心**，保留为未来扩展）。四个设计本身未变，只标状态；
+> `Q-01` §4 的预注册尚未提交。**Path2（认知架构 / Identity–Desire）是核心，但它不是"drive 信号来源"**，
+> 因此不在上表里——它是否需要自己的 hypothesis/arm 仍是 OPEN（见 `Q-01` §3 与决策记录 §6-2）。
 
 ## 4. 判别实验矩阵
 

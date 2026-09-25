@@ -36,6 +36,12 @@ related: 路径二 [`../paths/02-intrinsic-motivation/README.md`](../paths/02-in
 
 **控制组 P2-0**：无 drive（随机或纯反应）。任一设计若不显著优于 P2-0，该设计失败。
 
+> **状态（2026-09-25 决策）**：H-A **核心**（报告路径③）· H-D **重要辅助**（路径④）·
+> **H-B / H-C 属路径①，V1 非核心**（保留为未来扩展；§4 的预注册尚未提交，该决策在提交前收窄了范围）。
+> **缺口**：决策把 Path2（认知架构 / Identity–Desire）定为**核心**，而它是**持有与转化张力的结构、
+> 不是 drive 信号来源** → 本问题目前**没有对应 hypothesis**，须在预注册前决定是否补一条（OPEN）。
+> 出处：[`../../papers/notes/accepted/decision-intrinsic-motivation-path.md`](../../papers/notes/accepted/decision-intrinsic-motivation-path.md)。
+
 ## 4. Pre-registration（**提交后不得修改**）
 
 ```yaml
@@ -78,9 +84,12 @@ falsification: 任一设计相对 P2-0 无显著差异 → 该设计失败；四
 |---|---|---|---|
 | 2026-09-16 | observed | 二手材料 + 架构缺口审计（§1） | — |
 | 2026-09-16 | questioned | 通过 Gate 1：可判定 + 会改变架构 + 文献未答（§2） | — |
+| 2026-09-25 | questioned | 范围收窄：决策记录定 Path2+Path3 为**核心**、Path4 为**辅助**、Path1（H-B/H-C）**非 V1 核心**；Path2 尚无 hypothesis（§3） | — |
 
 ## 9. Next questions
 
-- 若 H-B 胜出：LP 能否直接当作**路径一 D1（寿命类分档）**的依据？（还在学 → Chunk 短；饱和 → Chunk 长）
+- **Path2 需要一条自己的 hypothesis 吗？**（决策把它定为核心，但它是持有/转化张力的结构而非 drive 信号来源 → 预注册前必须回答）
+- 若 H-A 胜出：drive 电平落在"权重"那一路（`architecture.md` §1.5）具体指什么状态？（现在只是**位置**，不是数据）
+- 若 H-B 胜出：LP 能否直接当作**路径一 D1（寿命类分档）**的依据？（还在学 → Chunk 短；饱和 → Chunk 长）— ⏸ 随 Path1 推迟至 V1 之后
 - 若 H-D 胜出：`independence × contingency` 的**预算仲裁**该由谁做？（IC 准入，还是算子层竞争）
 - 若全部失败：预置 ambient 行为的最小形式是什么？（世界很活时它是否足够）
