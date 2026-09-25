@@ -3,6 +3,7 @@
 > **STATUS: ACTIVE（实验轨道）**——与 MC 主线（P0 → M1 → M2 → M4）**并行**，**不得阻塞**它。
 > 层级：**Macha Core 侧**。drive 住在 **Core 侧的内部信息源**，Layer 只提供 affordance/观测/事件（Layer 零认知不变）。
 > 材料依据：`intrinsic-motivation-report/智能体内驱力调研报告.html`（**二手调研**，见 §8 处置）
+> —— 报告四条构建路径的结构化整理见 [`report-four-build-paths.md`](report-four-build-paths.md)
 > 上游：`docs/architecture.md` §1.5（接收域 = 准入）· 路径一（IC，回流三路）· `research/questions/README.md`
 
 ---
@@ -108,8 +109,10 @@
 
 - 报告自陈基于 arXiv/博客/**训练知识**，部分标 `[未验证]` → 按 `team-workflow` A2/A3：
   进 `research/` 作材料，**不进 `reference/`**，**不得直接作为论文引证**；引用需回溯原始论文。
+- **报告内容的项目内视图**：[`report-four-build-paths.md`](report-four-build-paths.md)（四条构建路径 · 边界划法 · 代表系统 ·
+  评估缺口；标注了哪些是报告原意、哪些是我们补的）。讨论与引用以该文件为入口，本体仍是 HTML。
 - 首篇需要回溯的原始工作：ICM(2017)、RND(2019)、Empowerment(2005/2013)、Learning Progress(1991/2007)、
-  D2A(ICLR 2025)、MAGELLAN(2025)、Social Influence MARL(2019)。
+  D2A(ICLR 2025)、MAGELLAN(2025)、Social Influence MARL(2019)。（完整 10 条清单见 `report-four-build-paths.md` §11）
 
 ## 9. 预算与时间盒
 

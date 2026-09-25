@@ -164,6 +164,7 @@ pytest
 - [Target Architecture](docs/architecture.md) — includes the Environment Integration Layer boundary
 - [Environment Integration Layer (draft note)](papers/notes/drafts/environment-integration-layer.md)
 - [Minecraft Layer Validation Plan (draft, CN)](research/plans/minecraft-layer-validation-plan.md)
+- [Intrinsic Motivation — Four Build Paths from the 2025 Survey Report (material, CN)](research/paths/02-intrinsic-motivation/report-four-build-paths.md)
 - [Development Roadmap](docs/roadmap.md)
 
 ---

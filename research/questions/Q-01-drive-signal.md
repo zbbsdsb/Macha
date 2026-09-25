@@ -12,7 +12,7 @@ related: 路径二 [`../paths/02-intrinsic-motivation/README.md`](../paths/02-in
   记忆是"记得"（不是"想要"）。**没有任何机制回答"它此刻想做什么"**。
 - 论文的 3+2 原语里，`independence`（它有自己的生活）**至今没有实现机制**；其余四根都能靠"更会回应"改善。
 - 二手材料（`intrinsic-motivation-report/…html`）归纳出四条构建路径，并指出 LLM 角色扮演的三条反方判据：
-  无持久状态 / 动机来自提示 / 移除提示即消失。
+  无持久状态 / 动机来自提示 / 移除提示即消失。→ 整理后的可检索条目：[`../paths/02-intrinsic-motivation/report-four-build-paths.md`](../paths/02-intrinsic-motivation/report-four-build-paths.md)（§1 四条路径、§6.1 三条判据）
 
 ## 2. Question
 
