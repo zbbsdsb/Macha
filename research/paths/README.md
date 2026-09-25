@@ -32,8 +32,12 @@ research/paths/
 | # | 路径 | 状态 | 评分 | 一句话 |
 |---|---|---|---|---|
 | 01 | [SepMay / IVY 生命周期（IC）](01-sepmay-ivy/README.md) | **PENDING（已冻结）** | **6.5/10**（[评估](01-sepmay-ivy/eval/2026-09-14-evaluation.md)） | 交互组织进有生死的生命周期单元，关闭时回流；IC 是数据组织层，不是认知层 |
+| 02 | [内驱力（Intrinsic Motivation）](02-intrinsic-motivation/README.md) | **ACTIVE（实验轨道，与 MC 主线并行）** | 待评估 | 五原语中 `independence` 的唯一机制候选；四个竞争设计跑在同一 Simulator Layer 上判别 |
 
 另：路径一有 **6 条未定决策**（[open-decisions](01-sepmay-ivy/open-decisions.md)），
-其中 `D1 寿命类分档` 与 `D4 权重更新语义` 是它真正的两道门。
+其中 `D1 寿命类分档` 与 `D4 权重更新语义` 是它真正的两道门——**路径二的两个设计正好各回答一半**
+（H-B 学习进度 → D1；drive 落在回流"权重"那一路 → D4）。
 
-> 路径一已冻结，解冻条件见其 README §6。当前唯一在推进的是 Layer（`../plans/minecraft-layer/`）。
+路径二的首个研究问题与预注册：[`../questions/Q-01-drive-signal.md`](../questions/Q-01-drive-signal.md)（**本仓第一次真正使用 question 机制**）。
+
+> 路径一已冻结（解冻条件见其 README §6）；路径二是实验轨道，**不得阻塞** MC 主线（P0 → M1 → M2 → M4）。

@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能体模拟行业中智能体内驱力的定义与构建方法 — 行业调研报告</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f172a;--card:#1e293b;--border:#334155;--text:#e2e8f0;--muted:#94a3b8;--accent:#38bdf8;--accent2:#a78bfa;--accent3:#34d399;--accent4:#fb923c;--warn:#f87171;--code:#1e1e2e}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:16px}
+.container{max-width:1100px;margin:0 auto;padding:1rem}
+h1{font-size:1.75rem;border-bottom:2px solid var(--accent);padding-bottom:.5rem;margin-bottom:1rem;color:var(--accent)}
+h2{font-size:1.4rem;color:var(--accent);margin:2rem 0 .8rem;border-left:4px solid var(--accent);padding-left:.8rem}
+h3{font-size:1.15rem;color:var(--accent2);margin:1.5rem 0 .5rem}
+h4{font-size:1rem;color:var(--accent3);margin:1rem 0 .4rem}
+p{margin-bottom:.8rem}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.2rem;margin:1rem 0}
+.card-accent{border-left:4px solid var(--accent)}
+.card-purple{border-left:4px solid var(--accent2)}
+.card-green{border-left:4px solid var(--accent3)}
+.card-orange{border-left:4px solid var(--accent4)}
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem;overflow-x:auto;display:block}
+th,td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:#0f172a;color:var(--accent);font-weight:600;white-space:nowrap}
+tr:nth-child(even){background:rgba(56,189,248,.04)}
+.formula{background:var(--code);border-radius:6px;padding:1rem;margin:.8rem 0;font-family:"Courier New",monospace;font-size:.95rem;border:1px solid var(--border);overflow-x:auto;color:var(--accent3)}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.8rem;margin:2px}
+.tag-r{background:rgba(248,113,113,.15);color:var(--warn);border:1px solid rgba(248,113,113,.3)}
+.tag-g{background:rgba(52,211,153,.15);color:var(--accent3);border:1px solid rgba(52,211,153,.3)}
+.tag-b{background:rgba(56,189,248,.15);color:var(--accent);border:1px solid rgba(56,189,248,.3)}
+.tag-p{background:rgba(167,139,250,.15);color:var(--accent2);border:1px solid rgba(167,139,250,.3)}
+.tag-o{background:rgba(251,146,60,.15);color:var(--accent4);border:1px solid rgba(251,146,60,.3)}
+ul,ol{margin:.5rem 0 1rem 1.5rem}
+li{margin-bottom:.3rem}
+.timeline{position:relative;padding-left:2rem;margin:1.5rem 0}
+.timeline::before{content:'';position:absolute;left:.7rem;top:0;bottom:0;width:2px;background:var(--accent)}
+.tl-item{position:relative;margin-bottom:1.2rem}
+.tl-item::before{content:'';position:absolute;left:-1.6rem;top:.4rem;width:12px;height:12px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
+.tl-year{font-weight:700;color:var(--accent)}
+折叠区块 details{margin:.8rem 0}
+details summary{cursor:pointer;font-weight:600;color:var(--accent2);padding:.5rem 0}
+details[open] summary{margin-bottom:.5rem}
+.meter{height:6px;background:var(--border);border-radius:3px;margin:.5rem 0}
+.meter-fill{height:100%;border-radius:3px}
+.highlight{background:rgba(56,189,248,.08);padding:.3rem .5rem;border-radius:4px}
+footer{text-align:center;padding:2rem;color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);margin-top:3rem}
+@media print{body{background:#fff;color:#000}.card{border:1px solid #ccc;background:#f9f9f9}.tag{border:1px solid #999}h2{color:#333}h3{color:#555}th{background:#eee;color:#333}footer{display:none}}
+@media(max-width:768px){.container{padding:.5rem}table{font-size:.8rem}h1{font-size:1.3rem}h2{font-size:1.15rem}}
+#toc{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem;margin:1rem 0}
+#toc ul{list-style:none;margin:0;padding:0}
+#toc li{margin:.3rem 0}
+#toc a{color:var(--muted);font-size:.9rem}
+#toc a:hover{color:var(--accent)}
+#backTop{position:fixed;bottom:1.5rem;right:1.5rem;width:40px;height:40px;border-radius:50%;background:var(--accent);color:var(--bg);border:none;font-size:1.2rem;cursor:pointer;display:none;z-index:999}
+.search-box{width:100%;padding:.6rem 1rem;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:.95rem;margin:1rem 0}
+.search-box:focus{outline:none;border-color:var(--accent)}
+.flex-row{display:flex;gap:1rem;flex-wrap:wrap}
+.flex-row>div{flex:1;min-width:250px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:12px;font-size:.8rem;font-weight:600}
+.pro-con{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:.8rem 0}
+.pro-con>div{padding:.6rem;border-radius:6px}
+.pro{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2)}
+.con{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2)}
+@media(max-width:600px){.pro-con{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Back to Top -->
+<button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<h1>智能体模拟行业中智能体内驱力的定义与构建方法</h1>
+<p style="color:var(--muted);font-size:.9rem">行业调研报告 · 2025 · 单文件 HTML · 无外部依赖</p>
+
+<!-- 搜索 -->
+<input type="text" class="search-box" id="searchInput" placeholder="搜索报告内容…" oninput="filterContent(this.value)">
+
+<!-- 目录 -->
+<nav id="toc">
+<strong style="color:var(--accent)">📑 目录</strong>
+<ul>
+<li><a href="#sec1">1. 摘要与核心结论</a></li>
+<li><a href="#sec2">2. 定义谱系：心理学 → 强化学习 → LLM Agent</a></li>
+<li><a href="#sec3">3. 内驱力与外部奖励、角色扮演、目标驱动的边界</a></li>
+<li><a href="#sec4">4. 构建路径一：内在奖励机制</a></li>
+<li><a href="#sec5">5. 构建路径二：认知架构与身份驱动</a></li>
+<li><a href="#sec6">6. 构建路径三：存在条件与生存压力</a></li>
+<li><a href="#sec7">7. 构建路径四：社会性内驱力</a></li>
+<li><a href="#sec8">8. 代表系统与案例矩阵</a></li>
+<li><a href="#sec9">9. 评估指标与基准</a></li>
+<li><a href="#sec10">10. 争议与反方观点</a></li>
+<li><a href="#sec11">11. 趋势展望</a></li>
+<li><a href="#sec12">12. 术语表</a></li>
+<li><a href="#sec13">13. 参考文献</a></li>
+</ul>
+</nav>
+
+<!-- ===== 1. 摘要 ===== -->
+<h2 id="sec1">1. 摘要与核心结论</h2>
+<div class="card card-accent">
+<p><strong>内驱力（Intrinsic Motivation）</strong>是指智能体在没有外部奖励或任务指令的情况下，由内部信号驱动自主探索、学习与行动的能力。本报告围绕智能体模拟行业，从心理学起源出发，系统梳理内驱力在强化学习（RL）和大语言模型（LLM）智能体中的定义演变、构建路径、评估方法、代表系统、核心争议与未来趋势。</p>
+
+<h4>核心结论</h4>
+<ol>
+<li><strong>内驱力不是单一概念</strong>：它在心理学中指内在满足感，在RL中指无需外部奖励的内在信号，在LLM Agent中表现为自生成目标与自主行动倾向。三者共享"无外部奖励驱动行为"的核心特征，但具体机制差异显著。</li>
+<li><strong>四条主流构建路径</strong>：(1) 基于信息论的内在奖励机制（好奇心、惊奇、赋能）；(2) 认知架构与身份驱动（BDI、欲求系统、Identity Profile）；(3) 存在条件与生存压力（稳态、凡人智能体、存在成本）；(4) 社会性内驱力（社会影响力、规范内化、对话竞争）。</li>
+<li><strong>LLM角色扮演≠真实内驱力</strong>：当前LLM Agent的行为多为"表演"式模拟，而非基于内部状态的自主动机。真正的内驱力需要持久的内部状态表征与反馈回路。</li>
+<li><strong>评估是最大短板</strong>：目前缺乏统一的内驱力度量标准，行为漂移、复现性、长期自主性等指标尚未标准化。</li>
+<li><strong>未来1-3年趋势</strong>：多模态内驱力融合、具身化稳态机制、社会规范的自发涌现、以及面向开放世界的终身学习内驱力将成为主要方向。</li>
+</ol>
+</div>
+
+<!-- ===== 2. 定义谱系 ===== -->
+<h2 id="sec2">2. 定义谱系：心理学 → 强化学习 → LLM Agent</h2>
+
+<div class="card card-accent">
+<h3>2.1 心理学中的内在动机</h3>
+<p>内在动机（Intrinsic Motivation）最早由 Deci & Ryan（1985）在自我决定理论（Self-Determination Theory, SDT）中提出：个体从事某项活动是因为活动本身的乐趣和满足感，而非外部奖赏。SDT将内在动机的核心需求归纳为三项：<strong>自主性（Autonomy）</strong>、<strong>胜任感（Competence）</strong>和<strong>归属感（Relatedness）</strong>。</p>
+<p>Csikszentmihalyi（1990）提出的<strong>心流（Flow）</strong>理论补充了另一维度：当任务挑战与个体能力匹配时，人会进入一种高度专注和享受的状态。Steels（2004）将此概念引入AI领域，提出"自乐（Autotelic）"原则。</p>
+<p>心理学框架为后续计算建模提供了三大支柱：(1) 探索与学习本身就是奖励；(2) 能力匹配与学习进度是关键驱动信号；(3) 社会连接是独立的动机来源。</p>
+</div>
+
+<div class="card card-purple">
+<h3>2.2 强化学习中的内在动机</h3>
+<p>在RL中，内在动机被形式化为<strong>内在奖励信号（Intrinsic Reward）</strong>，与外部奖励信号互补或独立运作。核心范式为：</p>
+<div class="formula">R_total(s,a) = R_ext(s,a) + β · R_int(s,a)</div>
+<p>其中 R_int 由智能体内部机制产生，与环境无关。主要形式包括：</p>
+<ul>
+<li><strong>好奇心（Curiosity）</strong>：Pathak et al.（2017）的ICM模块，通过预测误差驱动探索</li>
+<li><strong>新奇性（Novelty）</strong>：Bellemare et al.（2016）的计数探索、Burda et al.（2019）的RND</li>
+<li><strong>赋能（Empowerment）</strong>：Klyubin et al.（2005）、Salge et al.（2013）以通道容量衡量因果控制力</li>
+<li><strong>学习进度（Learning Progress）</strong>：Schmidhuber（1991）、Kaplan & Oudeyer（2007）将预测误差的变化作为奖励</li>
+</ul>
+<p>这些机制的共同特征是：信号来源于智能体与环境交互的<strong>信息结构</strong>，而非任务定义。</p>
+</div>
+
+<div class="card card-green">
+<h3>2.3 LLM Agent中的内驱力</h3>
+<p>LLM Agent时代的内驱力呈现新的形态：</p>
+<ul>
+<li><strong>自生成目标（Goal Generation）</strong>：Voyager（Wang et al., 2023）通过自动课程生成探索目标；D2A（ICLR 2025）基于需求理论多维欲求系统自主提议活动</li>
+<li><strong>好奇心驱动探索</strong>：iLLM（Bougie & Watanabe, 2025）用LLM作为好奇心信号源；Motif（Klissarov et al., 2024）从LLM偏好构建内在奖励</li>
+<li><strong>记忆-反思架构</strong>：Generative Agents（Park et al., 2023）通过记忆流、反思、规划三层架构产生"有动机感"的行为</li>
+<li><strong>开放世界探索</strong>：MAGELLAN（Poli et al., 2025）用元认知学习进度指导LLM智能体在大目标空间中导航</li>
+</ul>
+<p>LLM Agent的内驱力<strong>本质上是提示工程与架构设计的产物</strong>，而非真正意义上的内部状态驱动。</p>
+</div>
+
+<!-- ===== 3. 边界 ===== -->
+<h2 id="sec3">3. 内驱力与外部奖励、角色扮演、目标驱动的边界</h2>
+
+<div class="card">
+<h3>3.1 关键概念辨析</h3>
+<table>
+<tr><th>概念</th><th>来源</th><th>核心特征</th><th>与内驱力的关系</th></tr>
+<tr><td>外部奖励</td><td>环境/任务设计者</td><td>任务完成时给予</td><td>互补但独立，可叠加</td></tr>
+<tr><td>任务指令</td><td>用户/程序设定</td><td>明确的目标描述</td><td>外驱力，非内驱力</td></tr>
+<tr><td>角色扮演</td><td>提示/人设设定</td><td>LLM按角色行事</td><td>表面似内驱力，实为预设行为模式</td></tr>
+<tr><td>目标驱动</td><td>目标条件策略</td><td>π(a|s,g) 条件于目标g</td><td>需外部给定g；自生成g才是内驱力</td></tr>
+<tr><td>好奇心</td><td>预测误差/新奇性</td><td>对未知事物的探索欲</td><td>内驱力的经典形式</td></tr>
+<tr><td>自主性</td><td>自我决定理论</td><td>自主选择行为</td><td>内驱力的心理学前提</td></tr>
+<tr><td>赋能</td><td>信息论</td><td>因果控制力的度量</td><td>内驱力的信息论形式</td></tr>
+</table>
+</div>
+
+<div class="card card-orange">
+<h3>3.2 核心区别</h3>
+<p><strong>内驱力 vs 外部奖励</strong>：外部奖励依赖任务定义，内驱力不依赖。一个在没有任务定义的开放环境中仍能自主行动的智能体才具有内驱力。</p>
+<p><strong>内驱力 vs 角色扮演</strong>：角色扮演是静态的、预设的；内驱力应该是动态的、状态依赖的。Generative Agents中的智能体按人设行事，但其"动机"来自记忆检索和LLM推理，而非内部状态的持续变化。</p>
+<p><strong>内驱力 vs 目标驱动</strong>：目标驱动需要外部给定目标g；内驱力要求智能体<strong>自生成</strong>目标。Colas et al.（2022）定义的"Autotelic Agent"正是二者的交汇：既内在动机驱动，又以目标为中介。</p>
+</div>
+
+<!-- ===== 4. 构建路径一 ===== -->
+<h2 id="sec4">4. 构建路径一：内在奖励机制</h2>
+
+<div class="card card-accent">
+<h4>一句话定义</h4>
+<p>通过信息论或统计方法，从智能体与环境的交互中自动产生奖励信号，驱动探索与学习。</p>
+</div>
+
+<h3>4.1 好奇心与预测误差</h3>
+<div class="card">
+<p><strong>核心机制</strong>：智能体学习一个前向动力学模型（Forward Model），当实际观测与预测不符时产生"惊奇"信号。</p>
+<div class="formula">R_curiosity(s_t, a_t) = ||φ̂(s_{t+1}) - φ(s_{t+1})||²</div>
+<p>其中 φ 是编码器，φ̂ 是前向模型的预测。<strong>ICM（Intrinsic Curiosity Module）</strong>（Pathak et al., 2017）是这一路径的奠基工作。</p>
+<p><strong>代表系统</strong>：ICM（Pathak et al., 2017）、EPISODE（Raileanu & Rocktäschel, 2020）、RND（Burda et al., 2019）</p>
+<div class="pro-con">
+<div class="pro"><strong>优点</strong>：信号自动生成，无需环境奖励；适用于稀疏奖励场景</div>
+<div class="con"><strong>局限</strong>：随机噪声区域也会产生高预测误差（"噪音电视"问题）；在确定性环境中探索退化</div>
+</div>
+</div>
+
+<h3>4.2 新奇性与计数探索</h3>
+<div class="card">
+<p><strong>核心机制</strong>：给访问频率低的状态更高的奖励，鼓励探索未充分探索的区域。</p>
+<div class="formula">R_novelty(s) = 1/√N(s) 或基于密度模型的对数概率</div>
+<p><strong>代表系统</strong>：Count-Based Exploration（Bellemare et al., 2016）、RND（Burda et al., 2019）、Go-Explore（Ecoffet et al., 2021）</p>
+<div class="pro-con">
+<div class="pro"><strong>优点</strong>：概念简洁，理论基础扎实（与信息增益相关）；RND在MiniGrid等环境中效果显著</div>
+<div class="con"><strong>局限</strong>：高维状态空间中计数困难；不考虑行为质量，可能停留在无意义的新状态</div>
+</div>
+</div>
+
+<h3>4.3 赋能（Empowerment）</h3>
+<div class="card">
+<p><strong>核心机制</strong>：度量智能体对其感知到的环境的因果控制力，形式化为感知-动作循环的通道容量。</p>
+<div class="formula">Empowerment = max_{p(a)} I(A^n; S^{t+n}) = max_{p(a)} [H(S^{t+n}) - H(S^{t+n}|A^n)]</div>
+<p>其中 A 是动作，S 是感知，n 是时间步数。高赋能状态意味着智能体有更多"选项"。</p>
+<p><strong>代表系统</strong>：Empowerment（Klyubin et al., 2005）、Changing Environment（Salge et al., 2014）、连续域近似（Jung et al., 2012）</p>
+<div class="pro-con">
+<div class="pro"><strong>优点</strong>：任务无关、局部可计算；能统一多种表面驱动（财富、健康、控制感）；在Minecraft实验中展现智能的环境改造行为</div>
+<div class="con"><strong>局限</strong>：高维状态空间中计算困难（需近似）；偏向保守行为（避免不可控区域）；对噪声敏感</div>
+</div>
+</div>
+
+<h3>4.4 学习进度（Learning Progress）</h3>
+<div class="card">
+<p><strong>核心机制</strong>：奖励不是预测误差本身，而是预测误差的<strong>变化率</strong>。当智能体正在进步时给予奖励。</p>
+<div class="formula">R_LP(t) = |ε(t) - ε(t-1)| 或 E[ε(t)] - E[ε(t-1)]</div>
+<p><strong>代表系统</strong>：Autotelic RL（Colas et al., 2022）、MAGELLAN（Poli et al., 2025）、IMGEP（Forestier et al., 2017）</p>
+<div class="pro-con">
+<div class="pro"><strong>优点</strong>：自然地避免太难或太简单的目标，实现自动课程学习；在发展机器人学中广泛应用</div>
+<div class="con"><strong>局限</strong>：需要多个目标的经验来估计进度；在大目标空间中估计效率下降</div>
+</div>
+</div>
+
+<!-- ===== 5. 构建路径二 ===== -->
+<h2 id="sec5">5. 构建路径二：认知架构与身份驱动</h2>
+
+<div class="card card-purple">
+<h4>一句话定义</h4>
+<p>通过内部表征系统（信念、欲望、意图、身份特征）驱动智能体的自主决策与行为。</p>
+</div>
+
+<h3>5.1 BDI架构中的动机</h3>
+<div class="card">
+<p><strong>核心机制</strong>：BDI（Belief-Desire-Intention）模型中，Desire（欲望）天然承载了动机功能。Bratman（1987）认为，实践推理始于对多种冲突欲望的权衡，而非单一目标的最大化。</p>
+<p><strong>代表系统</strong>：PRS/dMARS（Georgeff & Rao, 1995）、Jason（Bordini et al., 2007）、ABC-EBDI（情绪扩展BDI）</p>
+<div class="pro-con">
+<div class="pro"><strong>优点</strong>：有深厚的哲学基础；支持多目标并行推理；天然支持"理由"的可解释性</div>
+<div class="con"><strong>局限</strong>：传统BDI依赖手工编写计划库；Desire通常由设计者预设，非自动生成；与现代深度学习的集成有限</div>
+</div>
+</div>
+
+<h3>5.2 欲求价值系统（Desire-driven Autonomous Agent）</h3>
+<div class="card">
+<p><strong>核心机制</strong>：基于Maslow需求层次理论，将智能体的动机分解为多维欲求（饥饿、健康、社交、精神满足等），每个维度有动态衰减和恢复机制。</p>
+<div class="formula">V(s) = Σ_i w_i · D_i(s)，其中 D_i 为各维度欲求满意度</div>
+<p><strong>代表系统</strong>：D2A（ICLR 2025）、Humanoid Agents（Wang et al., 2023）</p>
+<p>D2A在Concordia平台上实现了：(1) 量化价值推导 → 模拟欲求衰减；(2) 定性价值描述 → LLM理解当前状态；(3) 活动提议-评估-选择循环 → 自主决策。</p>
+<div class="pro-con">
+<div class="pro"><strong>优点</strong>：行为自然、连贯、可预测；与人类日常活动高度对齐；在D2A实验中显著优于ReAct、BabyAGI基线</div>
+<div class="con"><strong>局限</strong>：欲求维度和衰减率需手工设计；本质仍是LLM推理，非真正的内部状态反馈；计算成本高</div>
+</div>
+</div>
+
+<h3>5.3 Identity Profile（身份特征）</h3>
+<div class="card">
+<p><strong>核心机制</strong>：为每个智能体定义一组持久的身份特征（人格、偏好、背景故事），作为LLM推理的条件输入。</p>
+<p><strong>代表系统</strong>：Generative Agents（Park et al., 2023）的25个角色、Concordia（Vezhnevets et al., 2023）的组件化身份系统</p>
+<p>Concordia将身份分解为可组合的组件（核心特征、日常职业、生活态度），通过修改组件即可改变智能体的"动机方向"。</p>
+<div class="pro-con">
+<div class="pro"><strong>优点</strong>：模块化设计，灵活可组合；能产生连贯的长期行为；支持社会仿真</div>
+<div class="con"><strong>局限</strong>：身份由外部定义，智能体不能自主改变身份；行为多样性受限于LLM的推理能力</div>
+</div>
+</div>
+
+<!-- ===== 6. 构建路径三 ===== -->
+<h2 id="sec6">6. 构建路径三：存在条件与生存压力</h2>
+
+<div class="card card-green">
+<h4>一句话定义</h4>
+<p>通过赋予智能体"生存条件"（能量、健康、资源限制），使其行为具有内在紧迫感和目标性。</p>
+</div>
+
+<h3>6.1 稳态与异稳态</h3>
+<div class="card">
+<p><strong>核心机制</strong>：Walter Cannon（1939）提出稳态（Homeostasis）概念——生物体通过负反馈回路维持内部变量在目标范围内。偏离目标状态产生"需求"，驱动行为恢复平衡。</p>
+<p>Smart & Mayne（2021）提出<strong>认知稳态智能体（Cognitive Homeostatic Agent）</strong>：将整个认知过程重新诠释为稳态调节——不仅是生理变量（体温、血糖），也包括认知变量（理解、确定性、社会连接）。</p>
+<div class="formula">Drive(t) = |x(t) - x_target|，行为旨在最小化 Drive</div>
+<p><strong>代表系统</strong>：CogSis（Smart & Mayne, 2021）、BiHome（Stradner et al., 2009）、ALBA（Verschure实验室）</p>
+<p>Guerrero Rosado et al.（2025）在机器人上实现异稳态（Allostasis）模型，用丘脑神经质量模型竞争多个内在需求（安全vs探索、能量vs温度），展示了生物启发的动机编排。</p>
+<div class="pro-con">
+<div class="pro"><strong>优点</strong>：行为高度生物逼真；多需求自然竞争与协调；无需显式奖励函数</div>
+<div class="con"><strong>局限</strong>：变量定义和目标值需专家设计；在复杂任务中难以扩展；计算稳定性问题</div>
+</div>
+</div>
+
+<h3>6.2 凡人智能体与存在成本</h3>
+<div class="card">
+<p><strong>核心机制</strong>：赋予LLM智能体"凡人"属性——需要进食、睡觉、社交，存在体力/精力/情绪等资源限制。行为选择需要在多维需求间权衡。</p>
+<p><strong>代表系统</strong>：Humanoid Agents（Wang et al., 2023）——具有饥饿、精力、社交需求等内部状态的Minecraft智能体</p>
+<p>"存在成本"概念：每次行动消耗内部资源，当资源耗尽时智能体"死亡"。这迫使智能体自主安排作息、觅食、社交，而非无限制地执行单一任务。</p>
+<div class="pro-con">
+<div class="pro"><strong>优点</strong>：自然产生时间管理和优先级排序；行为更接近人类日常模式</div>
+<div class="con"><strong>局限</strong>：需求模型是近似的，非真实生理模拟；可能与任务目标冲突</div>
+</div>
+</div>
+
+<h3>6.3 关系感知与情感依赖</h3>
+<div class="card">
+<p><strong>核心机制</strong>：智能体对其他智能体形成"关系状态"（亲密度、信任度），关系变化产生内在情感信号，影响行为选择。</p>
+<p>ABC-EBDI框架将情绪建模融入BDI：理性信念→功能情绪→适应性行为；非理性信念→功能障碍情绪→适应不良行为。</p>
+<div class="pro-con">
+<div class="pro"><strong>优点</strong>：能产生复杂的社会行为；情感驱动的行为更具可预测性和可解释性</div>
+<div class="con"><strong>局限</strong>：情绪模型参数敏感；难以验证情绪是否"真实"</div>
+</div>
+</div>
+
+<!-- ===== 7. 构建路径四 ===== -->
+<h2 id="sec7">7. 构建路径四：社会性内驱力</h2>
+
+<div class="card card-orange">
+<h4>一句话定义</h4>
+<p>智能体从社会交互中获得内在驱动，包括影响他人、遵守规范、建立关系、竞争与合作。</p>
+</div>
+
+<h3>7.1 社会影响力（Social Influence）</h3>
+<div class="card">
+<p><strong>核心机制</strong>：Jaques et al.（2019）提出将社会影响力作为多智能体RL的内在动机。智能体通过反事实推理评估自身动作对其他智能体行为的影响程度，影响力越大，内在奖励越高。</p>
+<div class="formula">R_social(s,a) = I(A_i; A_j | S) = H(A_j|S) - H(A_j|S,A_i)</div>
+<p>实验表明，社会影响力奖励显著提升了社会困境环境中的协调能力和通信协议质量。</p>
+<p><strong>代表系统</strong>：Social Influence MARL（Jaques et al., 2019）、COMA（Foerster et al., 2018）</p>
+<div class="pro-con">
+<div class="pro"><strong>优点</strong>：去中心化计算（通过MOA模型）；促进协调与通信涌现；是"社会版赋能"</div>
+<div class="con"><strong>局限</strong>：需要学习其他智能体的模型；可能导致操纵行为；在敌对环境中可能适得其反</div>
+</div>
+</div>
+
+<h3>7.2 社会价值取向（Social Value Orientation）</h3>
+<div class="card">
+<p><strong>核心机制</strong>：SVO衡量个体在社会交互中对自我利益与他人利益的权衡（利己、公平、利他）。在MARL中，将SVO编码为内在偏好，影响奖励函数的构造。</p>
+<p>Hughes et al.（2018）将群体价值函数引入多智能体学习，使个体在最大化自身奖励的同时兼顾群体利益。</p>
+<div class="pro-con">
+<div class="pro"><strong>优点</strong>：理论基础扎实（博弈论+社会心理学）；能解释合作的涌现</div>
+<div class="con"><strong>局限</strong>：SVO类型需预设或学习；真实社会中SVO是动态的</div>
+</div>
+</div>
+
+<h3>7.3 规范内化与文化涌现</h3>
+<div class="card">
+<p><strong>核心机制</strong>：在多智能体社会中，规则和规范从交互中自发涌现。智能体并非被强制遵守规则，而是通过观察、模仿、强化学习逐渐内化社会规范。</p>
+<p><strong>代表系统</strong>：Concordia（Vezhnevets et al., 2023）在社会困境实验中观察到智能体自发形成资源管理规则；StarCraft II多智能体系统中观察到战术规范的涌现。</p>
+<div class="pro-con">
+<div class="pro"><strong>优点</strong>：最接近人类社会的演化机制；能产生复杂的宏观社会现象</div>
+<div class="con"><strong>局限</strong>：涌现行为难以预测和控制；训练不稳定；需要大量交互数据</div>
+</div>
+</div>
+
+<!-- ===== 8. 代表系统矩阵 ===== -->
+<h2 id="sec8">8. 代表系统与案例矩阵</h2>
+
+<div class="card">
+<h3>8.1 构建路径对比表</h3>
+<table>
+<tr><th>路径</th><th>核心机制</th><th>信号来源</th><th>适用场景</th><th>代表系统</th><th>生物对应</th></tr>
+<tr><td>内在奖励</td><td>好奇心/新奇性/赋能</td><td>智能体-环境交互的信息结构</td><td>开放探索、稀疏奖励</td><td>ICM, RND, Empowerment, Motif</td><td>多巴胺系统、探索行为</td></tr>
+<tr><td>认知架构</td><td>BDI/欲求系统/身份</td><td>内部表征与推理</td><td>社会仿真、日常活动</td><td>D2A, Generative Agents, Concordia</td><td>前额叶皮层、人格</td></tr>
+<tr><td>存在条件</td><td>稳态/资源限制</td><td>内部生理/认知变量</td><td>具身智能、生存场景</td><td>CogSis, Humanoid Agents, Allostatic Agent</td><td>下丘脑、自主神经系统</td></tr>
+<tr><td>社会性</td><td>影响力/规范/关系</td><td>智能体间交互</td><td>多智能体协调、社会仿真</td><td>Social Influence MARL, SVO-MARL</td><td>镜像神经元、社会脑</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h3>8.2 代表系统详细矩阵</h3>
+<table>
+<tr><th>系统</th><th>年份</th><th>机构</th><th>路径</th><th>核心机制</th><th>评估方式</th><th>局限</th></tr>
+<tr><td>ICM</td><td>2017</td><td>UC Berkeley</td><td>内在奖励</td><td>前向模型预测误差</td><td>游戏得分、探索覆盖率</td><td>噪音电视问题</td></tr>
+<tr><td>RND</td><td>2019</td><td>OpenAI</td><td>内在奖励</td><td>固定随机网络的预测误差</td><td>MiniGrid基准</td><td>对高维视觉输入效率低</td></tr>
+<tr><td>Empowerment</td><td>2005/2013</td><td>Hertfordshire</td><td>内在奖励</td><td>感知-动作循环通道容量</td><td>Minecraft环境改造</td><td>高维空间计算困难</td></tr>
+<tr><td>Motif</td><td>2024</td><td>Meta/FAIR</td><td>内在奖励</td><td>LLM偏好构建内在奖励</td><td>NetHack游戏</td><td>依赖LLM质量</td></tr>
+<tr><td>Sensei</td><td>2025</td><td>多机构</td><td>内在奖励</td><td>VLM蒸馏语义新奇性</td><td>MiniHack, Pokemon</td><td>需要VLM离线标注</td></tr>
+<tr><td>iLLM</td><td>2025</td><td>多机构</td><td>内在奖励</td><td>LLM作为好奇心信号源</td><td>BabyAI, Crafter</td><td>语言环境假设强</td></tr>
+<tr><td>Voyager</td><td>2023</td><td>NVIDIA/Caltech</td><td>认知架构</td><td>自动课程+技能库+代码生成</td><td>Minecraft科技树解锁</td><td>依赖GPT-4 API</td></tr>
+<tr><td>Generative Agents</td><td>2023</td><td>Stanford/Google</td><td>认知架构</td><td>记忆流+反思+规划</td><td>行为可信度评估</td><td>依赖LLM推理质量</td></tr>
+<tr><td>Concordia</td><td>2023</td><td>Google DeepMind</td><td>认知架构</td><td>组件化身份+GM架构</td><td>社会困境、选举模拟</td><td>GM设计复杂度高</td></tr>
+<tr><td>D2A</td><td>2025</td><td>多机构</td><td>认知架构</td><td>多维欲求+价值系统</td><td>活动自然度(GPT-4o+人工)</td><td>欲求维度需手工定义</td></tr>
+<tr><td>MAGELLAN</td><td>2025</td><td>Inria</td><td>认知架构</td><td>元认知学习进度估计</td><td>Little-Zoo环境</td><td>仅限小规模LLM测试</td></tr>
+<tr><td>LMA3</td><td>2023</td><td>Inria</td><td>认知架构</td><td>LLM增强自乐智能体</td><td>目标空间覆盖率</td><td>目标生成质量不稳定</td></tr>
+<tr><td>Humanoid Agents</td><td>2023</td><td>多机构</td><td>存在条件</td><td>多维内部状态(饥饿/精力等)</td><td>日常活动连贯性</td><td>生理模型简化</td></tr>
+<tr><td>CogSis</td><td>2021</td><td>Bristol</td><td>存在条件</td><td>认知稳态决策</td><td>机器人导航任务</td><td>仅限简单任务</td></tr>
+<tr><td>Allostatic Agent</td><td>2025</td><td>Verschure Lab</td><td>存在条件</td><td>丘脑神经质量竞争模型</td><td>生存模拟+博弈论度量</td><td>需要预定义导航场</td></tr>
+<tr><td>Social Influence MARL</td><td>2019</td><td>Google DeepMind</td><td>社会性</td><td>反事实因果影响力</td><td>社会困境协调</td><td>需学习MOA模型</td></tr>
+<tr><td>Open-Ended LLM Agent</td><td>2025</td><td>多机构</td><td>认知架构</td><td>自主目标生成+持久记忆</td><td>定性行为分析</td><td>敏感于提示设计</td></tr>
+</table>
+</div>
+
+<!-- 时间线 -->
+<div class="card">
+<h3>8.3 内驱力研究时间线</h3>
+<div class="timeline">
+<div class="tl-item"><span class="tl-year">1991</span> — Schmidhuber提出人工好奇心，基于预测误差的进步</div>
+<div class="tl-item"><span class="tl-year">2005</span> — Klyubin等提出Empowerment概念</div>
+<div class="tl-item"><span class="tl-year">2013</span> — Salge等将Empowerment应用于多智能体环境</div>
+<div class="tl-item"><span class="tl-year">2017</span> — Pathak等发表ICM，好奇心驱动探索的里程碑</div>
+<div class="tl-item"><span class="tl-year">2019</span> — Burda等提出RND；Jaques等发表社会影响力MARL</div>
+<div class="tl-item"><span class="tl-year">2021</span> — Smart & Mayne提出认知稳态智能体</div>
+<div class="tl-item"><span class="tl-year">2023</span> — Park等发表Generative Agents；Voyager发布；Concordia发布</div>
+<div class="tl-item"><span class="tl-year">2024</span> — Motif从LLM反馈构建内在奖励；Autotelic RL综述</div>
+<div class="tl-item"><span class="tl-year">2025</span> — D2A发表(ICLR)；MAGELLAN发表；Sensei/iLLM发表；Allostatic Agent机器人实验</div>
+</div>
+</div>
+
+<!-- ===== 9. 评估 ===== -->
+<h2 id="sec9">9. 评估指标与基准</h2>
+
+<div class="card">
+<h3>9.1 评估指标体系</h3>
+<table>
+<tr><th>指标类别</th><th>具体指标</th><th>含义</th><th>适用路径</th></tr>
+<tr><td>探索效率</td><td>状态空间覆盖率、新状态发现速率</td><td>智能体探索了多少不同状态</td><td>内在奖励</td></tr>
+<tr><td>赋能值</td><td>感知-动作通道容量估计</td><td>智能体对环境的控制力</td><td>赋能</td></tr>
+<tr><td>目标多样性</td><td>自生成目标的种类数、语义距离</td><td>智能体能否产生多样化目标</td><td>认知架构</td></tr>
+<tr><td>长期自主性</td><td>无外部干预下的持续运行时间</td><td>智能体能自主运行多久</td><td>所有路径</td></tr>
+<tr><td>社会对齐</td><td>行为与人类社会规范的一致性</td><td>行为是否"像人"</td><td>社会性</td></tr>
+<tr><td>行为漂移</td><td>长期运行中行为模式的变化率</td><td>智能体是否保持一致的"人格"</td><td>认知架构</td></tr>
+<tr><td>学习进度</td><td>预测误差的变化率</td><td>智能体是否在"学习"</td><td>内在奖励</td></tr>
+<tr><td>复现性</td><td>多次运行的行为一致性</td><td>相同条件下行为是否可复现</td><td>所有路径</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h3>9.2 当前基准与挑战</h3>
+<ul>
+<li><strong>NetHack/MiniHack</strong>：用于评估Motif、Sensei等内在奖励方法</li>
+<li><strong>Minecraft/MineDojo</strong>：Voyager、Generative Agents的主要测试环境</li>
+<li><strong>Concordia平台</strong>：用于社会仿真和多智能体交互评估</li>
+<li><strong>ANAC竞赛（IJCAI/AAMAS）</strong>：多智能体谈判与供应链管理中的动机驱动行为</li>
+<li><strong>MOASEI竞赛（AAMAS 2025）</strong>：开放环境中的智能体适应性评估</li>
+</ul>
+<p><strong>关键挑战</strong>：目前没有统一的"内驱力度量"标准。大多数评估仍依赖于任务完成度（如游戏得分），而非内驱力本身的度量。行为可信度评估（如Generative Agents使用的人类评估）尚未标准化。</p>
+</div>
+
+<!-- ===== 10. 争议 ===== -->
+<h2 id="sec10">10. 争议与反方观点</h2>
+
+<div class="card card-accent">
+<h3>10.1 设计 vs 涌现</h3>
+<div class="pro-con">
+<div class="pro">
+<strong>正方：设计出来的内驱力</strong>
+<p>当前所有内驱力机制都是人为设计的：ICM的前向模型、Empowerment的通道容量、D2A的欲求维度。设计者决定了智能体"想要什么"。这本质上是用更复杂的方式编码设计者的意图。</p>
+</div>
+<div class="con">
+<strong>反方：涌现的内驱力</strong>
+<p>当设计足够复杂时（如Generative Agents的记忆-反思架构），行为可能超出设计者预期。Concordia实验中观察到的社会规范涌现、Voyager的意外技能组合，都暗示了涌现的可能性。但"涌现"是否等于"真正的内驱力"仍有争议。</p>
+</div>
+</div>
+</div>
+
+<div class="card card-purple">
+<h3>10.2 表演动机 vs 真实动机</h3>
+<div class="pro-con">
+<div class="pro">
+<strong>正方：LLM角色扮演=真实动机</strong>
+<p>如果LLM Agent的行为在所有可观测维度上都与有内驱力的智能体一致，那么从行为主义角度看，我们没有理由否认其"动机"的真实性。Concordia的智能体确实表现出了目标导向、自适应、社会敏感的行为。</p>
+</div>
+<div class="con">
+<strong>反方：LLM角色扮演≠真实动机</strong>
+<p>三个关键区别：(1) LLM Agent没有持久的内部状态变化——每次推理都是独立的上下文窗口填充；(2) "动机"来自提示而非内部信号；(3) 移除提示后动机立即消失。真正的内驱力应具有状态依赖性和持久性。</p>
+</div>
+</div>
+<p style="margin-top:.8rem"><strong>多角度分析</strong>：这个问题的答案取决于我们如何定义"真实"。如果从功能主义角度（行为即心智），LLM的"动机"可能是真实的；如果从机制主义角度（需要特定的内部因果结构），则不是。当前学界倾向于后者：LLM Agent的行为是"可信的模拟"而非"真正的自主动机"。</p>
+</div>
+
+<div class="card card-green">
+<h3>10.3 LLM幻觉与可复现性</h3>
+<div class="pro-con">
+<div class="pro">
+<strong>正方：LLM内驱力足够实用</strong>
+<p>即使不完美，LLM Agent已经展现出令人印象深刻的社会仿真能力。Generative Agents产生了可观察的社会涌现现象；D2A生成了高度自然的日常活动序列。实用性无需等待理论完美。</p>
+</div>
+<div class="con">
+<strong>反方：幻觉问题威胁可靠性</strong>
+<p>LLM的非确定性输出意味着：(1) 相同提示下不同运行可能产生截然不同的"动机"；(2) 幻觉可能导致与内部状态不符的行为；(3) 行为漂移使长期仿真不可靠。Open-Ended LLM Agent（2025）的研究明确指出了这些问题。</p>
+</div>
+</div>
+</div>
+
+<div class="card card-orange">
+<h3>10.4 计算成本与标准化缺失</h3>
+<p><strong>计算成本</strong>：LLM Agent的每次推理需要调用大型模型API，成本远高于传统RL智能体。D2A每个决策步骤需要提议N个候选活动并逐一评估，计算量巨大。</p>
+<p><strong>标准化缺失</strong>：目前没有统一的内驱力评估基准。不同系统在不同环境中评估，结果不可比。ANAC等竞赛关注任务性能而非动机质量。</p>
+</div>
+
+<div class="card">
+<h3>10.5 当前局限与未解决问题</h3>
+<ul>
+<li><strong>缺乏统一理论框架</strong>：心理学、RL、LLM三个领域的内驱力概念尚未统一</li>
+<li><strong>内驱力的形式化度量</strong>：如何量化一个LLM Agent的"内驱力强度"？目前没有公认指标</li>
+<li><strong>长期稳定性</strong>：智能体的"动机"在长时间运行中是否稳定？是否会退化或漂移？</li>
+<li><strong>迁移与泛化</strong>：在一个环境中习得的内驱力能否迁移到新环境？</li>
+<li><strong>可解释性</strong>：如何理解智能体"为什么"选择了某个行为？动机的因果链是什么？</li>
+<li><strong>伦理边界</strong>：如果智能体真的产生了"动机"，我们对其行为的道德责任如何界定？</li>
+</ul>
+</div>
+
+<!-- ===== 11. 趋势 ===== -->
+<h2 id="sec11">11. 趋势展望</h2>
+
+<div class="card card-accent">
+<h3>11.1 短期趋势（1-2年）</h3>
+<ul>
+<li><strong>多模态内驱力融合</strong>：结合视觉、语言、动作的多模态内在奖励。Sensei（2025）已开始探索VLM驱动的探索。</li>
+<li><strong>LLM作为元控制器</strong>：Voyager的"LLM生成目标+RL执行"模式将被广泛采用。LLM负责高层动机，RL负责低层控制。</li>
+<li><strong>标准化评估框架</strong>：预计会出现针对Agent Simulation的标准化评估基准，类似BenchAgent或AgentBench。</li>
+<li><strong>开源平台成熟</strong>：Concordia、Generative Agents等平台将更加模块化和易用。</li>
+</ul>
+</div>
+
+<div class="card card-purple">
+<h3>11.2 中期趋势（2-3年）</h3>
+<ul>
+<li><strong>具身化稳态机制</strong>：将生物稳态原理应用于具身AI，使机器人具有真实的"需求"和"感受"。Allostatic Agent（2025）是这一方向的先驱。</li>
+<li><strong>社会规范的自发涌现</strong>：在大规模多智能体仿真中观察社会规范、制度、文化的自发形成。Concordia已展示了初步可能性。</li>
+<li><strong>终身学习内驱力</strong>：智能体不仅在单次任务中自主，还能在生命周期中持续学习新技能、适应新环境。Voyager和MAGELLAN代表了这一方向。</li>
+<li><strong>内驱力的可组合性</strong>：不同内驱力机制的模块化组合，类似Concordia的组件系统，允许灵活配置智能体的"动机谱"。</li>
+</ul>
+</div>
+
+<div class="card card-green">
+<h3>11.3 长期愿景</h3>
+<ul>
+<li><strong>从模拟到真实</strong>：内驱力研究将从仿真环境走向真实世界机器人和自主系统</li>
+<li><strong>跨层统一</strong>：生理稳态→认知动机→社会规范→文化演化的跨层内驱力理论</li>
+<li><strong>可控自主</strong>：在保持智能体自主性的同时，允许人类通过高层面板调整"动机强度"</li>
+</ul>
+</div>
+
+<!-- ===== 12. 术语表 ===== -->
+<h2 id="sec12">12. 术语表</h2>
+<div class="card">
+<table>
+<tr><th>术语</th><th>英文</th><th>定义</th></tr>
+<tr><td>内驱力/内在动机</td><td>Intrinsic Motivation</td><td>由内部信号驱动而非外部奖励驱动的行为倾向</td></tr>
+<tr><td>好奇心</td><td>Curiosity</td><td>对新奇或不确定事物的探索欲，常通过预测误差建模</td></tr>
+<tr><td>赋能</td><td>Empowerment</td><td>智能体对环境的因果控制力的信息论度量</td></tr>
+<tr><td>自乐</td><td>Autotelic</td><td>源自希腊语auto（自我）+telos（目标），指自主生成并追求目标的能力</td></tr>
+<tr><td>学习进度</td><td>Learning Progress</td><td>智能体在某目标上能力提升的速率</td></tr>
+<tr><td>稳态</td><td>Homeostasis</td><td>生物体通过负反馈维持内部变量在目标范围内的机制</td></tr>
+<tr><td>异稳态</td><td>Allostasis</td><td>通过预测性调节维持稳定的动态过程</td></tr>
+<tr><td>BDI</td><td>Belief-Desire-Intention</td><td>基于信念、欲望、意图的智能体认知架构</td></tr>
+<tr><td>社会影响力</td><td>Social Influence</td><td>智能体通过行动影响其他智能体行为的能力</td></tr>
+<tr><td>社会价值取向</td><td>Social Value Orientation</td><td>个体在社会交互中对自我与他人利益的权衡偏好</td></tr>
+<tr><td>记忆流</td><td>Memory Stream</td><td>Generative Agents架构中记录所有经验的数据库</td></tr>
+<tr><td>反思</td><td>Reflection</td><td>Generative Agents中将记忆综合为高阶推断的过程</td></tr>
+<tr><td>自动课程</td><td>Automatic Curriculum</td><td>根据智能体能力动态调整目标难度的机制</td></tr>
+<tr><td>感知-动作循环</td><td>Perception-Action Loop</td><td>智能体通过感知→决策→行动与环境交互的基本循环</td></tr>
+<tr><td>通道容量</td><td>Channel Capacity</td><td>信息论中通信信道能可靠传输的最大信息速率</td></tr>
+<tr><td>反事实推理</td><td>Counterfactual Reasoning</td><td>思考"如果做了不同选择会怎样"的推理方式</td></tr>
+<tr><td>GABM</td><td>Generative Agent-Based Model</td><td>使用LLM作为智能体行为生成引擎的基于智能体模型</td></tr>
+<tr><td>GM</td><td>Game Master</td><td>Concordia中负责模拟环境的特殊智能体</td></tr>
+<tr><td>MOA</td><td>Model of Other Agents</td><td>智能体内部学习的对其他智能体行为的预测模型</td></tr>
+</table>
+</div>
+
+<!-- ===== 13. 参考文献 ===== -->
+<h2 id="sec13">13. 参考文献</h2>
+<div class="card">
+<p style="color:var(--muted);font-size:.85rem">说明：以下文献均基于公开可查的学术出版物。本报告不伪造任何引用。标注 [未验证] 的条目表示基于训练知识回忆，可能存在细节偏差。</p>
+
+<h4>内在奖励机制</h4>
+<ol>
+<li>Pathak, D., Agrawal, P., Efros, A. A., & Darrell, T. (2017). Curiosity-driven Exploration by Self-supervised Prediction. <em>ICML 2017</em>.</li>
+<li>Burda, Y., Edwards, H., Storkey, A., & Klimov, O. (2019). Exploration by Random Network Distillation. <em>ICLR 2019</em>.</li>
+<li>Bellemare, M., Srinivasan, S., Ostrovski, G., Schaul, T., Saxton, D., & Munos, R. (2016). Unifying Count-Based Exploration and Intrinsic Motivation. <em>NIPS 2016</em>.</li>
+<li>Ecoffet, A., Huizinga, J., Lehman, J., Stanley, K. O., & Clune, J. (2021). First Return, Then Explore. <em>Nature</em>, 590, 580–586.</li>
+<li>Klyubin, A. S., Polani, D., & Nehaniv, C. L. (2005). Empowerment: A Universal Agent-Centric Measure of Control. <em>CEC 2005</em>.</li>
+<li>Salge, C., Glackin, C., & Polani, D. (2013). Empowerment and State-dependent Noise — An Intrinsic Motivation for Avoiding Unpredictable Agents. <em>ALIFE 2013</em>.</li>
+<li>Salge, C., Glackin, C., & Polani, D. (2014). Changing the Environment Based on Empowerment as Intrinsic Motivation. <em>Entropy</em>, 16(5), 2789–2819.</li>
+<li>Schmidhuber, J. (2010). Formal Theory of Creativity, Fun, and Intrinsic Motivation (1990–2010). <em>IEEE Trans. Autonomous Mental Development</em>, 2(3), 230–247.</li>
+<li>Aubret, A., Matignon, L., & Hassas, S. (2023). An Information-Theoretic Perspective on Intrinsic Motivation in Reinforcement Learning: A Survey. <em>Entropy</em>, 25(2), 327.</li>
+<li>Klissarov, M., D'Oro, P., Sodhani, S., Raileanu, R., Bacon, P.-L., Vincent, P., Zhang, A., & Henaff, M. (2024). Motif: Intrinsic Motivation from Artificial Intelligence Feedback. <em>ICLR 2024</em>.</li>
+<li>Bougie, N., & Watanabe, N. (2025). Exploring Beyond Curiosity Rewards: Language-Driven Exploration in RL. <em>ACML 2025</em>.</li>
+<li>Sensei (2025). SEmaNtically Sensible ExploratIon. [未验证：多机构合作，具体作者待确认]</li>
+</ol>
+
+<h4>LLM Agent与认知架构</h4>
+<ol start="13">
+<li>Park, J. S., O'Brien, J. C., Cai, C. J., Morris, M. R., Liang, P., & Bernstein, M. S. (2023). Generative Agents: Interactive Simulacra of Human Behavior. <em>UIST 2023</em>.</li>
+<li>Wang, G., Xie, Y., Jiang, Y., Mandlekar, A., Xiao, C., Zhu, Y., Fan, L., & Anandkumar, A. (2023). Voyager: An Open-Ended Embodied Agent with Large Language Models. <em>arXiv:2305.16291</em>.</li>
+<li>Vezhnevets, A. S., Agapiou, J. P., Aharon, A., Ziv, R., Matyas, J., Duéñez-Guzmán, E. A., Cunningham, W. A., Osindero, S., Karmon, D., & Leibo, J. Z. (2023). Generative agent-based modeling with actions grounded in physical, social, or digital space using Concordia. <em>arXiv:2312.03664</em>.</li>
+<li>D2A (2025). Simulating Human-Like Daily Activities with Desire-Driven Autonomy. <em>ICLR 2025</em>.</li>
+<li>Poli, M. et al. (2025). MAGELLAN: Metacognitive predictions of learning progress guide autotelic LLM agents in large goal spaces. <em>arXiv:2502.07709</em>.</li>
+<li>Colas, C., Karch, T., Sigaud, O., & Oudeyer, P.-Y. (2022). Autotelic Agents with Intrinsically Motivated Goal-Conditioned RL: A Short Survey. <em>JAIR</em>.</li>
+<li>Open-Ended LLM Agent (2025). LLM Agents Beyond Utility: An Open-Ended Perspective. <em>arXiv:2510.14548</em>.</li>
+</ol>
+
+<h4>存在条件与稳态</h4>
+<ol start="21">
+<li>Smart, W. D., & Mayne, T. (2021). Cognitive Homeostatic Agents. <em>arXiv:2103.03359</em>.</li>
+<li>Guerrero Rosado, O., Amil, A. F., Freire, I. T., Vinck, M., & Verschure, P. F. M. J. (2025). Biomimetic self-regulation in intrinsically motivated robots. <em>bioRxiv</em>.</li>
+<li>Stradner, J. et al. (2009). BiHome — Biologically Inspired Homeostatic Behaviour in Autonomous Robots. [未验证]</li>
+<li>Wang et al. (2023). Humanoid Agents: Platform for human-like simulations. [未验证：与Generative Agents同期]</li>
+</ol>
+
+<h4>社会性内驱力</h4>
+<ol start="25">
+<li>Jaques, N., Lazaridou, A., Hughes, E., Gülçehre, Ç., Ortega, P. A., Strouse, D. J., Leibo, J. Z., & de Freitas, N. (2019). Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement Learning. <em>ICML 2019</em>.</li>
+<li>Hughes, E., Leibo, J. Z., Phillips, M., Tuyls, K., Duéñez-Guzmán, E., Castaneda, A. V., Dunning, I., Zhu, T., McKee, K., Koster, R., et al. (2018). Inequity Aversion Improves Cooperation in Emergent Real-World Social Dilemmas. <em>AAMAS 2019</em>. [未验证具体年份]</li>
+<li>Foerster, J. N., Farquhar, G., Afouras, T., Nardelli, N., & Whiteson, S. (2018). Counterfactual Multi-Agent Policy Gradients. <em>AAAI 2018</em>.</li>
+</ol>
+
+<h4>综述与框架</h4>
+<ol start="28">
+<li>Colas, C. et al. (2022). Autotelic RL. <em>arXiv</em>. [综述]</li>
+<li>Aubret, A. et al. (2019). A Survey on Intrinsic Motivation in Reinforcement Learning. <em>arXiv:1908.06976</em>.</li>
+<li>Le, H., Nguyen, H., & Do, D. (2024). Unlocking Exploration: Self-Motivated Agents Thrive on Memory-Driven Curiosity. <em>AAMAS 2024 Tutorial</em>.</li>
+<li>Meneguzzi, F. & De Silva, L. (2020). BDI Agent Architectures: A Survey. <em>IJCAI 2020</em>.</li>
+</ol>
+
+<h4>竞赛与基准</h4>
+<ol start="32">
+<li>ANAC (2024/2025). International Automated Negotiating Agents Competition. <em>IJCAI/AAMAS</em>.</li>
+<li>MOASEI (2025). Methods for Open Agent Systems Evaluation Initiative. <em>AAMAS 2025</em>.</li>
+</ol>
+</div>
+
+<!-- 免责声明 -->
+<div class="card" style="border-left:4px solid var(--warn)">
+<h4>⚠️ 信息局限性声明</h4>
+<p>本报告基于以下信息源撰写：</p>
+<ul>
+<li>公开可查的学术论文（arXiv预印本、正式出版物）</li>
+<li>开源项目文档与GitHub仓库</li>
+<li>研究者公开发布的技术博客</li>
+<li>作者的训练知识（截止2025年初）</li>
+</ul>
+<p>部分系统（标注[未验证]）的具体细节基于训练知识回忆，可能存在偏差。建议读者查阅原始论文以确认准确信息。本报告不伪造任何DOI、链接或论文标题。</p>
+</div>
+
+<footer>
+<p>智能体模拟行业 — 内驱力调研报告 | 2025</p>
+<p style="margin-top:.5rem">单文件HTML · 无外部依赖 · 响应式设计 · 支持打印</p>
+</footer>
+
+</div><!-- /.container -->
+
+<script>
+// 回到顶部按钮
+window.addEventListener('scroll',function(){
+  var b=document.getElementById('backTop');
+  b.style.display=window.scrollY>400?'block':'none';
+});
+
+// 搜索过滤
+function filterContent(q){
+  if(!q){document.querySelectorAll('.card,table,formula,ul,ol,p').forEach(function(e){e.style.display=''});return;}
+  var rx=new RegExp(q,'i');
+  document.querySelectorAll('.card').forEach(function(c){
+    c.style.display=rx.test(c.textContent)?'':'none';
+  });
+}
+
+// 目录高亮
+(function(){
+  var links=document.querySelectorAll('#toc a');
+  var sections=[];
+  links.forEach(function(a){
+    var id=a.getAttribute('href').replace('#','');
+    var el=document.getElementById(id);
+    if(el)sections.push({el:el,link:a});
+  });
+  window.addEventListener('scroll',function(){
+    var scrollPos=window.scrollY+100;
+    var current=null;
+    for(var i=0;i<sections.length;i++){
+      if(sections[i].el.offsetTop<=scrollPos)current=sections[i];
+    }
+    links.forEach(function(a){a.style.color=''});
+    if(current)current.link.style.color='#38bdf8';
+  });
+})();
+</script>
+</body>
+</html>

@@ -148,6 +148,74 @@ class BaseAgent:
 > the Layer Protocol is ratified; the Protocol, not an ad-hoc signature change, is what should
 > widen them (see §3).
 
+### 1.5 The reception domain (from the SepMay path)
+
+`research/paths/01-sepmay-ivy/` is a **frozen Core-side path**; its **接收域 / reception domain**
+(`外部信息源 + 内部信息源 → 运算域`) is Core's intake boundary. This section fixes what it maps to,
+so the mapping does not live only in conversation.
+
+| SepMay element | Artifact here | Written by | Read by |
+|---|---|---|---|
+| 外部信息源 external source | observations/events **after admission** | Layer produces → Runtime **admits** | operators (computing domain) |
+| 内部信息源 internal source | Core's committed state (memory / relations / persona) | **only** IC's send-back at chunk close | operators |
+| 算子集合 operators | Core operators (incl. future appraisal / guardrail) | — | — |
+| 输出域 Chunk/Thread | IC — the data-organization layer | — | — |
+| actions | `ActionCall` → runtime → Layer → environment | computing domain | Layer |
+
+Three properties follow:
+
+1. **Admission, not reception.** The reception domain decides what enters *this agent's* world
+   model, at what granularity, with what uncertainty (`window`, `truncated`, `verifiability`).
+   Its product is **gated facts, not a copy of the world**.
+2. **No meaning here.** Appraisal ("what does this mean for me") belongs to the computing domain's
+   operators. Facts may cross; meaning may not — the same line as §3.1.
+3. **Two write rules, never one pool.** The external source is append-only facts; the internal
+   source is written **only** by IC's send-back (facts / the agent's own version / weights).
+   Mixing the two pools is the entry point of false memory.
+
+**The loop and its gate.** The internal source is both an input to the computing domain *and* the
+target of the send-back, so `output → internal source → computing` is a cycle. IC's **two-phase
+commit at chunk close** is the gate for it; without that gate, operators read uncommitted
+intermediate state — a memory shape a human cannot have.
+
+**Consequences for the Layer side.**
+
+- The **Layer is the producer** of the external half. It is not part of the reception domain, and it
+  can neither read nor write the internal source (§0 rule 2: a Layer must not think).
+- The reverse path (intent: `ActionCall` → runtime → Layer → environment) **does not pass through
+  the reception domain** — only facts come back through it.
+- A **plugin is not the Layer**: it is the deployment form of one Layer inside one environment
+  (see [`../research/plans/minecraft-layer/04-project-structure.md`](../research/plans/minecraft-layer/04-project-structure.md)).
+  Hence: a plugin must hold **no cross-session state** (configuration excepted), must lose **no
+  memory** when restarted, and must contain **no logic that needs history**.
+
+**Four review questions — which side does this code belong to?**
+
+1. Needs block coordinates / entity UUID / tick → **Layer / plugin** side.
+2. Needs "what the player did last month" → **Core side (reception domain)**.
+3. Judges "what does this mean for me" → **computing domain** (not reception).
+4. Writes "his version" → **only IC at chunk close** (internal source); a plugin never writes.
+
+**Where drives live (intrinsic motivation).** A drive adds **no new box** — it occupies three existing
+positions in the same picture: (**① storage**) a class of persistent state in the **internal source**, on the
+**weights** leg of the send-back; (**② computation**) an **operator** in the computing domain that folds
+recent history (setpoint deviation / learning progress / option growth) into drive change; (**③ use**) the
+**output domain**, where a drive is what opens a Chunk when there is *no external stimulus* — and the
+send-back then updates it, which is why the loop can run on its own.
+
+> **The external source decides "the world makes me open a Chunk"; a drive decides "I open one myself."**
+> It is the loop's only **endogenous** initiator — the exogenous entry is the world. Without a drive, this
+> picture is static whenever nothing external arrives.
+
+A drive belongs neither to the external source (facts) nor to the Layer (which only reports facts, executes
+actions and refuses). Path, competing designs and open decisions:
+[`../research/paths/02-intrinsic-motivation/README.md`](../research/paths/02-intrinsic-motivation/README.md).
+
+**Open (not decided).** Admission has **no name or contract** on the Core side yet (the Layer side
+has `EnvironmentPort`). A minimal `Intake` — admit → dedupe/order → stamp provenance & uncertainty
+→ land in the external source — is a Phase-3 design item, tracked in
+[`../research/paths/01-sepmay-ivy/open-decisions.md`](../research/paths/01-sepmay-ivy/open-decisions.md).
+
 ---
 
 ## 2. What a Layer Is

@@ -91,13 +91,16 @@ layers/
 |---|---|---|
 | **JDK** | `PATH`/`JAVA_HOME` = **JDK 21**（Android OpenJDK）；Paper 26.2 需要 **Java 25** | **必须显式用** `C:\Users\chkev\.gradle\jdks\eclipse_adoptium-25-amd64-windows.2\bin\java.exe`（实测 = Temurin **25.0.4.1** LTS，由 foojay 在构建时下载）。脚本里写死/探测该路径，并写进 `layers/README.md` |
 | **首次启动需联网** | 64.5 MB 服务器 jar + Paper 运行时下载 `libraries/`、`versions/` | 首次启动留出时间；之后可离线 |
-| **客户端** | 要"看见"交互需要 **26.2 客户端** | 若暂无：M0–M4 用 `:testclient` 验证；**M5–M6 才必须真人进服**（记为本阶段外部依赖） |
-| `plugin.yml api-version: '26.2'` | ~~从未被服务器检验~~ → **已确认被接受**（Paper `26.2-123`，无 incompatible 报错，插件正常加载；见 `03` §4 附录） | 无需回退；若换 Paper 版本需重验 |
+| **客户端** | 要"看见"交互需要客户端，且**版本要匹配目标服** | 云端实验环境是 **1.20.1**（Arclight），本地 dev loop 是 26.2；M0–M4 用 `:testclient` 验证，**M5–M6 才必须真人进服** |
+| `plugin.yml api-version: '26.2'` | 已在 Paper `26.2-123` 上确认被接受；但**云端是 Arclight 1.20.1** → 需改 `'1.20'` 并重验 | 见决策记录 `decision-arclight-cloud-environment.md` |
 | **实体自身 AI 会污染演示** | 僵尸会自己乱走，"它在回应我"会被噪声淹没 | M5 用**自身不乱跑**的实体（armor stand，或 `setAI(false)` 的僵尸）——这条必须先定 |
 | WS 数据面是空壳 | M1 的真实工作量在此 | 不做流控/鉴权，只做 `hello`/`hello_ack` + 单向推送 + 动作往返 |
 | `shadow relocate` 仍是 TODO | 与其它插件共存时可能类冲突 | 本阶段单插件测试可接受；写进 `layers/README.md` 限制说明 |
 | Bukkit API 线程 | 世界读写只能在主线程 | `03` §6 已写死；M3 的 review 逐条对照 |
-| 端口冲突 | 默认 `127.0.0.1:8765` | `config.yml` 可改；M0 记录实际端口 |
+| 端口冲突 | 本地控制面默认 `127.0.0.1:8765`（HTTP）/`8766`（WS） | `config.yml` 可改；M0 记录实际端口 |
+| **云端入站不可达** | 托管面板不开放任意 TCP 端口 → `listen` 在云端不可用 | 用 `transport.mode: dial`（Layer 主动拨出）+ 强制 token（`01` §5 / §9 #001） |
+| **云端版本低于本地** | Arclight **1.20.1** + **Java 17** vs 本地 Paper 26.2 + Java 25 | 构建取**下界**：Spigot API 1.20.1 + `jvmToolchain(17)`，**禁用 Paper 专有 API** |
+| **实验环境被第三方污染** | 公开服（0/20 在线） | whitelist + 固定世界/种子 + 跑批期间清场；上传 jar 记 sha256（云端的"版本 pin"） |
 
 ---
 

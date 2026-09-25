@@ -64,6 +64,19 @@
 3. 握手：`hello` → 校验 `protocol.min/max` → 回 `hello_ack`（能力清单 = `PaperEnvironmentPort.declaredCapabilities`，
    世界名与 `tick` 基准取自真实服务器）
 4. 补 HTTP `/action`（`01` §5 要求；可先只做单发动作，不含推送）
+5. **传输方向可配**（云端追加，见决策记录 `decision-arclight-cloud-environment.md`）：
+   `transport.mode: listen|dial` —— 本地 `listen`（Runtime 连 Layer），**云端 `dial`**（Layer 主动拨出到
+   `runtime.endpoint`）；`dial` 强制 token。**两种模式消息形状完全相同**。
+6. **构建目标改下界**（同一决策）：`spigot-api 1.20.1` + `jvmToolchain(17)` + `api-version: '1.20'`，
+   **禁用 Paper 专有 API**（云端是 Arclight 1.20.1，Java 17）。
+7. **把 `tools/stub-core/` 的监听端提前做出来**（最小形态：连上、收 `hello_ack`、打印即可）——
+   否则 `dial` 没有对端，M1 在云端无法验收。
+
+### 云端验收（追加）
+
+- [ ] 插件在 **Arclight 1.20.1** 上加载成功（原始日志行）
+- [ ] `dial` 模式成功拨出，`tools/stub-core/` 收到 `hello_ack` 全文（原始 JSON）
+- [ ] 本机 Paper 26.2 上用**同一个 jar** 仍能加载并握手（证明"一份 jar 两环境"）
 
 ### 验收
 

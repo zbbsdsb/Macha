@@ -52,12 +52,13 @@ include(":kit:protocol", ":kit:runtime", ":kit:transport", ":minecraft", ":simul
 
 | key | 值 | 备注 |
 |---|---|---|
-| `minecraft` | `26.2` | 仅作文档/日志，不参与编译 |
-| `paper` | `26.2-123`（jar sha256 记录在案） | 服务端 pin |
-| `java` | `25`（toolchain） | 若 KGP 不支持 → 21（`00` §H-D2） |
+| `minecraft` | **云端 1.20.1** · 本地 26.2 | 仅作文档/日志，不参与编译 |
+| `paper` | `26.2-123`（jar sha256 记录在案） | **本地 dev loop** 的服务端 pin |
+| `arclight` | **1.20.1**（Forge 混合端） | **云端实验环境**；上传 jar 记 sha256（云端没有可 pin 的分发 API） |
+| `java` | **17**（出厂 toolchain）· 本地可 25 | 一份 jar 跑两个环境 → 取**下界 17**（Gradle 缓存已有 Temurin 17） |
 | `kotlin` | `2.4.20` | 与 KGP 同版本 |
 | `gradle` | `9.7.1`（wrapper） | 备选 8.14.5 |
-| `paperApi` | `26.2-R0.1-SNAPSHOT` 或对应 release 坐标 | scaffold 时以仓库实际坐标为准 |
+| `spigotApi` | **`1.20.1-R0.1-SNAPSHOT`**（**取代 paperApi**） | 按**下界** Bukkit/Spigot API 编译；**禁用 Paper 专有 API**，否则云端 Arclight `NoClassDefFoundError` |
 | `kotlinxSerialization` | 当前最新稳定 | scaffold 时从 Maven Central 取 |
 | `javaWebsocket` | `1.6.0` | 已验证存在 |
 | `junit` | 5.x 当前稳定 | scaffold 时确认 |
@@ -66,8 +67,10 @@ include(":kit:protocol", ":kit:runtime", ":kit:transport", ":minecraft", ":simul
 规则：
 - **任何版本不得散落在 `build.gradle.kts` 里**；
 - 仓库坐标：Paper 用 `https://repo.papermc.io/repository/maven-public/`；
-- 构建可复现：启用 Gradle **dependency verification / lockfile**，并把 Paper server jar 的
-  sha256 写进 `docs`（不是仓库）。
+  Spigot API 用 `https://hub.spigotmc.org/nexus/content/repositories/snapshots/`；
+- 构建可复现：启用 Gradle **dependency verification / lockfile**，并把**两个环境**的服务端
+  sha256 写进 `docs`（不是仓库）；
+- 决策依据：[`../../../papers/notes/accepted/decision-arclight-cloud-environment.md`](../../../papers/notes/accepted/decision-arclight-cloud-environment.md)。
 
 ---
 

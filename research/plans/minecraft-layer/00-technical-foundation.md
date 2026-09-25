@@ -194,10 +194,11 @@ Minecraft
 | Java（运行时与工具链） | **Java SE 25** | 26.2 的**最低** Java 版本即为 SE 25；低于此无法启动服务器 |
 | Paper | **26.2，build 123**（2026-09-09，STABLE） | [PaperMC Fill v3 API](https://fill.papermc.io/v3/projects/paper/versions/26.2/builds) 实测最新稳定构建 |
 | Paper jar 校验 | 落盘文件名统一为 **`paper-server.jar`**（见 `04` §3.7 / `06`）；**真正的锁是 sha256** `7b7b3b43c009103e1971a0576c26f655a7dd9b56a0a2a4438e352c03a7fecd08`（M0-E，以脚本为准） | 同一次 API 响应；写进 `03` 的可复现清单 |
+| **云端实验环境** | **Arclight 1.20.1（Forge 混合端）** `play.simpfun.cn:15463`（`43.248.103.155`，protocol **763**），面板**最大权限** | 2026-09-15 团队决定：**这台就是实验环境**（不是演示服）→ 需 whitelist / 固定世界 / 构建 sha / 重启纪律。见决策记录 `decision-arclight-cloud-environment.md` |
 | Kotlin | **2.4.20**（2026-09-07 工具版本；2.4 线支持至 2027-12-03） | [Kotlin releases](https://kotlinlang.org/docs/releases.html)；不选 12 月才发布的 2.5.0（EAP/未发布） |
 | Kotlin Gradle Plugin | **2.4.20**（与 Kotlin 同版本） | 同上 |
 | Gradle | **9.7.1**（2026-08-19） | [Gradle releases](https://gradle.org/releases/)；备选 **8.14.5**：若 KGP 2.4.20 的受支持 Gradle 上限不覆盖 9.7，则降到 8.14.5（scaffold 时用官方兼容矩阵确认，见 §H-D2） |
-| JVM target | **25** | 跟随服务器运行时；若 KGP 2.4.20 的 `jvmTarget` 上限低于 25，则目标 **21**（字节码 21 可运行在 JDK 25 上），scaffold 时实测确定 |
+| JVM target | **17（出厂目标）** · 本地 dev loop 可用 25 | **两个环境、一份 jar**：云端 Arclight 1.20.1 跑 **Java 17**，本机 Paper 26.2 跑 Java 25 → 取**下界 17**（Gradle 缓存已有 Temurin 17，无需下载）。见决策记录 `decision-arclight-cloud-environment.md` |
 | 传输 | **HTTP（控制面）+ WebSocket（双向流）** | 本阶段建议的形态；**绑定在 `transport/`**，协议本身与传输解耦 |
 | 协议格式 | **UTF-8 JSON，v0**，信封采用 JSON-RPC 2.0 风格（`type`/`id`/`payload` 形状） | 见 `01-protocol-v0.md`；未来可换 gRPC/IPC/MQ 而不改协议语义 |
 | 构建 | Gradle Kotlin DSL + Version Catalog + **Shadow**（打包第三方依赖） | 见 §D |
@@ -230,7 +231,7 @@ Minecraft
 
 | 依赖 | 作用域 | 为什么需要 | 注意 |
 |---|---|---|---|
-| `io.papermc.paper:paper-api:26.2-…` | `compileOnly` | 编译插件所需的 Bukkit/Paper API | **必须 compileOnly 且禁止打进 jar**——运行期由服务器提供；打包进去会类冲突 |
+| `io.papermc.paper:paper-api:**1.20.1**-R0.1-SNAPSHOT`（或 `org.spigotmc:spigot-api:1.20.1`，看可解析性） | `compileOnly` | 一份 jar 要同时跑云端 Arclight 1.20.1 与本地 Paper **1.20.1** → 按**下界**的 Bukkit API 编译 | 必须 compileOnly、禁止打进 jar；**必须新增守护任务 `verifyBukkitOnly`（禁止 `import io.papermc.*` 与 Paper 专有类）**，否则误用专有类会在 Arclight 上 `NoClassDefFoundError` |
 | `org.jetbrains.kotlin:kotlin-stdlib` | `implementation` | Paper 不提供 Kotlin 运行时 | 必须随插件分发（shadow 打包或 `plugin.yml` 的 `libraries`），二者选一并写进 `03` |
 | `org.jetbrains.kotlinx:kotlinx-serialization-json` | `implementation` | 协议 JSON 编解码；编译期需 `kotlin("plugin.serialization")` | 选它是因为**无反射**、Kotlin 原生、可空字段表达清晰；**不要**依赖服务器内部的 Gson（版本随服务器漂移） |
 | `org.java-websocket:Java-WebSocket:1.6.0` | `implementation` | WS 服务端（双向流） | 关键理由：**不依赖 Netty**，避免与 Paper 的 Netty 冲突；体积极小 |

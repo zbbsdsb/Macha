@@ -2,7 +2,7 @@
 
 > 用途：整段粘给本地 agent。**分两部分，中间必须停下来贴证据**；Part 1 不通过，不要开始 Part 2。
 > 上下文：[`../README.md`](../README.md) ｜ [`../plans/01-server-and-handshake.md`](../plans/01-server-and-handshake.md)（§M0 遗留修正）｜
-> [`../../plans/minecraft-layer/01-protocol-v0.md`](../../plans/minecraft-layer/01-protocol-v0.md)（§3.2 / §9）
+> [`../../../plans/minecraft-layer/01-protocol-v0.md`](../../../plans/minecraft-layer/01-protocol-v0.md)（§3.2 / §5 / §9）
 
 ```text
 # 任务：先修 M0 遗留 A–F，再做 M1（WS 握手）

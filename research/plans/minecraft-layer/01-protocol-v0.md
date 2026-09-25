@@ -233,6 +233,17 @@ Guardrail 决定确定性校验还是概率自洽）。
 绑定地址默认 `127.0.0.1`（不外网暴露）。HTTP 控制面默认 `8765`，WS 数据面默认 `8766`（分端口，
 M1 定案；受依赖限制两条通道不可共用一个端口）。
 
+**连接方向（2026-09-15 新增，配置项 `transport.mode`）**
+
+| 模式 | 谁主动连 | 用途 |
+|---|---|---|
+| `listen`（默认） | Runtime → Layer；Layer 绑定 `127.0.0.1` | 本地 dev loop（不外网暴露） |
+| `dial` | **Layer → Runtime**（`runtime.endpoint`） | 云端/托管环境：宿主面板不会为插件开放任意 TCP 端口，这是唯一可行形态 |
+
+- **两种模式下消息形状完全相同**——这是"协议与传输解耦"的第一次实证。
+- **`dial` 模式强制 token**；跨公网不得明文（TLS 或隧道）。
+- 决策记录：[`../../../papers/notes/accepted/decision-arclight-cloud-environment.md`](../../../papers/notes/accepted/decision-arclight-cloud-environment.md)。
+
 **与 MCP 的关系**：v0 只**借形状**（JSON-RPC 风格、`tools/call` 式的动作调用），不追求 MCP 兼容。
 `docs/research/standards_interop.md` §188 主张 `ActionCall` 收敛到 Tool-Use 形状——本草案与该方向
 一致，但**现在不实现 MCP**。
@@ -280,7 +291,7 @@ M1 定案；受依赖限制两条通道不可共用一个端口）。
 
 | # | 日期 | 消息/字段 | 变更 | 为什么真实环境需要 | Sim 可表达？ | 结论 |
 |---|---|---|---|---|---|---|
-| — | — | — | *（尚无条目——8 步闭环尚未开跑）* | — | — | — |
+| 001 | 2026-09-15 | **传输绑定**（§5，非消息） | 新增 `transport.mode: listen\|dial`（连接方向可配） | 云端实验环境是托管 Arclight 1.20.1，面板不开放任意 TCP 端口 → 必须由 Layer 主动拨出 | 不适用（不涉及消息形状） | **采纳**；消息形状未变，属部署属性 |
 
 **预留（不是变更，不实现）**：路径一（IC 生命周期，见 [`../../paths/01-sepmay-ivy/README.md`](../../paths/01-sepmay-ivy/README.md) §7）
 预期会需要 —— `action_result(pending)` 语义、observation 的节奏/压力事实（玩家等待、是否在战斗中）、

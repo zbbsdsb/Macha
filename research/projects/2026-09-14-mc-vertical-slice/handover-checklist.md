@@ -22,7 +22,11 @@
 - [ ] 插件产物存在：`layers/minecraft/build/libs/minecraft-0.1.0-all.jar`
       （若缺：`cd layers && ./gradlew :minecraft:shadowJar`）
 - [ ] 首次启动需要联网（下载服务器 jar + Paper 的 `libraries/`、`versions/`）
-- [ ] 有 **26.2 客户端**可用（M5–M6 必须真人进服；M0–M4 可用 `:testclient`）
+- [ ] 有 **1.20.1 客户端**可用（云端实验环境是 Arclight 1.20.1；M5–M6 必须真人进服）
+- [ ] 云端实验环境：`play.simpfun.cn:15463`（Arclight 1.20.1，protocol 763），面板**最大权限**（可上传 jar / 改配置 / 重启 / 看日志）
+- [ ] 云端必须用 `transport.mode: dial`（Layer 主动拨出）+ token；本地继续 `listen`
+- [ ] 实验环境确定性：whitelist 开、固定世界/种子、跑批期间无第三方玩家、上传 jar 记 sha256
+- [ ] 构建取**下界**：Spigot API **1.20.1** + **Java 17**（一份 jar 同时跑云端与本地）
 
 ## C. 状态核对（"文档说的" vs "实际是"）
 
