@@ -162,6 +162,12 @@ so the mapping does not live only in conversation.
 | 输出域 Chunk/Thread | IC — the data-organization layer | — | — |
 | actions | `ActionCall` → runtime → Layer → environment | computing domain | Layer |
 
+> **The operator set is named but not specified** — its `Written by` / `Read by` cells are empty because
+> no operator space has ever been defined. A research draft (candidate primitives, target objects,
+> composition, state semantics, and how to test them) lives in
+> [`../research/paths/01-sepmay-ivy/operator-space.md`](../research/paths/01-sepmay-ivy/operator-space.md).
+> It is a **design hypothesis, not ratified**, and it does not unfreeze the SepMay path.
+
 Three properties follow:
 
 1. **Admission, not reception.** The reception domain decides what enters *this agent's* world

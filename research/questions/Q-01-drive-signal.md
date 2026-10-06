@@ -92,4 +92,6 @@ falsification: 任一设计相对 P2-0 无显著差异 → 该设计失败；四
 - 若 H-A 胜出：drive 电平落在"权重"那一路（`architecture.md` §1.5）具体指什么状态？（现在只是**位置**，不是数据）
 - 若 H-B 胜出：LP 能否直接当作**路径一 D1（寿命类分档）**的依据？（还在学 → Chunk 短；饱和 → Chunk 长）— ⏸ 随 Path1 推迟至 V1 之后
 - 若 H-D 胜出：`independence × contingency` 的**预算仲裁**该由谁做？（IC 准入，还是算子层竞争）
+  → 与路径一算子空间的 `D11`（Operator Selection 归谁）是**同一个问题**，见
+  [`../paths/01-sepmay-ivy/operator-space.md`](../paths/01-sepmay-ivy/operator-space.md) §9
 - 若全部失败：预置 ambient 行为的最小形式是什么？（世界很活时它是否足够）

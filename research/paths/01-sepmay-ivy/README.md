@@ -32,7 +32,8 @@ NPC 不该为每一次交互都付整条思维链的代价：交互被组织进�
 >    否则运算域会读到自己未提交的中间态。
 > 3. 因此接收域的职责是**准入（admission）**，不是"接收"：决定什么进入这个 agent 的世界模型、
 >    以什么粒度、带什么不确定性（`window` / `truncated` / `verifiability`）。**接收域不做赋义**——
->    赋义属运算域的算子。
+>    赋义属运算域的算子（"算子"此前只有名字、没有内容；研究草案见 §10 与
+>    [`operator-space.md`](operator-space.md)，**未定，不是基线**）。
 > 4. 正式映射表与四条判定问题见 [`../../../docs/architecture.md`](../../../docs/architecture.md) §1.5。
 
 ## 3. 层级定位（本轮最重要的收敛）
@@ -126,3 +127,23 @@ IC 因此只有一条设计义务——
 - 若 IC 最终只是"分批写内存"，那它就是普通的内存分层，**不值得叫一条路径**。
 - 真正的风险不在 Chunk 怎么划，而在**回流那一步**：它是人格漂移与假记忆的唯一产地。
   若 §4 的三路分离挡不住它，IC 应被**整条放弃**，而不是继续加机制。
+
+## 10. Operator Space（研究草案——不改变本文件的冻结状态）
+
+§2 图里那个 `算子集合（一切即插件）` 此前只有名字、没有内容。现在有一份独立的研究草案：
+[`operator-space.md`](operator-space.md)。要点（**全部是假设，不是基线**）：
+
+- **算子** = 对**信息 / Thread / 内部状态**施加的一次**状态变换**（`State → Operator → State'`），
+  核心问题只有"**什么发生了变化**"；
+- 第一版**最小候选基**（实验假设，**不是 taxonomy**）：`SELECT / RELATE / TRANSFORM / TEST / COMMIT`；
+- 严格分开三样东西：**External Information（获得了什么）/ Operator（做了什么）/ Internal State（留下了什么）**
+  → 因此 **Memory Store ≠ Operator Space**，**Tool Calling ≠ Operator Space**；
+- 高级能力（Reasoning / Reflection / Planning / Regret / Analogy …）**不作为 primitive**；
+  "它们等于算子组合"是**待验证假设**，不是结论；
+- 算子带**状态语义**：`(X, Internal State, Context) → (X', Internal State')` —— 这一步才把它与
+  回流三路（尤其"权重"）真正接上；
+- 第一个可跑实验是**标注实验 E-OS1**：只需一条 transcript，**不需要 Core、不需要改 Layer**。
+
+**本节不解冻路径一**：§6 的三条解冻条件未变；实验若产生"必须由实现回答"的问题，先落
+[`open-decisions.md`](open-decisions.md)，不变成开工理由。新增未定项：**`D7`（准入契约）+ `D8–D11`（算子空间）**，
+与原有 `D1–D6` 合计 **11 条**。

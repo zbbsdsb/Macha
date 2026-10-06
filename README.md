@@ -166,6 +166,7 @@ pytest
 - [Decision: Macha's Intrinsic-Motivation Path (RATIFIED 2026-09-25)](papers/notes/accepted/decision-intrinsic-motivation-path.md)
 - [Minecraft Layer Validation Plan (draft, CN)](research/plans/minecraft-layer-validation-plan.md)
 - [Intrinsic Motivation — Four Build Paths from the 2025 Survey Report (material, CN)](research/paths/02-intrinsic-motivation/report-four-build-paths.md)
+- [Operator Space (research draft, CN)](research/paths/01-sepmay-ivy/operator-space.md)
 - [Development Roadmap](docs/roadmap.md)
 
 ---
