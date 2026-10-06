@@ -3,6 +3,8 @@
 > **STATUS: DRAFT（研究草案）** — 不是已定设计，**不解冻**路径一，也**不修改** [`README.md`](README.md) §4 的已定基线。
 > 本文件把 README §2 图里那个叫"算子集合（一切即插件）"的空盒子第一次填上内容，形式是**可实验、可反驳的候选**，不是 taxonomy。
 > **本轮不写代码**（审计结论：仓内没有 Operator abstraction；见 §12）。
+> **第一阶段的工程实施计划**（沙盒放哪、最小数据模型、算子契约、执行与 trace、三个实验、实现顺序）：
+> [`../../plans/operator-sandbox-plan.md`](../../plans/operator-sandbox-plan.md)（**PLAN ONLY**）。
 > 相关：[`README.md`](README.md) · [`open-decisions.md`](open-decisions.md)（D8–D11）· [`../../README.md`](../../README.md)（路径索引）·
 > [`../../../docs/architecture.md`](../../../docs/architecture.md) §1.5（算子在接收域图里的位置）· 路径二 §1.5（内驱力算子占的那一格）
 
