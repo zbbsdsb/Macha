@@ -1,0 +1,16 @@
+{
+  "attributable_changes": 3,
+  "attributable_steps": 0.75,
+  "intermediate_units": 1,
+  "ops_used": [
+    "COMMIT",
+    "SELECT",
+    "TRANSFORM"
+  ],
+  "providers_used": [
+    "normalize"
+  ],
+  "reuse": null,
+  "total_steps": 4,
+  "unmapped_steps": 0
+}

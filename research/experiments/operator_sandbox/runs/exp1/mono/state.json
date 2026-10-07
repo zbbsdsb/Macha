@@ -1,0 +1,31 @@
+{
+  "entries": [
+    {
+      "committed_from": {
+        "op": "t-A#1",
+        "thread": "t-A"
+      },
+      "key": "events/player_took_item",
+      "unit_id": "u0003",
+      "version": 1
+    }
+  ],
+  "unit_payloads": {
+    "u0003": {
+      "created_by": "t-A#1",
+      "id": "u0003",
+      "logical_ts": 1,
+      "origin": "derived",
+      "payload": {
+        "action": "take",
+        "kind": "event",
+        "object": "chest_contents",
+        "source_text": "玩家拿走了箱子里的东西"
+      },
+      "refs": [
+        "u0002"
+      ]
+    }
+  },
+  "version": 1
+}

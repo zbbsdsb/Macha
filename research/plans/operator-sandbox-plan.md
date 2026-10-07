@@ -127,6 +127,23 @@ docs/architecture.md（§1.5 算子那一行）· src/macha/**（V1，禁改）�
 Macha Core Phase 3 的**候选实现**，届时以**决策记录**（`papers/notes/accepted/decision-*.md`）提升进
 `src/macha/core/`，而不是顺手搬代码。**在此之前，沙盒不是 Core，Core 不依赖沙盒。**
 
+### 2.4 语言与依赖决定（Python / 纯标准库）
+
+| 决定 | 理由 |
+|---|---|
+| **Python 3.10+** | ① 算子在 **Core 侧（运算域）**，而 Core 就是 Python（`src/macha`、`requires-python>=3.10`）；② 若算子层活下来，将来提升进 Core **不用重写**；③ replay / 确定性用标准库最容易做（无 JVM toolchain、无 Gradle、无构建等待） |
+| **不用 Kotlin** | `layers/**` 是 Layer，硬规则 **V3：Layer 零认知**。算子一旦写进 Kotlin，边界就漏了 |
+| **只用标准库**（`dataclasses` / `json` / `pathlib` / `argparse`） | 项目现有依赖里有 pydantic，但**不用它**：`Unit` 只有 6 个字段、没有校验需求。少一个 import 面，沙盒就能在任意干净 Python 里直接跑（不必 `pip install -e .`），这对"第三方按 README 复现"是关键 |
+| **pytest** | 已是 dev 依赖，不新增 |
+| **明确不引入** | 无向量库、无 LLM SDK、无网络、无 async、无 ORM（§9 延后清单） |
+
+**这个选择的唯一真代价**：Python 的 dict/set 迭代顺序与 `PYTHONHASHSEED` 会破坏复现性。对应三条硬纪律
+（已写进 §5/§6/§8）：**迭代一律排序**（按 `id`）· **逻辑时钟而非墙钟** · **replay 测试固定 hash seed**。
+这不是隐患，是实现时必须遵守的约束。
+
+> 一句话：**Python 是"将来能长成 Core"的语言，标准库是"今天不引入任何新依赖"的选择。**
+> 代价是确定性要靠纪律，而不是靠运行时保证。
+
 ---
 
 ## 3. Minimal Data Model
@@ -166,6 +183,16 @@ Macha Core Phase 3 的**候选实现**，届时以**决策记录**（`papers/not
 | 谁能写 | 除 `COMMIT` 外**任何算子的输出都只落在这里** | **只有 `COMMIT`** |
 | 是否进 trace | 是（每个 op 的 before/after 引用） | 是（版本号变化） |
 | 是否可被下一次 SELECT 看见 | 否（Thread 结束即不可见） | 是 |
+
+**组成项的归属（"Thread 需要考虑什么"的逐条落地）**：
+
+| 考虑项 | 落点 | 说明 |
+|---|---|---|
+| `inputs` | `Workspace.inputs` | 本 Thread 准入的外部 unit（只读引用） |
+| `working objects` | `Workspace.units` | 外部 + 派生 unit 同居一处，靠 `origin` 区分 |
+| `intermediate outputs` | `Workspace.units` 里的 `derived` unit | **不另设"中间结果"层**——多一层就多一种状态语义 |
+| `operator trace` | **不进 Workspace** | trace 是跨 Thread 的执行记录，由 runner 统一写（§6）。放进 Workspace 会让"工作集"与"审计日志"混成一个东西 |
+| `status` | `Workspace.status` | 见上表 |
 
 ### 3.3 `State`（跨 Thread 持续存在的信息）
 
@@ -277,6 +304,11 @@ Macha Core Phase 3 的**候选实现**，届时以**决策记录**（`papers/not
 
 - **`why` 字段由场景/程序填写**（自由文本），这是回答"这个行为究竟是哪个算子导致的"的入口。
 - **canonicalization**：键排序 + 稳定序列化 → 求 **trace hash**，作为复现性判据（§8）。
+- **Replay 元数据（v1 用不到，也要留格子）**：`params`（算子参数）· `provider`（用的是哪个确定性实现）·
+  `comparator`（TEST 的比较器名）· 场景级 `seed`（v1 恒为常量）。**v1 没有 model metadata、没有外部依赖**
+  ——这两个格子在 v1 的 trace 里**显式写 `null` / `none`**，而不是省略：将来接模型时是**填格子**，不是改格式。
+- **Replay 的两件事必须分开**：① **确定性校验**（同输入 + 同初始 State + 同程序 → 同 trace hash）→ **v1 支持**；
+  ② **从 trace 重放执行**（拿一条已记录的 trace 重新跑出同样结果）→ **v1 不做**，登记在 §9 延后清单。
 - **不做**：不接 OpenTelemetry、不做面板、不做指标聚合系统（方法规范规则 9：不造第二套工具）。
 - `trace.jsonl` 与末态 `state.json` 一起落 `runs/<exp-id>/`，**提交进 git** 作为 E0/E1 证据。
 
@@ -286,6 +318,41 @@ Macha Core Phase 3 的**候选实现**，届时以**决策记录**（`papers/not
 
 统一场景（沿用 `operator-space.md` §11.1 的叙事，便于两份文档互相印证）：
 **"玩家偷走东西 → 玩家离开 → 很久以后再次出现"**。
+
+### 7.0 三个实验的共同设计（对照组 · 可数指标 · 结论条件）
+
+> **本节为 2026-09-25 补强新增。** 原稿只验证"能不能表达"，缺三样：**没有对照组**（无法回答"非这样分解不可吗"）、
+> **判据是定性的**（"读 trace 觉得没问题"）、**Exp3 的结论不可归因**（成功是场景干的活，失败说不清是算子空间还是编码）。
+> 三样都在这里补齐；§7.1–§7.3 只写各自特有的部分。
+
+#### (a) 每个实验跑两次：算子程序 vs 不透明大步
+
+| 运行 | 是什么 | 用来回答 |
+|---|---|---|
+| **`prog`** | 我们声明的算子程序（2–5 步，有中间产物、有 trace） | 这套算子空间**能不能**表达 |
+| **`mono`** | **同等输入、同等输出，但压成一步**（一个不透明的整体动作：不产出中间产物、不做算子分解） | 分解**是否必要**——即"能不能回答是哪一步造成的改变" |
+
+**判据**：若两种运行**终态相同**，则分解的全部价值都体现在**可归因性**上——`prog` 能指出是哪一步改了
+State / focus，`mono` 指不出来。**若 `prog` 也指不出来，则分解在本任务上是装饰**——§12.1 的头号风险
+（"分解是虚假的"）从此有了探测器，不再靠眼看。
+
+**纪律（否则对照不公平）**：`mono` 是**对照**，不是失败路径，也不是"偷懒版"；它必须由**同一个人、
+在同一时间、用同等严格的程度**写成"不做分解的等价实现"。
+
+#### (b) 三个可数量（每次运行都记，落 `runs/<exp-id>/metrics.json`）
+
+| 指标 | 定义 | 为什么是它 |
+|---|---|---|
+| `attributable_steps` | trace 中**能唯一归因**到某个算子、且该步改变了 State 或 focus 的步数 ÷ 总步数 | 分解价值的直接度量，也是 (a) 的判据来源 |
+| `unmapped_steps` | 标"**都不是**"（无法对应任何候选算子）的步数 | 候选基缺口的第一手数据（对应 `operator-space.md` §11.2 E-OS1 的缺口感） |
+| `reuse` | 本次用的 comparator / provider / 算子集，是否与其它实验**同名同实现** | 防"每个实验各发明一套"（§12.1 R4：场景替代算子） |
+
+**不做**：不打分、不加权、不算"通过率"。三个数是**给人和论文看的原始计数**，不是 KPI。
+
+#### (c) 结论条件
+
+每个实验必须在**预注册里先写死**"什么结果算什么"（方法规范规则 1：先注册后实验）。
+**Exp3 的条件最严**，因为它的失败最可能来自**编码太弱**，而不是**算子空间太弱**——见 §7.3。
 
 ### 7.1 Experiment 1 — Continuity
 
@@ -336,6 +403,12 @@ I3 = ¬X（"玩家没有拿走东西"）
 - **Next design question**：冲突是**状态**（两条并存）还是**算子**（需要一个 join/resolve 算子）？
 - **声明的限制（必须写进场景 README）**：v1 的 negation 判定依赖场景**显式声明** `negates` 边 +
   结构化 payload；**这不是自然语言矛盾检测**。若实验结果被解读为"能处理任意矛盾"，即为误读。
+- **结论条件（预注册时必须先写死；不写就只能算 exploratory / E0）**：
+  1. **同一结论必须在两份独立编码下成立**——编码一：场景显式声明 `negates` 边；编码二：comparator
+     **不看 `negates`**，靠结构化 payload 自行比对。**两份编码结论不一致 → 本次结果为"不确定"**，两边都不得采信；
+  2. 允许写出的最强结论是：**"在声明式编码下，算子空间能 / 不能保留冲突"**——**不得**升级为"能处理任意矛盾"；
+  3. 只有 `unmapped_steps > 0` 且**集中在冲突处理步骤上**，才算"缺一个 primitive"的可接受证据；
+     **仅"终态只剩一条"不算证据**——那可能只是编码太弱。
 
 ---
 
@@ -346,7 +419,9 @@ I3 = ¬X（"玩家没有拿走东西"）
 | **单元** | 每个算子的纯函数行为 | SELECT 不产生 unit；RELATE/TEST/TRANSFORM 产出 `derived` 且 `refs` 可对回；COMMIT 之外无 State 写入；缺参数/未知 provider → 硬失败 |
 | **边界守卫** | import 面 | 算子模块不得 import State 写入；代码不得 import `macha.*`（`src/macha`）与任何 Kotlin/Gradle 产物；不得引入第三方依赖 |
 | **集成** | 三个实验各一条 | 断言 canonical trace 的**关键子序列** + 末态 `state.json` 的**声明式断言**（不比对整份文件，避免脆断言） |
-| **Replay / 确定性** | 同输入 + 同初始 State + 同程序 → 同结果 | 两次运行的 `trace hash` 相同；固定 `PYTHONHASHSEED`；逻辑时钟非墙钟；迭代一律排序 |
+| **对照运行** | 每个实验的 `prog` 与 `mono` 两次运行（§7.0a） | 两次终态一致；`attributable_steps` 能从 trace 算出；`mono` 的 trace 里**不存在**中间归因 |
+| **可数指标** | `attributable_steps` / `unmapped_steps` / `reuse`（§7.0b） | 三个数能由 trace 与场景元数据**机械算出**（不靠人读），落 `metrics.json` |
+| **Replay / 确定性**（**排第二**） | 同输入 + 同初始 State + 同程序 → 同结果 | 两次运行的 `trace hash` 相同；固定 `PYTHONHASHSEED`；逻辑时钟非墙钟；迭代一律排序。**这是赶工时第一个可以砍的项——砍掉不影响三个实验的结论**（见 §12.2） |
 | **手工验收（E0）** | 一条命令产出证据 | `python research/experiments/operator_sandbox/run_experiment.py exp1` → `runs/exp1/{trace.jsonl,state.json}` |
 | **不做** | CI | 仓内无 `.github/`；本轮**不新建**（预算上限）。命令写进 sandbox README，人工执行 |
 
@@ -368,6 +443,7 @@ Complex Memory Hierarchy · Operator Learning · Operator Discovery**。
 **本计划另外补上（诚实补充，都有仓内依据）**：
 
 - 不做 **DSL / grammar / 配置文件格式**（§5）；
+- 不做**从 trace 重放执行**（v1 只做确定性校验，见 §6）；
 - 不做**分支与循环**（§5）；
 - 不做**重要性/置信度打分**（§3.1：那属于"什么值得记住"，而 COMMIT 不决定它）；
 - 不做 **CI / 打包 / 发布**（§1.1 无 CI；`pyproject.toml` 不动）；
@@ -385,7 +461,7 @@ Complex Memory Hierarchy · Operator Learning · Operator Discovery**。
 
 | Step | 内容 | 产出 / 判据 | 预估 |
 |---|---|---|---|
-| **0** | 评审本计划；注册 **`Q-02`**（Gate 1 + Gate 2 预注册，含三个实验的预测与 falsifier） | `research/questions/Q-02-*.md`，`prereg:` 有 commit hash | 0.5 天 |
+| **0** | 评审本计划；**按 U8 二选一走哪条腿**（见 §10.1） | 研究腿 → `research/questions/Q-02-*.md`（`prereg:` 有 commit hash）；工程腿 → 无 Question，结果只到 E0 | 0.5 天 |
 | **1** | `model.py` + `workspace.py` + `state.py` + `trace.py`（spine）+ 单元测试 | 能 open/seed/close 一个空 Thread；State append + version；trace 可读 | 0.5–1 天 |
 | **2** | Operator 协议 + registry + 线性 runner + trace 接线 + 写权限守卫测试 | 一个假算子能跑通并被记录 | 0.5 天 |
 | **3** | `SELECT` / `TRANSFORM`（provider seam）/ `COMMIT` + **Exp1** 场景 | `runs/exp1/` 落地；Exp1 的四个判据可判 | 1 天 |
@@ -395,7 +471,33 @@ Complex Memory Hierarchy · Operator Learning · Operator Discovery**。
 | **7** | 复盘写回：`operator-space.md` §3/§11.2（哪些算子被用到、哪些是装饰）、`open-decisions.md`（D8/D9/D10/D11 的答案或更新）、必要时 `research/failures/` | 文档更新 diff | 0.5 天 |
 | **8** | 决策点：**继续 / 停止**（若 Exp3 失败且诊断为"算子空间不足"，按路径惯例**如实记录并停止**，不缝补） | 决策记录或失败记录 | — |
 
-**合计：约 5–6 人日**（不含 Step 0 的评审）。全部可在不碰 Core/Layer 的前提下完成。
+**合计：约 6–7 人日**（原为 5–6；新增的 `mono` 对照组与 `metrics.json` 各占约半天），不含 Step 0 的评审。
+全部可在不碰 Core/Layer 的前提下完成。
+
+### 10.1 Step 0 的两条腿（U8 未定，但计划对两条腿都成立）
+
+| | **研究腿（推荐）** | **工程腿** |
+|---|---|---|
+| 前提 | 三个实验要产生**可定级的证据**（E1；有 `mono` 对照后可能够到 E2） | 只想知道"这套东西能不能跑" |
+| Step 0 产出 | `research/questions/Q-02-*.md`：机制 + ≥2 竞争假设 + 预测 + falsifier + `prereg:` commit hash | 无 Question；在 sandbox README 写明验收条件（三个实验各自的可观测判据）即可 |
+| 结果能说什么 | "在某条件下观察到 X"（E1）；有对照后**可能够到 E2** | 只能说"能跑通"（E0）；**不得**写成研究结论，不得进 `papers/notes/` |
+| 失败怎么办 | 按 F 类归档进 `research/failures/` | README 记一条备注即可 |
+| 代价 | 多 0.5 天写预注册 | 省 0.5 天，但结论不可用 |
+
+**推荐走研究腿**：`mono` 对照（§7.0a）已经把对照条件准备好了，多花半天把 E0 变成 E1/E2，
+是这笔投入里性价比最高的一步。
+
+### 10.2 预算与止损闸门（硬线，到点就停）
+
+| 闸门 | 触发条件 | 动作 |
+|---|---|---|
+| **G1** | Step 3 超过 **2 天**仍未产出第一条真实 trace（`runs/exp1/trace.jsonl`） | **停止并报告卡在哪一步**；**不得**用"再加一个机制"绕过 |
+| **G2** | 任一 Step 的实际耗时达到预估的 **2 倍** | 停止、重估范围：优先砍 §12.2 标为"排第二"的项，**不要**砍实验 |
+| **G3** | 累计达到预估上限（**7 人日**）而 Step 5 未完成 | 停止；只交付"已完成到哪一步 + 原始 trace"，**不交付半成品结论** |
+| **G4** | 产生改 `src/macha/**` 或 `layers/**` 的冲动 | 记为**协议/Core 问题**写进 `open-decisions.md`，**本轮不做** |
+
+**为什么要有 G1–G3**：这条路径的历史症状是"连续数轮都在定义概念，没有任何一项被现实检验"
+（`README.md` §6）。止损线的作用是**逼出第一条 trace**，而不是保护预算。
 
 ---
 
@@ -439,14 +541,69 @@ Complex Memory Hierarchy · Operator Learning · Operator Discovery**。
 | 有没有引入没有实验依据的字段？ | `logical_ts` 与 `why` 是为 trace/replay 服务；`refs` 为"派生物可对回"服务；其余字段都在三个实验里被实际使用。**没有 embedding / confidence / importance。** |
 | 有没有一项工程工作其实属于未来阶段？ | 有：`run_experiment.py` 的 CLI 化与 `runs/` 归档严格说属于 Step 6；但它把 E0 证据变成可复跑的东西，值得保留。**CI、打包、SDK 化**全部推迟（§9）。 |
 | **五个 primitive 是否真的都需要第一版？** | **不是五个都需要，答案是三加二**：Exp1 只用 `SELECT/TRANSFORM/COMMIT`；`RELATE`/`TEST` 到 Exp2/Exp3 才出现。因此第一版实现顺序是 **3 → 5**（§10 Step 3/4），并且 **`RELATE` 的存在性本身是风险**（U2）：若 Exp2/Exp3 能用二元 `TEST` + `TRANSFORM` 表达，`RELATE` 应当被**删除**，而不是保留以凑五个。 |
+| **有没有排错主次的工程项？** | **有：Replay 的确定性校验属于"排第二"的事。** 它不是三个实验得出结论的**必要条件**——砍掉它，三个实验照样能判（§8 已标注）。它值得做（复现性纪律），但**不得**与"临时/持久边界""可归因性"并列；赶工时第一个砍它。 |
 
 ---
 
-## 13. Recommended First Commit（如果只允许一个最小 commit）
+## 13. Expected Effects（执行完之后会得到什么）
+
+> 这一节的作用是**先写清收益与天花板**，避免把一次沙盒实验读成"Macha 会思考了"。
+
+### 13.1 磁盘上多出什么
+
+| 产物 | 内容 |
+|---|---|
+| `research/experiments/operator_sandbox/` | 约 10 个 Python 文件（纯标准库）+ README（含重跑命令） |
+| 该目录 `runs/exp1\|exp2\|exp3/` | 每个实验**两份**运行（`prog` / `mono`）：各一份 `trace.jsonl` + `state.json` + `metrics.json`，**提交进 git**：可逐行审查的执行轨迹 |
+| `research/questions/Q-02-*.md` | 带预注册（机制 + 预测 + falsifier）的问题文件 |
+| 文档更新 | `operator-space.md` §3/§11.2 复盘 · `open-decisions.md`（D8–D11 的答案或更新）· 必要时 `research/failures/` |
+
+### 13.2 哪些问题从"讨论"变成"有数据"
+
+| 计划要检验的问题 | 执行后拿到的东西 |
+|---|---|
+| 五个 primitive 是否足以表达基础认知过程 | 三条 trace：每步都能对应某个算子，或明确标"**都不是**"——E-OS1 缺口感的第一份真实数据 |
+| 不同算子如何组合 | 三个实验各自的实际算子序列（以及"只用三个够不够"） |
+| **分解是否必要**（"非这样分解不可吗"） | `prog` vs `mono` 对照（§7.0a）+ `attributable_steps`：**分解的价值 = 可归因性**，不再靠眼看 |
+| 算子的输入/输出/状态语义 | 一次可复现的执行：同信息、同算子、不同 `State` → 输出是否不同 |
+| 哪些属于 Operator、哪些属于 State/Memory | 边界守卫测试 + `output_refs`：**只有 COMMIT 产生 State 变化**，其余全是 Thread-local |
+| 是否存在无法表达的案例 | Exp3 的结果：冲突被**保留**，还是塌缩成"只会 summarization" |
+| 顺带 | **D8**（作用对象是否统一）· **D9**（COMMIT 是否就是"回流"——沙盒允许中途 COMMIT，IC 只允许关闭时回流，Exp1/Exp2 会暴露哪种语义是必须的）· **D10**（RELATE 是否冗余）· **D11**（谁触发算子）的部分证据 |
+
+### 13.3 天花板（必须说清，否则一定会被误读）
+
+- **证据等级只到 E0/E1**：单案例观察 + 有 provenance + 可重跑命令。它**只能**支持"可做""在某条件下观察到 X"，
+  **永远不能**支持"算子空间完备"。要 E2 需要对照实验，要 E3 需要第二实现或跨环境。
+- **不产生任何宿主可见的能力**：NPC 仍然不会说话、不会记事、不会自主行动。这是**实验台，不是功能**。
+- **不解冻 SepMay 路径**（解冻条件三条未变）· **不碰 Core/Layer** · **不阻塞 MC 主线**。
+- 成本约 **6–7 人日**（含 `mono` 对照与 `metrics.json`）；不新建顶层目录、不加依赖、不建 CI。
+
+### 13.4 三种可能结局，以及各自意味着什么
+
+| 结局 | 含义 | 后续动作 |
+|---|---|---|
+| **A. Exp1/Exp2 通过，且 `RELATE` 被判冗余** | 最小可用集是 `SELECT/TRANSFORM/TEST/COMMIT` | **删掉 RELATE**（这是发现，不是失败）；更新 D10 |
+| **B. Exp3 表达不出冲突** | "五个 primitive 不足"的第一份证据——**本计划最有价值的可能结果** | 记 `research/failures/`，更新 D10；讨论"冲突是新 primitive 还是 State 语义" |
+| **C. 改变全由 TRANSFORM 完成，RELATE/TEST 是装饰** | **算子分解在本任务上是虚假的** | §7.0a 的 `mono` 对照 + `attributable_steps` 就是它的**探测器**：若 `prog` 指不出"是哪一步造成的改变"，它与 `mono` 没有区别 → 重估整个候选基（比"跑通"值钱），不要用"再调一版"掩盖它 |
+
+### 13.5 长期效果与分岔
+
+把 `architecture.md` §1.5 里那个 `Written by` / `Read by` 全是 `—` 的算子空格子，变成
+**一个能被反驳、能被扩展、能被第三方复现的研究对象**——并给出两条分岔：
+
+```text
+活过两轮实验  → 以决策记录提升为 Macha Core 运算域的候选实现（Phase 3）
+被现实否掉    → 按路径惯例整条归档，不缝补（README §9 的反对意见）
+```
+
+---
+
+## 14. Recommended First Commit（如果只允许一个最小 commit）
 
 > **实现 Step 1 + Step 2 + Step 3 的走通骨架**：`model.py` / `workspace.py` / `state.py` / `trace.py` /
 > `operators.py`（**只含 `SELECT` / `TRANSFORM` / `COMMIT`**）/ `program.py` / `scenarios.py`（**只含 Exp1**）+
-> 三条测试（单算子、边界守卫、Exp1 集成）+ `runs/exp1/` 的一条真实 trace（提交进 git）。
+> 三条测试（单算子、边界守卫、Exp1 集成）+ **`runs/exp1/` 的两份真实运行**（`prog` 与对照 `mono`，
+> 各带 `trace.jsonl` + `state.json` + `metrics.json`，提交进 git）。
 
 **为什么是它，而不是更小的"只写数据模型"**：
 
@@ -455,10 +612,11 @@ Complex Memory Hierarchy · Operator Learning · Operator Discovery**。
    （`operator-space.md` §1.2：算子至今只有名字没有内容）。
 2. **它一次性暴露两个最难回填的决定**：**临时/持久边界**（谁有写入权）与 **id/版本语义**。
    这两样错了，上面每个算子都要重写；这两样对了，`RELATE`/`TEST` 只是各加一个纯函数。
-3. **它同时就是第一个实验**（Exp1 = Continuity），所以它能回答一个真问题，而不只是"能编译"。
-4. **它是可评审的**：~7 个文件、三个纯函数算子、一条 trace，一个人一次能看完。
+3. **它同时就是第一个实验**（Exp1 = Continuity），而且带上 `mono` 对照后**第一次能回答"分解是否必要"**
+   ——不只是"能编译"。
+4. **它是可评审的**：~7 个文件、三个纯函数算子、两条 trace，一个人一次能看完。
 
-**明确不在首 commit 里**：`RELATE`、`TEST`、Exp2、Exp3、replay 测试套件、任何 CLI 美化、
+**明确不在首 commit 里**：`RELATE`、`TEST`、Exp2、Exp3、replay 测试套件（§12.2 标为"排第二"）、任何 CLI 美化、
 任何 `src/macha` 或 `layers` 改动、任何新依赖。
 
 ---

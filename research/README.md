@@ -19,8 +19,10 @@ deleted, rewritten, or proven wrong without ceremony. Nothing here is a delivera
     ([index](plans/minecraft-layer/README.md)): stack lock, file-level project structure, protocol v0,
     observation/event set, build & boundary rules. Plan only; no code yet.
   - `plans/operator-sandbox-plan.md` — **Operator Sandbox 第一阶段实施计划**（SepMay 算子空间）：
-    仓库审计、位置决定（为何落在 `experiments/`）、最小数据模型、五个算子契约、执行与 trace 模型、
-    三个实验（Continuity / Reinterpretation / Contradiction）、测试策略、延后清单、实现顺序与首 commit。
+    仓库审计、位置决定（为何落在 `experiments/`）、**语言与依赖决定（Python / 纯标准库）**、最小数据模型、
+    五个算子契约、执行与 trace 模型、三个实验（Continuity / Reinterpretation / Contradiction，**含 `prog` vs `mono`
+    对照组与三个可数指标**）、测试策略、延后清单、实现顺序（**含 Step 0 两条腿与 G1–G4 止损闸门**）、
+    **预期效果与天花板（E0/E1，不产生宿主可见能力）**、首 commit。
     **PLAN ONLY — 未写代码**；上游设计见 `paths/01-sepmay-ivy/operator-space.md`。
 - `projects/` — **execution** projects (dated): what to do, in what order, with a handover checklist.
   Design/spec docs stay in `plans/`; a project folder only answers "how do we get there".
