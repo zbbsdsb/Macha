@@ -1,69 +1,81 @@
-# Site
+# Macha 官网（`site/`）
 
-Deployment source for the Macha website / paper showcase (statically hostable).
+Macha 官网的部署源。零构建、零 CDN、零运行时依赖——打开任意 `.html` 即可运行。
 
-**Repo-internal on purpose.** The paper is the product, so the site's lifecycle is tied
-to `papers/` and `announcements/`; keeping it in this repository makes "update the paper,
-then the site" a single change.
+新版把叙事换成**关系缺口**，视觉换成克制冷静的近单色风格，取代了旧版的三维漫游站点。视觉与信息架构的完整说明见 [`DESIGN.md`](DESIGN.md)；上游依据是[重构调研报告](../research/macha-site-refactor-report/macha-site-refactor-report.html)。
 
 ---
 
-## What it is
+## 页面
 
-A single continuous 3D space. The visitor **is** a camera that travels between six
-scenes; scene changes are gradient transitions (fog, light, exposure, geometry) rather
-than page loads.
+| 文件 | 页面 | 类型 | 状态 |
+|---|---|---|---|
+| `index.html` | 愿景 | 主序列 | 有内容 |
+| `sepmay.html` | SEPMAY 路径 | 主序列 | 有内容 |
+| `architecture.html` | 架构与契约 | 技术细节 | 占位（结构已定） |
+| `operators.html` | 算子空间 | 技术细节 | 占位（结构已定） |
+| `drive.html` | 内驱力与长期张力 | 技术细节 | 占位（结构已定） |
+| `evaluation.html` | 评测与一致性 | 技术细节 | 占位（结构已定） |
+| `experiments.html` | 实验赛道 | 技术细节 | 占位（结构已定） |
+| `glossary.html` | 术语表 | 辅助 | 初稿（口径待统一） |
+| `about.html` | 关于与参与 | 辅助 | 有内容（A04/A05 待补） |
 
-| # | Scene | Copy |
-|---|---|---|
-| 01 | Origin — Design Goals | ✅ written |
-| 02 | Horizon — Industry Goals & Vision | ✅ written |
-| 03 | Core — Core Architecture | ⬜ staged, copy pending |
-| 04 | Descent — Deep Dive | ⬜ staged, copy pending |
-| 05 | Field — Application Plan | ⬜ staged, copy pending |
-| 06 | Archive — Glossary | ⬜ staged, copy pending |
+顶部导航只有四项：愿景、SEPMAY、技术、论文。五个技术细节页由页内索引互链；页脚列出全部九页。
 
-Full design rationale: [`DESIGN.md`](DESIGN.md).
+---
 
-## Run locally
+## 本地预览
 
-No build step — it is plain ESM over an import map.
+任选一种：
 
 ```bash
-cd site
+# 1) 直接打开文件
+start index.html          # Windows
+open  index.html          # macOS
+
+# 2) 起一个本地静态服务器（推荐，行为更接近线上）
 python -m http.server 8000
-# open http://localhost:8000
+# 然后访问 http://localhost:8000/
 ```
 
-Any static server works. Three.js is loaded from jsDelivr, so the first load needs
-network access.
+---
 
-## Deploy
+## 部署
 
-GitHub Pages → *Settings → Pages → Deploy from branch* → folder `/site`.
+`site/` 是纯静态目录，可直接托管在任意静态主机（GitHub Pages、Cloudflare Pages、Netlify、任意对象存储 + CDN）。没有构建步骤，把目录内容原样发布即可。入口文件是 `index.html`。
 
-## Editing copy
+---
 
-- **Prose** lives in `index.html` (English is the no-JS / crawler-facing source of truth).
-- **Translations and strings** live in `assets/js/content.js` (`STRINGS`).
-- **Structure chips** on the pending scenes live in `STACKS` in the same file.
+## 编辑指南
 
-Filling a pending scene = edit `content.js` + drop the `panel--pending` block from that
-`<article>` in `index.html`. No 3D code changes.
+**改文案**：直接改对应 `.html` 里的正文。文案板块的编号与状态清单在 [`DESIGN.md` §5](DESIGN.md)；需要项目作者定调的六块是 H07、H09、H11、A04、A05、G02。
 
-## Editing a scene's look
+**改样式**：只改 [`assets/css/site.css`](assets/css/site.css) 顶部的设计令牌，不要在页面里写内联样式。令牌含义见 [`DESIGN.md` §3](DESIGN.md)。
 
-Each scene is one module under `assets/js/scenes/`, exporting:
+**加页面**：复制一个技术细节页作为模板，改 `title` / `meta description` / hero，并在**所有页面的页脚**与相关页的 `.page-index` 里补上链接。
 
-```js
-{ group, focus, env, update(dt, t, reveal), dispose() }
-```
+**技术细节页的模板**：每页必须回答三个问题——这页将回答什么问题（hero 的 `.hero__lede`）、它将包含哪些章节（结构大纲 `<ol>`）、相关文档在哪里（`.doc-links`，指向仓库真实路径）。占位不等于空页。
 
-`env` is interpolated between neighbours every frame — that is the entire transition
-mechanism. Register new scenes in `assets/js/scenes/index.js`.
+---
 
-## Flags
+## 依赖
 
-- `?nofx` — disable bloom post-processing.
-- `prefers-reduced-motion` — disables parallax, drift and scene rotation.
-- `L` — toggle EN / 中文.
+无。字体（`Instrument Sans` / `Geist Mono`，Latin 部分）自托管在 `assets/fonts/`，中文走系统字体回退。
+
+---
+
+## 静态校验
+
+改完后自查（无需浏览器）：
+
+- 所有 `href="./*.html"` 指向的文件存在。
+- `assets/css/site.css` 里的字体路径 `url('../fonts/*')` 指向的文件存在。
+- 无遗留三维资源引用。
+- 每个技术细节页都含 `.page-index` 与至少一条 `.doc-links`。
+- 每页 `title` 与 `meta description` 非空。
+
+---
+
+## 许可
+
+站点内容随仓库以 [MIT License](../LICENSE) 发布；文案改写自仓库文档，随项目演进而更新。

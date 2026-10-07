@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEPMAY 路径 — Macha</title>
+<meta name="description" content="SEPMAY（路径一 / IVY 生命周期）把交互组织进有明确生死的生命周期单元，单元内只在局部上下文里计算，关闭时把结果回流到内部信息源。本页同时公开它此刻被冻结的位置：11 条未定决策与三条解冻条件。">
+<link rel="stylesheet" href="./assets/css/site.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="./index.html">
+      <span class="brand__mark">Macha</span>
+      <span class="brand__tag">认知标准骨架</span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      <ul>
+        <li><a href="./index.html">愿景</a></li>
+        <li><a href="./sepmay.html" aria-current="page">SEPMAY</a></li>
+        <li><a href="./architecture.html">技术</a></li>
+        <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文</a></li>
+        <li><a class="nav-ext" href="https://github.com/zbbsdsb/Macha">GitHub ↗</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="wrap">
+      <p class="kicker">Macha · 路径一 · SepMay / IVY 生命周期</p>
+      <h1>SEPMAY 路径</h1>
+      <p class="hero__lede">NPC 不该为每一次交互都付整条思维链的代价。</p>
+      <div class="hero__meta">
+        <span>状态 · PENDING（已冻结）</span>
+        <span>外部评分 · 6.5 / 10</span>
+        <span>层级 · Core 侧（Phase 3）</span>
+        <span>收敛 · 2026-09-14</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="problem">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">一 · 它解决什么问题</span>
+        <h2>为交互赋予生死</h2>
+      </div>
+
+      <p>交互被组织进有明确生死的生命周期单元，单元内只在局部上下文里计算，关闭时把结果回流到内部信息源。这样一次交互的代价不再等于整条思维链，而是等于它所在单元的预算。</p>
+
+      <p>它把系统划成三层，互不越界。约束是单向的：IC 不决定 NPC 怎么想，但 IC 决定 NPC 能想起什么粒度。因此 IC 只有一条设计义务——不得产生「人不可能有的记忆形态」，例如精确复述三小时前的每一句话，或同一件事存在两套互不知情的记忆。</p>
+
+      <p>这条义务把「忘，还是记得太具体」从人格问题降级为数据层约束：测试里出现「记得比人多」或「两套记忆互不知道」，一律算 IC 的 bug，与人格设定无关。</p>
+    </div>
+  </section>
+
+  <section id="structure">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">二 · 结构</span>
+        <h2>接收域 · 运算域 · 输出域</h2>
+      </div>
+
+      <pre><code>接收域                    运算域                     输出域
+外部信息源 ┐                                    ┌ Ive Chunk → Ive Thread …
+           ├→ 算子集合（一切即插件）→ ───────────┤ Ive Chunk → Ive Thread …
+内部信息源 ┘                                    └
+     ↑                                              │
+     └──────────── 数据回流 ←────────────────────────┘</code></pre>
+
+      <p>图的读法有三条。第一，回流不改写外部信息源：被改写的只有「他自己」——事实 append-only，内部状态才可提交更新。第二，内部信息源同时是运算域的输入与回流的目标，因此图上有一个环，这个环必须由 IC 的关闭时点（两阶段提交）做闸门，否则运算域会读到自己未提交的中间态。第三，因此接收域的职责是准入，不是接收。</p>
+
+      <div class="callout">
+        <span class="callout__label">准入，不是接收</span>
+        <p>接收域决定什么进入这个 agent 的世界模型、以什么粒度、带什么不确定性（<code>window</code> / <code>truncated</code> / <code>verifiability</code>）。它的产品是「有门的事实」，而不是世界的拷贝。接收域不做赋义——赋义属于运算域的算子。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="layers">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">三 · 层级定位</span>
+        <h2>三层，互不越界</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table class="stackable">
+          <caption>三层各自管什么</caption>
+          <thead>
+            <tr><th scope="col">层</th><th scope="col">管什么</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">认知层</th><td data-label="管什么">NPC 怎么想、记什么、有无人格、一致不一致</td></tr>
+            <tr><th scope="row">数据组织层 = IC<br>（Chunk / Thread）</th><td data-label="管什么">谁和谁归一组、这组数据活多久、以什么粒度被写出与读入</td></tr>
+            <tr><th scope="row">环境层（Layer）</th><td data-label="管什么">Minecraft 里发生了什么</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>重要性、情绪、关系亲密度与戏剧价值被明确排除在特性集之外，因为它们需要判断，属于认知层的输出。认知层可以贴标签，但调度侧不得自行计算。</p>
+    </div>
+  </section>
+
+  <section id="baseline">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">四 · 已定基线</span>
+        <h2>可直接作为实现依据的条目</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table class="stackable">
+          <caption>路径一已定项与基线</caption>
+          <thead>
+            <tr><th scope="col">条目</th><th scope="col">状态</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Ive Chunk = 管理一组具有相同特性的 Thread 的容器</th><td data-label="状态">已定</td></tr>
+            <tr><th scope="row">Thread 不跨 Chunk</th><td data-label="状态">已定</td></tr>
+            <tr><th scope="row">Chunk 不嵌套（只一层）</th><td data-label="状态">已定</td></tr>
+            <tr><th scope="row">Chunk 关闭时数据回流</th><td data-label="状态">已定</td></tr>
+            <tr><th scope="row">回流分三路：事实件 / 陈述件（他自己的版本）/ 权重</th><td data-label="状态">基线</td></tr>
+            <tr><th scope="row">两阶段：Chunk 内只写暂存，关闭时一次性提交</th><td data-label="状态">基线</td></tr>
+            <tr><th scope="row">中断 ≠ 关闭：中断只提交事实件，不产生「他的版本」</th><td data-label="状态">基线</td></tr>
+            <tr><th scope="row">回流目标是单一内部信息源；多视角是读法不是写法</th><td data-label="状态">基线</td></tr>
+            <tr><th scope="row">IC 不判断重要性、不定义人格、不解释情境</th><td data-label="状态">已定</td></tr>
+            <tr><th scope="row">深度差异由情境决定，可被感知但须归因于角色状态，不得在同一节拍内翻转</th><td data-label="状态">已定</td></tr>
+            <tr><th scope="row">特性集候选：参与者集 / 活动类 / 寿命类 / 资源类（须正交、宜少）</th><td data-label="状态">基线</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="status">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">五 · 当前状态</span>
+        <h2>这条路径此刻是冻结的</h2>
+      </div>
+
+      <p><span class="tag tag--warn">PENDING · 已冻结</span> <span class="tag">外部评分 6.5 / 10</span></p>
+
+      <p>冻结原因写得很直接：连续数轮都在定义概念，没有任何一项被现实检验。处置是——IC 现在冻结，不投入实现；当前唯一在推进的是 Layer（Phase 1–2）。等 Layer 的八步闭环跑通、协议有了实测，再回头用现实检验 IC，而不是继续在纸上分辨。</p>
+
+      <h3>解冻条件（三条满足任一）</h3>
+      <ul class="rowlist">
+        <li><span>条件一</span><span>Layer 的八步闭环完成。</span></li>
+        <li><span>条件二</span><span>出现一个真实场景，逼着回答「寿命类怎么分档」。</span></li>
+        <li><span>条件三</span><span>愿意为 IC 写一个最小可证伪版本。</span></li>
+      </ul>
+
+      <div class="callout">
+        <span class="callout__label">诚实状态</span>
+        <p>这一页的价值不在于把 SEPMAY 讲成成果，而在于公开它此刻的位置。招募材料里那句「认知核心：尚未构建 —— Phase 3」被直接印在页面上，事后复盘认为它是全文档最有效的一处设计：对的人是加分，错的人是筛掉。SEPMAY 页沿用同一种做法。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="open">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">六 · 未定决策</span>
+        <h2>11 条未定项，明确不阻塞任何实现</h2>
+      </div>
+
+      <p>三条硬规矩：未定项不阻塞任何实现；未定项若被临时猜一个，必须显式标注为临时假设并写明作废条件；每条都写了「何时必须回答」，到点仍未回答，则该路径不得解冻。</p>
+
+      <div class="table-wrap">
+        <table class="stackable">
+          <caption>路径一的十一条未定决策</caption>
+          <thead>
+            <tr><th scope="col">编号</th><th scope="col">问题</th><th scope="col">何时必须回答</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">D1</th><td data-label="问题">寿命类怎么分档 —— 唯一卡住「Chunk 关闭时机」的口子</td><td data-label="何时">路径解冻前</td></tr>
+            <tr><th scope="row">D2</th><td data-label="问题">分组标准由谁声明、怎么声明</td><td data-label="何时">路径解冻时（与 D1 同时）</td></tr>
+            <tr><th scope="row">D3</th><td data-label="问题">「语义调度器」是否成立（本轮立场：反对把语义放进调度器）</td><td data-label="何时">路径解冻前</td></tr>
+            <tr><th scope="row">D4</th><td data-label="问题">权重更新的语义 —— 人格漂移与假记忆的唯一产地</td><td data-label="何时">写最小可证伪版本之前</td></tr>
+            <tr><th scope="row">D5</th><td data-label="问题">路径二、路径三是什么（已部分回答：路径二 = 内驱力）</td><td data-label="何时">用户裁定</td></tr>
+            <tr><th scope="row">D6</th><td data-label="问题">与 Layer 协议的关系（映射已定，协议预留仍非阻塞）</td><td data-label="何时">Layer 八步闭环之后</td></tr>
+            <tr><th scope="row">D7</th><td data-label="问题">接收域「准入」组件的名字与最小契约（暂名 Intake）</td><td data-label="何时">写 Macha Core（Phase 3）之前</td></tr>
+            <tr><th scope="row">D8</th><td data-label="问题">Operator 的作用对象是否必须统一（Information / Thread / State）</td><td data-label="何时">E-OS1 标注实验之后</td></tr>
+            <tr><th scope="row">D9</th><td data-label="问题">COMMIT 与「回流」是不是一回事（与 D4 强耦合）</td><td data-label="何时">与 D4 同时</td></tr>
+            <tr><th scope="row">D10</th><td data-label="问题">候选基是否可分 / 是否完备</td><td data-label="何时">E-OS1 跑完之后</td></tr>
+            <tr><th scope="row">D11</th><td data-label="问题">Operator Selection 归谁（与 Q-01 的「预算仲裁」是同一问题）</td><td data-label="何时">不早于 E-OS1 / E-OS2</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>D1 与 D4 是这条路径真正的两道门。D9 与 D4 强耦合——COMMIT 的时点决定「两阶段提交」的闸门画在哪一层，D4 不定，D9 无法定。D8、D10、D11 都要求先在现实里跑一次标注，不构成解冻理由。</p>
+    </div>
+  </section>
+
+  <section id="layer-relation">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">七 · 与 Layer 的关系</span>
+        <h2>它不改协议，也不阻塞实现</h2>
+      </div>
+
+      <p>Layer ↔ 接收域 ↔ plugin 的正式映射已经定了：Layer 是外部信息源的生产者，不在接收域内，也读写不了内部信息源；意图流（<code>ActionCall</code>）不经过接收域，只有事实回流经过；plugin 不是 Layer，它是该 Layer 在一个环境内的部署载体，因此不持跨会话状态、重启不丢记忆、不含任何「需要历史」的逻辑。</p>
+
+      <p>仍然只是预留、不实现也不冻结的，是 IC 预期会让协议多出来的三样东西：<code>action_result(pending)</code> 语义、observation 的节奏与压力事实、action 的 deadline / budget。它们登记在协议 v0 的预留说明里，等试跑实测后再定。</p>
+
+      <h3>反对意见，留给未来的自己</h3>
+      <p>若 IC 最终只是「分批写内存」，那它就是普通的内存分层，不值得叫一条路径。真正的风险不在 Chunk 怎么划，而在回流那一步：它是人格漂移与假记忆的唯一产地。若回流三路分离挡不住它，IC 应被整条放弃，而不是继续加机制。</p>
+    </div>
+  </section>
+
+  <section id="next">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">八 · 继续读</span>
+        <h2>相关页面与原始文档</h2>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>算子空间</h3>
+          <p>SEPMAY 回答了信息存在哪里、活多久、以什么粒度写回；它没有回答信息进入系统之后可以被做哪些变换。算子空间是这后半个问题的容器，也是 D8–D11 的出处。</p>
+          <p><a href="./operators.html">读算子空间 →</a></p>
+        </div>
+        <div class="card">
+          <h3>架构与契约</h3>
+          <p>接收域在 Core 侧的映射表与四条判定问题写在架构文档里，包括「这段代码属于哪一侧」的四问。</p>
+          <p><a href="./architecture.html">读架构与契约 →</a></p>
+        </div>
+      </div>
+
+      <ul class="doc-links">
+        <li>
+          <span class="path">research/paths/01-sepmay-ivy/README.md</span>
+          <span class="desc">路径一本体：主张、结构、层级定位、已定、冻结条件、反对意见</span>
+        </li>
+        <li>
+          <span class="path">research/paths/01-sepmay-ivy/open-decisions.md</span>
+          <span class="desc">十一条未定决策的完整清单与「何时必须回答」</span>
+        </li>
+        <li>
+          <span class="path">research/paths/01-sepmay-ivy/operator-space.md</span>
+          <span class="desc">算子空间研究草案（D8–D11 的出处）</span>
+        </li>
+        <li>
+          <span class="path">research/paths/README.md</span>
+          <span class="desc">并行路径的目录约定、状态与评分索引</span>
+        </li>
+        <li>
+          <span class="path">docs/architecture.md §1.5</span>
+          <span class="desc">接收域映射表与四条判定问题</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <p class="site-footer__label">Macha</p>
+        <p>开源、引擎无关、模型无关的游戏 NPC 认知标准骨架。不与既有方案争夺「大脑」或「平台」，而是定义它们都必须遵守的骨架。</p>
+      </div>
+      <div>
+        <p class="site-footer__label">站点</p>
+        <ul>
+          <li><a href="./index.html">愿景</a></li>
+          <li><a href="./sepmay.html">SEPMAY 路径</a></li>
+          <li><a href="./architecture.html">架构与契约</a></li>
+          <li><a href="./operators.html">算子空间</a></li>
+          <li><a href="./drive.html">内驱力与长期张力</a></li>
+          <li><a href="./evaluation.html">评测与一致性</a></li>
+          <li><a href="./experiments.html">实验赛道</a></li>
+          <li><a href="./glossary.html">术语表</a></li>
+          <li><a href="./about.html">关于与参与</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="site-footer__label">仓库</p>
+        <ul>
+          <li><a href="https://github.com/zbbsdsb/Macha">GitHub 仓库 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文草稿 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/LICENSE">MIT License ↗</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__base">
+      <p>MIT License · Copyright (c) 2026 CeaserZhao</p>
+      <p>本站文案改写自仓库文档，随项目演进而更新</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

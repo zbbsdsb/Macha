@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>实验赛道 — Macha 技术细节</title>
+<meta name="description" content="我们在哪些世界里做实验、每个实验要验证什么、结果与负面结果在哪里公开。本页给出结构大纲与仓库内的原始文档入口：Layer 验证计划、公开公告与算子沙盒。">
+<link rel="stylesheet" href="./assets/css/site.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="./index.html">
+      <span class="brand__mark">Macha</span>
+      <span class="brand__tag">认知标准骨架</span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      <ul>
+        <li><a href="./index.html">愿景</a></li>
+        <li><a href="./sepmay.html">SEPMAY</a></li>
+        <li><a href="./architecture.html" aria-current="true">技术</a></li>
+        <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文</a></li>
+        <li><a class="nav-ext" href="https://github.com/zbbsdsb/Macha">GitHub ↗</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="wrap">
+      <p class="kicker">Macha · 技术细节</p>
+      <h1>实验赛道</h1>
+      <p class="hero__lede">这页将回答：我们在哪些世界里做实验、每个实验要验证什么，以及结果与负面结果在哪里公开。</p>
+      <div class="hero__meta">
+        <span>类型 · 技术细节</span>
+        <span>状态 · 结构已定，正文筹备中</span>
+        <span>来源 · announcements/、research/plans/</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="index">
+    <div class="wrap">
+      <div class="page-index">
+        <span class="page-index__label">技术细节 · 五页</span>
+        <ul>
+          <li><a href="./architecture.html"><span>架构与契约</span><span>Core / Layer / 协议</span></a></li>
+          <li><a href="./operators.html"><span>算子空间</span><span>SELECT / RELATE / TRANSFORM / TEST / COMMIT</span></a></li>
+          <li><a href="./drive.html"><span>内驱力与长期张力</span><span>independence 的机制候选</span></a></li>
+          <li><a href="./evaluation.html"><span>评测与一致性</span><span>保证的检验与失败条件</span></a></li>
+          <li><a href="./experiments.html" aria-current="page"><span>实验赛道</span><span>预注册、结果与负面结果</span></a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="outline">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">筹备中</span>
+        <h2>这一页将包含什么</h2>
+      </div>
+
+      <p class="lede">Macha 的公开实验只有一个目的：让抽象在真实世界里被证伪一次。这一页记录赛道、判据与结果——包括没跑通的那些。结构已定，正文未定。</p>
+
+      <ol>
+        <li><strong>赛道不是项目身份</strong> —— Minecraft 是第一个 Concrete Layer Test Case，inZOI 是第二条观察与设计映射赛道；两者都不是「Macha for Minecraft」或「Macha for inZOI」。</li>
+        <li><strong>唯一因变量</strong> —— 给定 Core，接入一个世界所需的一切是否<strong>全部</strong>落在 Layer 一侧。判断标准是边界是否守住，不是 NPC 在游戏里看起来多聪明。</li>
+        <li><strong>五条退出判据 V1–V5</strong> —— V1 Core 代码改动量 = 0（本计划的核心）、V2 环境泄漏、V3 认知上移、V4 可替换性、V5 可独立实现。</li>
+        <li><strong>三个前置门与最小交付物</strong> —— G0 环境勘测 / G1 协议 v0 冻结 / G2 Stub Core，以及 M1–M9 九项最小 Layer 交付物。</li>
+        <li><strong>里程碑与顺序</strong> —— P0 勘测到 P6 移交 Phase 3；Layer 先、Core 后，V1/V4 先在 Stub Core 上成立，Phase 3 用真 Core 重测。</li>
+        <li><strong>已跑过的实验</strong> —— 算子沙盒里的 E-S1（continuity 档，2026-10-07，证据等级 E1），以及它的三条 trace 与 ablation。</li>
+        <li><strong>公开与可回放</strong> —— 能力清单、回放 transcript、协议问题清单（每一条「为了接通而想改 Core」的冲动都转成一个协议问题记录下来）；负面结果按 F1–F7 归档。</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="docs">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">相关文档</span>
+        <h2>现在就可以读的原始材料</h2>
+      </div>
+
+      <p>在正文补齐之前，这一页的入口仍然可用：顺着下面的链接可以直接读到仓库里的原始材料。</p>
+
+      <ul class="doc-links">
+        <li>
+          <span class="path">announcements/2026-08-16-minecraft-experiment.md</span>
+          <span class="desc">赛道一的公开公告：为什么是 Minecraft、明确不做什么，以及 2026-09-13 的范围澄清</span>
+        </li>
+        <li>
+          <span class="path">announcements/2026-08-16-inzoi-experiment.md</span>
+          <span class="desc">赛道二的公开公告：生活模拟为什么是最难的测试，以及合规边界</span>
+        </li>
+        <li>
+          <span class="path">research/plans/minecraft-layer-validation-plan.md</span>
+          <span class="desc">Layer 验证计划：唯一因变量、V1–V5、G0–G2、M1–M9、P0–P6 与开放问题</span>
+        </li>
+        <li>
+          <span class="path">research/experiments/operator_sandbox/</span>
+          <span class="desc">已跑通的第一个实验（E-S1）：代码、三份运行与 metrics.json</span>
+        </li>
+        <li>
+          <span class="path">research/experiments/README.md</span>
+          <span class="desc">实验目录的边界：研究实验进这里，工程验收进 projects/</span>
+        </li>
+        <li>
+          <span class="path">research/failures/README.md</span>
+          <span class="desc">负面结果系统：F1–F7 分类与失败记录必须包含的六项</span>
+        </li>
+        <li>
+          <span class="path">docs/roadmap.md</span>
+          <span class="desc">开发路线图：Layer 优先的排序反转与各阶段退出判据</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <p class="site-footer__label">Macha</p>
+        <p>开源、引擎无关、模型无关的游戏 NPC 认知标准骨架。不与既有方案争夺「大脑」或「平台」，而是定义它们都必须遵守的骨架。</p>
+      </div>
+      <div>
+        <p class="site-footer__label">站点</p>
+        <ul>
+          <li><a href="./index.html">愿景</a></li>
+          <li><a href="./sepmay.html">SEPMAY 路径</a></li>
+          <li><a href="./architecture.html">架构与契约</a></li>
+          <li><a href="./operators.html">算子空间</a></li>
+          <li><a href="./drive.html">内驱力与长期张力</a></li>
+          <li><a href="./evaluation.html">评测与一致性</a></li>
+          <li><a href="./experiments.html">实验赛道</a></li>
+          <li><a href="./glossary.html">术语表</a></li>
+          <li><a href="./about.html">关于与参与</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="site-footer__label">仓库</p>
+        <ul>
+          <li><a href="https://github.com/zbbsdsb/Macha">GitHub 仓库 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文草稿 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/LICENSE">MIT License ↗</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__base">
+      <p>MIT License · Copyright (c) 2026 CeaserZhao</p>
+      <p>本站文案改写自仓库文档，随项目演进而更新</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

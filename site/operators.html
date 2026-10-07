@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>算子空间 — Macha 技术细节</title>
+<meta name="description" content="信息进入系统之后可以被做哪些变换？算子空间是 SEPMAY 图里那个「算子集合」空盒子的研究草案：最小候选基 SELECT / RELATE / TRANSFORM / TEST / COMMIT。本页给出结构大纲与原始文档入口。">
+<link rel="stylesheet" href="./assets/css/site.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="./index.html">
+      <span class="brand__mark">Macha</span>
+      <span class="brand__tag">认知标准骨架</span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      <ul>
+        <li><a href="./index.html">愿景</a></li>
+        <li><a href="./sepmay.html">SEPMAY</a></li>
+        <li><a href="./architecture.html" aria-current="true">技术</a></li>
+        <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文</a></li>
+        <li><a class="nav-ext" href="https://github.com/zbbsdsb/Macha">GitHub ↗</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="wrap">
+      <p class="kicker">Macha · 技术细节</p>
+      <h1>算子空间</h1>
+      <p class="hero__lede">这页将回答：信息进入系统之后可以被做哪些变换，以及如何验证这些算子不是想象出来的。</p>
+      <div class="hero__meta">
+        <span>类型 · 技术细节</span>
+        <span>状态 · 结构已定，正文筹备中</span>
+        <span>来源 · research/paths/01-sepmay-ivy/operator-space.md</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="index">
+    <div class="wrap">
+      <div class="page-index">
+        <span class="page-index__label">技术细节 · 五页</span>
+        <ul>
+          <li><a href="./architecture.html"><span>架构与契约</span><span>Core / Layer / 协议</span></a></li>
+          <li><a href="./operators.html" aria-current="page"><span>算子空间</span><span>SELECT / RELATE / TRANSFORM / TEST / COMMIT</span></a></li>
+          <li><a href="./drive.html"><span>内驱力与长期张力</span><span>independence 的机制候选</span></a></li>
+          <li><a href="./evaluation.html"><span>评测与一致性</span><span>保证的检验与失败条件</span></a></li>
+          <li><a href="./experiments.html"><span>实验赛道</span><span>预注册、结果与负面结果</span></a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="outline">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">筹备中</span>
+        <h2>这一页将包含什么</h2>
+      </div>
+
+      <p class="lede">SEPMAY 已经回答了「信息存在哪里、活多久、以什么粒度写回」，但没有回答「信息进入系统之后可以被做哪些变换」。这一页是那后半个问题的容器。结构已定，正文未定。</p>
+
+      <ol>
+        <li><strong>算子是什么</strong> —— 对信息、Thread 或内部状态施加的一次状态变换：<code>State → Operator → State'</code>，核心问题只有「什么发生了变化」。</li>
+        <li><strong>三个必须分开的东西</strong> —— External Information（获得了什么）/ Operator（做了什么）/ Internal State（留下了什么）。由此：Memory Store ≠ Operator Space，Tool Calling ≠ Operator Space。</li>
+        <li><strong>最小候选基</strong> —— SELECT / RELATE / TRANSFORM / TEST / COMMIT。这是实验假设，不是分类学：不完备、不声称正交、不排除合并或删除。</li>
+        <li><strong>作用对象</strong> —— Information / Thread / State 三层，风险依次递增；一旦涉及 State 就直接连上回流写入权。</li>
+        <li><strong>状态语义</strong> —— <code>(X, Internal State, Context) → (X', Internal State')</code>。同一个信息在不同内部状态下做同一个操作，可能得到不同结果。</li>
+        <li><strong>如何发现算子空间</strong> —— 三个可跑的实验：E-OS1 标注、E-OS2 组合、E-OS3 状态依赖，以及它们各自的失败形态。</li>
+        <li><strong>明确不做</strong> —— 一上来定义二十到五十个算子、把 Reflection / Planning / Reasoning 全叫算子、宣布候选基已经完备。</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="docs">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">相关文档</span>
+        <h2>现在就可以读的原始材料</h2>
+      </div>
+
+      <p>在正文补齐之前，这一页的入口仍然可用：顺着下面的链接可以直接读到仓库里的原始材料。</p>
+
+      <ul class="doc-links">
+        <li>
+          <span class="path">research/paths/01-sepmay-ivy/operator-space.md</span>
+          <span class="desc">算子空间研究草案：定义、候选基、作用对象、状态语义、三个实验、禁止清单</span>
+        </li>
+        <li>
+          <span class="path">research/paths/01-sepmay-ivy/open-decisions.md</span>
+          <span class="desc">D8–D11 四条算子空间未定决策，含「何时必须回答」</span>
+        </li>
+        <li>
+          <span class="path">research/questions/Q-02-operator-space-primitives.md</span>
+          <span class="desc">E-S1 的预注册与结果（continuity 档的三条 trace 与 ablation）</span>
+        </li>
+        <li>
+          <span class="path">research/experiments/operator_sandbox/</span>
+          <span class="desc">算子沙盒代码：SELECT / TRANSFORM / COMMIT 与三份运行</span>
+        </li>
+        <li>
+          <span class="path">research/plans/operator-sandbox-plan.md</span>
+          <span class="desc">第一阶段的工程实施计划：沙盒位置、最小数据模型、算子契约、实现顺序</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <p class="site-footer__label">Macha</p>
+        <p>开源、引擎无关、模型无关的游戏 NPC 认知标准骨架。不与既有方案争夺「大脑」或「平台」，而是定义它们都必须遵守的骨架。</p>
+      </div>
+      <div>
+        <p class="site-footer__label">站点</p>
+        <ul>
+          <li><a href="./index.html">愿景</a></li>
+          <li><a href="./sepmay.html">SEPMAY 路径</a></li>
+          <li><a href="./architecture.html">架构与契约</a></li>
+          <li><a href="./operators.html">算子空间</a></li>
+          <li><a href="./drive.html">内驱力与长期张力</a></li>
+          <li><a href="./evaluation.html">评测与一致性</a></li>
+          <li><a href="./experiments.html">实验赛道</a></li>
+          <li><a href="./glossary.html">术语表</a></li>
+          <li><a href="./about.html">关于与参与</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="site-footer__label">仓库</p>
+        <ul>
+          <li><a href="https://github.com/zbbsdsb/Macha">GitHub 仓库 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文草稿 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/LICENSE">MIT License ↗</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__base">
+      <p>MIT License · Copyright (c) 2026 CeaserZhao</p>
+      <p>本站文案改写自仓库文档，随项目演进而更新</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>内驱力与长期张力 — Macha 技术细节</title>
+<meta name="description" content="内驱力是五原语中 independence 的唯一机制候选。本页给出结构大纲与仓库内的原始文档入口：构建路径、四个竞争设计、判别实验矩阵与边界规则。">
+<link rel="stylesheet" href="./assets/css/site.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="./index.html">
+      <span class="brand__mark">Macha</span>
+      <span class="brand__tag">认知标准骨架</span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      <ul>
+        <li><a href="./index.html">愿景</a></li>
+        <li><a href="./sepmay.html">SEPMAY</a></li>
+        <li><a href="./architecture.html" aria-current="true">技术</a></li>
+        <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文</a></li>
+        <li><a class="nav-ext" href="https://github.com/zbbsdsb/Macha">GitHub ↗</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="wrap">
+      <p class="kicker">Macha · 技术细节 · 路径二</p>
+      <h1>内驱力与长期张力</h1>
+      <p class="hero__lede">这页将回答：在一个没有玩家、没有外部任务的世界里，什么信号能让 NPC 持续产生非重复、可满足、不漂移的目标。</p>
+      <div class="hero__meta">
+        <span>类型 · 技术细节</span>
+        <span>状态 · 结构已定，正文筹备中</span>
+        <span>路径状态 · ACTIVE（实验轨道）</span>
+        <span>来源 · research/paths/02-intrinsic-motivation/README.md</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="index">
+    <div class="wrap">
+      <div class="page-index">
+        <span class="page-index__label">技术细节 · 五页</span>
+        <ul>
+          <li><a href="./architecture.html"><span>架构与契约</span><span>Core / Layer / 协议</span></a></li>
+          <li><a href="./operators.html"><span>算子空间</span><span>SELECT / RELATE / TRANSFORM / TEST / COMMIT</span></a></li>
+          <li><a href="./drive.html" aria-current="page"><span>内驱力与长期张力</span><span>independence 的机制候选</span></a></li>
+          <li><a href="./evaluation.html"><span>评测与一致性</span><span>保证的检验与失败条件</span></a></li>
+          <li><a href="./experiments.html"><span>实验赛道</span><span>预注册、结果与负面结果</span></a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="outline">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">筹备中</span>
+        <h2>这一页将包含什么</h2>
+      </div>
+
+      <p class="lede">内驱力在五原语里的位置很窄，但那个位置目前没有替代品：其他四根都能靠「更会回应」改善，只有 independence 不能。结构已定，正文未定。</p>
+
+      <ol>
+        <li><strong>主张与生态位</strong> —— 它不新增盒子，而是横跨已有图里的三个位置：一类持久状态、一格算子、一次回流更新。外部信息源决定「世界让我开 Chunk」，内驱力决定「我自己开 Chunk」。</li>
+        <li><strong>构建路径</strong> —— 持久内部状态（认知架构 / Identity–Desire）与存在条件（稳态）为核心，社会性为重要辅助，信息论内在奖励非 V1 核心。</li>
+        <li><strong>唯一研究问题</strong> —— 在一个没有玩家、没有外部任务的世界里，什么信号能让 NPC 持续产生非重复、可满足、不漂移的目标；三种失败形态各自可观测。</li>
+        <li><strong>四个竞争设计</strong> —— 稳态设定点、学习进度、赋能寻求、连接驱动，加上必须存在的无 drive 控制组。</li>
+        <li><strong>判别实验矩阵</strong> —— E-1 空世界、E-2 有 affordance 的世界、E-3 脚本玩家、E-4 长期、E-5 换环境。</li>
+        <li><strong>指标与边界规则</strong> —— 八条可从 transcript 算出的量；drive 必须落在 Core 侧内部信息源，自生成目标必须经 Chunk 准入，内驱力不得改变事实。</li>
+        <li><strong>反对意见</strong> —— 若四个设计都跑不赢控制组，independence 应改由预置的 ambient 行为实现，本路径整条放弃。</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="docs">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">相关文档</span>
+        <h2>现在就可以读的原始材料</h2>
+      </div>
+
+      <p>在正文补齐之前，这一页的入口仍然可用：顺着下面的链接可以直接读到仓库里的原始材料。</p>
+
+      <ul class="doc-links">
+        <li>
+          <span class="path">research/paths/02-intrinsic-motivation/README.md</span>
+          <span class="desc">路径二本体：主张、生态位、构建路径、四个竞争设计、实验矩阵、指标、边界规则</span>
+        </li>
+        <li>
+          <span class="path">papers/notes/accepted/decision-intrinsic-motivation-path.md</span>
+          <span class="desc">内驱力构建路径的决策记录（2026-09-25 通过），规范文本以此为准</span>
+        </li>
+        <li>
+          <span class="path">research/questions/Q-01-drive-signal.md</span>
+          <span class="desc">本仓第一次真正使用 question 机制：首个研究问题与预注册</span>
+        </li>
+        <li>
+          <span class="path">research/paths/02-intrinsic-motivation/report-four-build-paths.md</span>
+          <span class="desc">二手调研报告的项目内视图：四条构建路径、边界划法、评估缺口</span>
+        </li>
+        <li>
+          <span class="path">docs/architecture.md §1.5</span>
+          <span class="desc">drive 在接收域图里占的那三个位置</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <p class="site-footer__label">Macha</p>
+        <p>开源、引擎无关、模型无关的游戏 NPC 认知标准骨架。不与既有方案争夺「大脑」或「平台」，而是定义它们都必须遵守的骨架。</p>
+      </div>
+      <div>
+        <p class="site-footer__label">站点</p>
+        <ul>
+          <li><a href="./index.html">愿景</a></li>
+          <li><a href="./sepmay.html">SEPMAY 路径</a></li>
+          <li><a href="./architecture.html">架构与契约</a></li>
+          <li><a href="./operators.html">算子空间</a></li>
+          <li><a href="./drive.html">内驱力与长期张力</a></li>
+          <li><a href="./evaluation.html">评测与一致性</a></li>
+          <li><a href="./experiments.html">实验赛道</a></li>
+          <li><a href="./glossary.html">术语表</a></li>
+          <li><a href="./about.html">关于与参与</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="site-footer__label">仓库</p>
+        <ul>
+          <li><a href="https://github.com/zbbsdsb/Macha">GitHub 仓库 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文草稿 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/LICENSE">MIT License ↗</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__base">
+      <p>MIT License · Copyright (c) 2026 CeaserZhao</p>
+      <p>本站文案改写自仓库文档，随项目演进而更新</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

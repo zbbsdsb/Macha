@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>术语表 — Macha</title>
+<meta name="description" content="Macha 全仓术语的单一入口。本页收录架构、路径与研究方法里反复出现的术语，每条一行定义，并注明出处。初稿待口径统一后定稿。">
+<link rel="stylesheet" href="./assets/css/site.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="./index.html">
+      <span class="brand__mark">Macha</span>
+      <span class="brand__tag">认知标准骨架</span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      <ul>
+        <li><a href="./index.html">愿景</a></li>
+        <li><a href="./sepmay.html">SEPMAY</a></li>
+        <li><a href="./architecture.html">技术</a></li>
+        <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文</a></li>
+        <li><a class="nav-ext" href="https://github.com/zbbsdsb/Macha">GitHub ↗</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="wrap">
+      <p class="kicker">Macha · 辅助</p>
+      <h1>术语表</h1>
+      <p class="hero__lede">全仓术语的单一入口。同一个概念在仓库里只应有一个写法——这一页是它的落点。</p>
+      <div class="hero__meta">
+        <span>类型 · 辅助</span>
+        <span>状态 · 初稿，口径待统一</span>
+        <span>来源 · 全仓术语</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="intro">
+    <div class="wrap wrap--narrow">
+      <p class="lede">Macha 的术语散布在架构文档、研究路径与方法论里。这一页把它们收在一处：每条给出一个可被引用的定义，并注明它出自哪份文档。定义按主题分组，不按拼音或字母排序——先看清一个概念属于哪一层，比记住它排在第几位更重要。</p>
+
+      <div class="callout">
+        <span class="callout__label">口径未统一 · 待定稿</span>
+        <p>同一概念在仓库里目前存在多种写法，例如「玩家条件性」与「玩家依赖性」、「关系存档」与 relational save file。本页是待评审的初稿：<strong>术语定稿前，全站译法以本页为准</strong>；一旦仓库里的规范文本确定口径，本页随之更新。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="architecture">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">架构</span>
+        <h2>两个系统，一个契约</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table class="stackable">
+          <caption>架构层术语</caption>
+          <thead>
+            <tr><th scope="col">术语</th><th scope="col">定义</th><th scope="col">出处</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Macha Core</th><td data-label="定义">与环境无关的认知侧系统；Macha 的「大脑」，目前尚未构建（Phase 3）</td><td data-label="出处"><code>docs/architecture.md</code></td></tr>
+            <tr><th scope="row">Environment Integration Layer</th><td data-label="定义">每个外部世界一份的独立接入层；不思考，只搬运、翻译与守界</td><td data-label="出处"><code>docs/architecture.md</code></td></tr>
+            <tr><th scope="row">Layer Protocol</th><td data-label="定义">Core 与 Layer 之间唯一的契约；规定五类交换与能力清单</td><td data-label="出处"><code>docs/architecture.md</code></td></tr>
+            <tr><th scope="row">能力清单 Capability manifest</th><td data-label="定义">由探测而非文档得到的「这个环境真能做什么」的声明</td><td data-label="出处"><code>research/plans/minecraft-layer-validation-plan.md</code></td></tr>
+            <tr><th scope="row">Stub Core</th><td data-label="定义">非 LLM、规则式的对手方，用于在 Phase 1–2 验证 Layer 边界</td><td data-label="出处"><code>research/plans/minecraft-layer-validation-plan.md</code></td></tr>
+            <tr><th scope="row">反模式</th><td data-label="定义">会悄悄破坏 Core / Layer 边界的写法，如 Core 里出现 <code>if game == "minecraft"</code></td><td data-label="出处"><code>docs/architecture.md</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="sepmay">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">路径一 · SEPMAY</span>
+        <h2>生命周期与数据组织</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table class="stackable">
+          <caption>SEPMAY 路径术语</caption>
+          <thead>
+            <tr><th scope="col">术语</th><th scope="col">定义</th><th scope="col">出处</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">SEPMAY（路径一）</th><td data-label="定义">把交互组织进有明确生死的生命周期单元；单元内局部计算，关闭时回流</td><td data-label="出处"><code>research/paths/01-sepmay-ivy/README.md</code></td></tr>
+            <tr><th scope="row">Chunk</th><td data-label="定义">管理一组具有相同特性的 Thread 的容器；不嵌套</td><td data-label="出处"><code>research/paths/01-sepmay-ivy/README.md</code></td></tr>
+            <tr><th scope="row">Thread</th><td data-label="定义">Chunk 内的信息线程；不跨 Chunk 存在</td><td data-label="出处"><code>research/paths/01-sepmay-ivy/README.md</code></td></tr>
+            <tr><th scope="row">接收域 / 运算域 / 输出域</th><td data-label="定义">SEPMAY 的三层结构；接收域负责准入而非接收，赋义属于运算域的算子</td><td data-label="出处"><code>research/paths/01-sepmay-ivy/README.md</code></td></tr>
+            <tr><th scope="row">回流</th><td data-label="定义">Chunk 关闭时数据写回内部信息源；分事实件 / 陈述件 / 权重三路</td><td data-label="出处"><code>research/paths/01-sepmay-ivy/README.md</code></td></tr>
+            <tr><th scope="row">中断 ≠ 关闭</th><td data-label="定义">中断只提交事实件；只有关闭才触发完整回流</td><td data-label="出处"><code>research/paths/01-sepmay-ivy/README.md</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="primitives">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">关系模型</span>
+        <h2>三原语与两施行条件</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table class="stackable">
+          <caption>关系的最小结构条件</caption>
+          <thead>
+            <tr><th scope="col">术语</th><th scope="col">定义</th><th scope="col">类别</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">连续性 Continuity</th><td data-label="定义">关系状态在时间上持续存在并累积</td><td data-label="类别">结构原语</td></tr>
+            <tr><th scope="row">玩家条件性 Contingency</th><td data-label="定义">行为稳定地、可见地依赖于这位玩家</td><td data-label="类别">结构原语</td></tr>
+            <tr><th scope="row">独立性 Independence</th><td data-label="定义">拥有不来自玩家输入的状态与目标</td><td data-label="类别">结构原语</td></tr>
+            <tr><th scope="row">表达 Expression</th><td data-label="定义">状态被表现出来、玩家能读到；看不见的状态等于不存在</td><td data-label="类别">施行条件</td></tr>
+            <tr><th scope="row">互惠 Reciprocity</th><td data-label="定义">关系是双向的，而非单向服务</td><td data-label="类别">施行条件</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="mechanisms">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">路径二与算子</span>
+        <h2>机制候选</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table class="stackable">
+          <caption>机制层术语</caption>
+          <thead>
+            <tr><th scope="col">术语</th><th scope="col">定义</th><th scope="col">出处</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">内驱力 drive</th><td data-label="定义">让 NPC 自己产生目标的信号；independence 的唯一机制候选</td><td data-label="出处"><code>research/paths/02-intrinsic-motivation/README.md</code></td></tr>
+            <tr><th scope="row">算子空间 Operator Space</th><td data-label="定义">信息进入系统后可被施加的状态变换集合</td><td data-label="出处"><code>research/paths/01-sepmay-ivy/operator-space.md</code></td></tr>
+            <tr><th scope="row">算子 Operator</th><td data-label="定义">一次状态变换：<code>State → Operator → State'</code></td><td data-label="出处"><code>research/paths/01-sepmay-ivy/operator-space.md</code></td></tr>
+            <tr><th scope="row">候选基</th><td data-label="定义">SELECT / RELATE / TRANSFORM / TEST / COMMIT；是实验假设，不是分类学</td><td data-label="出处"><code>research/paths/01-sepmay-ivy/operator-space.md</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="method">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">研究方法</span>
+        <h2>证据、失败与一致性</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table class="stackable">
+          <caption>方法论术语</caption>
+          <thead>
+            <tr><th scope="col">术语</th><th scope="col">定义</th><th scope="col">出处</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">证据等级 E0–E3</th><td data-label="定义">claim 的上限，不是分数；E0 只能支持「可跑通」</td><td data-label="出处"><code>docs/research-methodology.md</code></td></tr>
+            <tr><th scope="row">预注册 Pre-registration</th><td data-label="定义">跑实验前冻结预测与反驳条件；凭证是 commit hash</td><td data-label="出处"><code>docs/research-methodology.md</code></td></tr>
+            <tr><th scope="row">失败分类 F1–F7</th><td data-label="定义">按「谁错了」分类的负面结果；F3/F4/F5 不得当作研究结论</td><td data-label="出处"><code>docs/research-methodology.md</code></td></tr>
+            <tr><th scope="row">一致性 Conformance</th><td data-label="定义">一个实现符合 Macha 的检验；Level 1 至少 12 项自动检查</td><td data-label="出处"><code>docs/prototype_portrait.md</code></td></tr>
+            <tr><th scope="row">四个 Gate</th><td data-label="定义">Question / Pre-registration / Evidence / Claim 四道闸，一次会只过一道</td><td data-label="出处"><code>docs/research-methodology.md</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <p class="site-footer__label">Macha</p>
+        <p>开源、引擎无关、模型无关的游戏 NPC 认知标准骨架。不与既有方案争夺「大脑」或「平台」，而是定义它们都必须遵守的骨架。</p>
+      </div>
+      <div>
+        <p class="site-footer__label">站点</p>
+        <ul>
+          <li><a href="./index.html">愿景</a></li>
+          <li><a href="./sepmay.html">SEPMAY 路径</a></li>
+          <li><a href="./architecture.html">架构与契约</a></li>
+          <li><a href="./operators.html">算子空间</a></li>
+          <li><a href="./drive.html">内驱力与长期张力</a></li>
+          <li><a href="./evaluation.html">评测与一致性</a></li>
+          <li><a href="./experiments.html">实验赛道</a></li>
+          <li><a href="./glossary.html">术语表</a></li>
+          <li><a href="./about.html">关于与参与</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="site-footer__label">仓库</p>
+        <ul>
+          <li><a href="https://github.com/zbbsdsb/Macha">GitHub 仓库 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文草稿 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/LICENSE">MIT License ↗</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__base">
+      <p>MIT License · Copyright (c) 2026 CeaserZhao</p>
+      <p>本站文案改写自仓库文档，随项目演进而更新</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

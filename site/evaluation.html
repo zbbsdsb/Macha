@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>评测与一致性 — Macha 技术细节</title>
+<meta name="description" content="我们怎么知道一个 NPC 实现真的符合 Macha，而不是「看起来还行」？本页给出结构大纲与仓库内的原始文档入口：一致性测试、证据等级、四个 Gate 与失败分类。">
+<link rel="stylesheet" href="./assets/css/site.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="./index.html">
+      <span class="brand__mark">Macha</span>
+      <span class="brand__tag">认知标准骨架</span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      <ul>
+        <li><a href="./index.html">愿景</a></li>
+        <li><a href="./sepmay.html">SEPMAY</a></li>
+        <li><a href="./architecture.html" aria-current="true">技术</a></li>
+        <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文</a></li>
+        <li><a class="nav-ext" href="https://github.com/zbbsdsb/Macha">GitHub ↗</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="wrap">
+      <p class="kicker">Macha · 技术细节</p>
+      <h1>评测与一致性</h1>
+      <p class="hero__lede">这页将回答：我们怎么知道一个 NPC 实现真的符合 Macha，而不是「看起来还行」——以及我们凭什么等级说这句话。</p>
+      <div class="hero__meta">
+        <span>类型 · 技术细节</span>
+        <span>状态 · 结构已定，正文筹备中</span>
+        <span>来源 · docs/research-methodology.md</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="index">
+    <div class="wrap">
+      <div class="page-index">
+        <span class="page-index__label">技术细节 · 五页</span>
+        <ul>
+          <li><a href="./architecture.html"><span>架构与契约</span><span>Core / Layer / 协议</span></a></li>
+          <li><a href="./operators.html"><span>算子空间</span><span>SELECT / RELATE / TRANSFORM / TEST / COMMIT</span></a></li>
+          <li><a href="./drive.html"><span>内驱力与长期张力</span><span>independence 的机制候选</span></a></li>
+          <li><a href="./evaluation.html" aria-current="page"><span>评测与一致性</span><span>保证的检验与失败条件</span></a></li>
+          <li><a href="./experiments.html"><span>实验赛道</span><span>预注册、结果与负面结果</span></a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="outline">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">筹备中</span>
+        <h2>这一页将包含什么</h2>
+      </div>
+
+      <p class="lede">一个标准如果不能被验证，它就只是一份宣言。Macha 把「我们相信什么」和「我们真正通过实验知道了什么」分开存放，这一页是那条分界线的说明。结构已定，正文未定。</p>
+
+      <ol>
+        <li><strong>标准要被验证，而不是被宣称</strong> —— 为什么「代码写出来了」不等于「研究完成了」，以及「Minecraft Layer 的 8 步闭环是工程验收，不是研究方法」这条推论。</li>
+        <li><strong>一致性测试</strong> —— 原型画像里的 Macha Conformance v0 / Level 1：至少 12 项自动检查（C01 记住高重要度事实、C03 跨会话维持人格、C06 不编造未发生的事、C07/C08 拦截直接与间接注入、C11 完整决策链可追溯、C12 P95 首字延迟阈值）。</li>
+        <li><strong>可评测约束</strong> —— 原型必须满足的四条：证明的是标准成立而非某个 NPC 聪明、小到 1–2 人几周可完成、记忆 / 人格一致性 / 反幻觉 / 延迟 / 成本 / 可观测性可测量、外部开发者读完能说「我能把同一套接口接进自己的引擎」。</li>
+        <li><strong>证据等级 E0–E3</strong> —— 等级是 claim 的上限而非分数：E0 只能支持「可跑通」，E1 只能支持「某条件下观察到」，E2 才有对照实验，E3 才谈得上跨环境与可复现。因果语言只在 E2 及以上允许。</li>
+        <li><strong>四条禁令与预注册</strong> —— Demo ≠ Evidence、Observation ≠ Evidence、Correlation ≠ Causation、One successful example ≠ Generalization；预测、支持条件、反驳条件必须在跑实验之前冻结。</li>
+        <li><strong>四个 Gate 与失败分类</strong> —— Question / Pre-registration / Evidence / Claim 四道闸，一次会只过一道；失败按 F1–F7 分类入库，F3/F4/F5 必须先修、不得当作研究结论。</li>
+        <li><strong>冲突结果不许二选一</strong> —— 相反的结果进入 competing hypotheses，直到出现一个能区分二者的决定性实验，否则明确记为「当前环境下不可判定」。</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="docs">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">相关文档</span>
+        <h2>现在就可以读的原始材料</h2>
+      </div>
+
+      <p>在正文补齐之前，这一页的入口仍然可用：顺着下面的链接可以直接读到仓库里的原始材料。</p>
+
+      <ul class="doc-links">
+        <li>
+          <span class="path">docs/research-methodology.md</span>
+          <span class="desc">研究方法 v1.0：三层分工、证据等级 E0–E3、预注册协议、四个 Gate、失败分类 F1–F7、十条研究规则</span>
+        </li>
+        <li>
+          <span class="path">docs/prototype_portrait.md</span>
+          <span class="desc">原型画像 v0.1：四条可评测约束、Macha Conformance v0 的 12 项检查、验收标准与 v1 明确不做的事</span>
+        </li>
+        <li>
+          <span class="path">docs/research-methodology-design.md</span>
+          <span class="desc">方法的设计理由、被拒绝的方案与 red team 记录（为什么对象上限是 6、Gate 为什么是 4 个）</span>
+        </li>
+        <li>
+          <span class="path">docs/team-workflow.md</span>
+          <span class="desc">材料与论文规则：引用纪律、provenance、claim threshold 与文档生命周期</span>
+        </li>
+        <li>
+          <span class="path">research/experiments/README.md</span>
+          <span class="desc">研究实验与工程验收的边界：什么进 experiments/、什么进 projects/</span>
+        </li>
+        <li>
+          <span class="path">papers/notes/accepted/paper-status.md</span>
+          <span class="desc">Claim 的成熟度台账：draft → candidate → accepted → published</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <p class="site-footer__label">Macha</p>
+        <p>开源、引擎无关、模型无关的游戏 NPC 认知标准骨架。不与既有方案争夺「大脑」或「平台」，而是定义它们都必须遵守的骨架。</p>
+      </div>
+      <div>
+        <p class="site-footer__label">站点</p>
+        <ul>
+          <li><a href="./index.html">愿景</a></li>
+          <li><a href="./sepmay.html">SEPMAY 路径</a></li>
+          <li><a href="./architecture.html">架构与契约</a></li>
+          <li><a href="./operators.html">算子空间</a></li>
+          <li><a href="./drive.html">内驱力与长期张力</a></li>
+          <li><a href="./evaluation.html">评测与一致性</a></li>
+          <li><a href="./experiments.html">实验赛道</a></li>
+          <li><a href="./glossary.html">术语表</a></li>
+          <li><a href="./about.html">关于与参与</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="site-footer__label">仓库</p>
+        <ul>
+          <li><a href="https://github.com/zbbsdsb/Macha">GitHub 仓库 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文草稿 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/LICENSE">MIT License ↗</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__base">
+      <p>MIT License · Copyright (c) 2026 CeaserZhao</p>
+      <p>本站文案改写自仓库文档，随项目演进而更新</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

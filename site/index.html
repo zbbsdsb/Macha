@@ -1,210 +1,259 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Macha — An open cognitive skeleton for game NPCs</title>
-<meta name="description" content="Macha is an open, engine-agnostic, model-agnostic cognitive standard skeleton for game NPCs. Travel the space: design goals, industry vision, architecture, deep dive, application plan and glossary." />
-<meta name="color-scheme" content="dark" />
-<meta property="og:title" content="Macha — An open cognitive skeleton for game NPCs" />
-<meta property="og:description" content="Not an NPC that can chat. A standard skeleton for NPCs that remember, stay themselves, and can be tested." />
-<meta property="og:type" content="website" />
-<link rel="stylesheet" href="assets/css/site.css" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='11' fill='none' stroke='%236EE7F9' stroke-width='2'/><circle cx='16' cy='16' r='3.5' fill='%236EE7F9'/></svg>" />
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-  }
-}
-</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Macha — 游戏 NPC 的认知标准骨架</title>
+<meta name="description" content="Macha 是一个开源、引擎无关、模型无关的游戏 NPC 认知标准骨架。我们把问题从「智能体应该具备什么能力」换成「玩家希望这个世界如何对待他」，并把答案落成三原语与两施行条件，以及一个以玩家为索引的持久关系状态。">
+<link rel="stylesheet" href="./assets/css/site.css">
 </head>
 <body>
 
-<canvas id="gl" aria-hidden="true"></canvas>
-<div class="grain" aria-hidden="true"></div>
-<div class="vignette" aria-hidden="true"></div>
-
-<p class="fallback-note" hidden data-i18n="boot.webgl">WebGL is unavailable — showing the text-only route.</p>
-
-<!-- ══════════════════════════════════════════════ HUD -->
-<header class="hud hud--top">
-  <a class="brand" href="https://github.com/" aria-label="Macha">
-    <span class="brand-mark" aria-hidden="true"></span>
-    <span class="brand-name">MACHA</span>
-    <span class="brand-sub" id="scene-name">Design Goals</span>
-  </a>
-  <div class="lang" role="group" aria-label="Language">
-    <button class="lang-btn is-active" data-lang="en" aria-pressed="true">EN</button>
-    <span class="lang-sep" aria-hidden="true">/</span>
-    <button class="lang-btn" data-lang="zh" aria-pressed="false">中文</button>
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="./index.html">
+      <span class="brand__mark">Macha</span>
+      <span class="brand__tag">认知标准骨架</span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      <ul>
+        <li><a href="./index.html" aria-current="page">愿景</a></li>
+        <li><a href="./sepmay.html">SEPMAY</a></li>
+        <li><a href="./architecture.html">技术</a></li>
+        <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文</a></li>
+        <li><a class="nav-ext" href="https://github.com/zbbsdsb/Macha">GitHub ↗</a></li>
+      </ul>
+    </nav>
   </div>
 </header>
 
-<div class="progress" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
+<main>
 
-<nav class="rail" aria-label="Scenes">
-  <span class="rail-title" data-i18n="hud.nav">Scenes</span>
-  <ul class="rail-list">
-    <li><button class="dot is-active" data-goto="0"><span class="dot-num">01</span><span class="dot-label">Design Goals</span></button></li>
-    <li><button class="dot" data-goto="1"><span class="dot-num">02</span><span class="dot-label">Industry Vision</span></button></li>
-    <li><button class="dot" data-goto="2"><span class="dot-num">03</span><span class="dot-label">Core Architecture</span></button></li>
-    <li><button class="dot" data-goto="3"><span class="dot-num">04</span><span class="dot-label">Deep Dive</span></button></li>
-    <li><button class="dot" data-goto="4"><span class="dot-num">05</span><span class="dot-label">Application Plan</span></button></li>
-    <li><button class="dot" data-goto="5"><span class="dot-num">06</span><span class="dot-label">Glossary</span></button></li>
-  </ul>
-</nav>
-
-<footer class="hud hud--bottom">
-  <div class="telemetry" aria-hidden="true">
-    <span class="telemetry-tag" data-i18n="hud.telemetry">CAM</span>
-    <span id="cam-readout">POS — — —  ·  FOV 58</span>
-  </div>
-  <div class="travel">
-    <button class="travel-btn" id="prev" aria-label="Previous scene">←</button>
-    <span class="scene-no"><b id="scene-no">01</b><i>/06</i></span>
-    <button class="travel-btn" id="next" aria-label="Next scene">→</button>
-  </div>
-  <p class="hint" data-i18n="hud.hint">Scroll or drag to travel · ← → to step · 1–6 to jump</p>
-</footer>
-
-<!-- ══════════════════════════════════════════════ SCENES -->
-<main id="stage">
-
-  <!-- 01 · Origin — Design Goals -->
-  <article class="panel" data-panel="0">
-    <p class="kicker" data-i18n="s1.kicker">Scene 01 — Origin</p>
-    <h2 class="title" data-i18n="s1.title">Design Goals</h2>
-    <p class="lead" data-i18n="s1.lead">Macha is not an NPC that can chat. It is a standard skeleton for NPCs that remember, stay themselves, and can be tested.</p>
-
-    <div class="body">
-      <p data-i18n="s1.p1">We start from the player, not from the model. What breaks immersion is rarely a weak answer — it is an NPC that forgets, contradicts itself, or has no reason to refuse.</p>
-      <p data-i18n="s1.p2">So the first deliverable is not a game. It is a spec, a reference implementation, and a conformance suite small enough for one or two people to finish.</p>
-
-      <ul class="pillars">
-        <li><b data-i18n="s1.p.memory">Memory</b><span data-i18n="s1.p.memory.d">Experiences, relationships and causality that survive across sessions.</span></li>
-        <li><b data-i18n="s1.p.arch">Architecture</b><span data-i18n="s1.p.arch.d">An extensible, modular architecture instead of piled-up prompts.</span></li>
-        <li><b data-i18n="s1.p.char">Character</b><span data-i18n="s1.p.char.d">A stable, believable, evolving persona for every NPC.</span></li>
-      </ul>
-
-      <ul class="checks">
-        <li data-i18n="s1.li1">Standard, not product — open, engine-agnostic and model-agnostic.</li>
-        <li data-i18n="s1.li2">Measurable — memory, character consistency, latency, cost and observability are all testable.</li>
-        <li data-i18n="s1.li3">Swappable — change the model or the memory backend and the conformance tests still pass.</li>
-        <li data-i18n="s1.li4">Finishable — 1–2 developers, a few weeks, no engine plugin required.</li>
-      </ul>
+  <section class="hero">
+    <div class="wrap">
+      <p class="kicker">Macha · 认知标准骨架</p>
+      <h1>让 NPC 真的像世界里的一个人</h1>
+      <p class="hero__lede">开源、引擎无关、模型无关的游戏 NPC 认知标准骨架。</p>
+      <div class="hero__meta">
+        <span>状态 · Layer 协议阶段</span>
+        <span>许可 · MIT</span>
+        <span>更新 · 2026-10-07</span>
+      </div>
+      <div class="hero__actions">
+        <a class="btn" href="./sepmay.html">读 SEPMAY 路径</a>
+        <a class="btn btn--ghost" href="./architecture.html">看技术细节</a>
+      </div>
     </div>
-  </article>
+  </section>
 
-  <!-- 02 · Horizon — Industry Goals & Vision -->
-  <article class="panel" data-panel="1">
-    <p class="kicker" data-i18n="s2.kicker">Scene 02 — Horizon</p>
-    <h2 class="title" data-i18n="s2.title">Industry Goals &amp; Vision</h2>
-    <p class="lead" data-i18n="s2.lead">Redefine the relationship between player, NPC and world — and make that definition public.</p>
+  <section id="what">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">一 · 我们想要的游戏智能体</span>
+        <h2>玩家要的不是能力，是世界的回应</h2>
+      </div>
 
-    <div class="body">
-      <p data-i18n="s2.p1">Today every studio re-invents NPC cognition from scratch. There is no shared vocabulary for what a game agent is, and no shared way to prove one works.</p>
-      <p data-i18n="s2.p2">Macha aims to be that vocabulary: a thin, open standard that any engine and any model can implement, with evidence published in the open.</p>
+      <p>玩家想要的不是一堆能力，而是世界的回应。我们把提问方式从「智能体应该具备什么能力」换成「玩家希望这个世界如何对待他」，并把答案定义为：一个被世界规则约束、拥有自己的边界、能让玩家的行为留下可理解后果的他者。智能体只是世界变得「有回应」的那个界面。</p>
 
-      <ul class="checks">
-        <li data-i18n="s2.li1">A shared vocabulary: what a game agent is, and what it must guarantee.</li>
-        <li data-i18n="s2.li2">A semi-permeable membrane: the world shapes the NPC, the NPC keeps its own interpretation.</li>
-        <li data-i18n="s2.li3">One standard, many worlds — the same interfaces across engines and models.</li>
-        <li data-i18n="s2.li4">Public evidence: experiments, results and failures published in the open.</li>
+      <p>随着 NPC 行为进入开放式，玩家感知到的关系由一组当前架构既不计算也不保证的结构条件决定，而模型能力不是它的主要变量。玩家对 NPC 的常见抱怨——它没看见我、它记错了、它没有自我、它只为我而存在、它与世界无关——用关系语言描述，比用「模型幻觉」「上下文不足」更贴近实际体验。</p>
+
+      <h3>五个关系条件</h3>
+      <p>「玩家想要的、可相信可改变、会留下后果的他者」可以拆成五条可直接检验的条件：</p>
+      <ul class="rowlist">
+        <li><span>它看见我</span><span>反应针对我的当前状态，而不是通用模板。</span></li>
+        <li><span>它记得我</span><span>记得关系里要紧的事，允许琐事淡去。</span></li>
+        <li><span>它是它自己</span><span>有边界，会拒绝，不能被任意改写。</span></li>
+        <li><span>它可以被我改变</span><span>我的行为在它身上留下痕迹，并且改变有代价。</span></li>
+        <li><span>它超出我</span><span>有自己的作息、关系与行为，不专为我而存在。</span></li>
+      </ul>
+      <p>五条之间互相拉扯，因此「好智能体」不是某一项指标最高，而是在这些张力之间保持稳定。这也解释了为什么单靠模型升级解决不了「像不像真的」。</p>
+    </div>
+  </section>
+
+  <section id="model">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">二 · 最小关系模型</span>
+        <h2>七个维度收敛为三原语与两施行条件</h2>
+      </div>
+
+      <p>把玩家侧的描述压到结构层，剩下的只有三件事必须在时间里被计算、被保证，以及两件让它们真正被玩家读到的事。</p>
+
+      <div class="table-wrap">
+        <table class="stackable">
+          <caption>最小关系模型：三原语与两施行条件</caption>
+          <thead>
+            <tr><th scope="col">类别</th><th scope="col">条件</th><th scope="col">含义</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">结构原语</th><td data-label="条件">连续性 Continuity</td><td data-label="含义">关系状态在时间上持续存在并累积</td></tr>
+            <tr><th scope="row">结构原语</th><td data-label="条件">玩家条件性 Contingency</td><td data-label="含义">行为稳定地、可见地依赖于这位玩家</td></tr>
+            <tr><th scope="row">结构原语</th><td data-label="条件">独立性 Independence</td><td data-label="含义">拥有不来自玩家输入的状态与目标</td></tr>
+            <tr><th scope="row">施行条件</th><td data-label="条件">表达 Expression</td><td data-label="含义">状态被表现出来，玩家能读到；看不见的状态等于不存在</td></tr>
+            <tr><th scope="row">施行条件</th><td data-label="条件">互惠 Reciprocity</td><td data-label="含义">关系是双向的，而非单向服务</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>「惊喜」被降级为结果而不是原语：随机与幻觉同样能制造惊喜，它无法区分「活」与「死」。「看见我」是索引在身份上的条件性，「记得我」是这种条件性的持续，「我可以改变它」是条件性在时间上的展开。</p>
+
+      <div class="callout">
+        <span class="callout__label">可证伪</span>
+        <p>在匹配表层质量的前提下，如果只提升能力——更强模型、更长上下文、RAG 记忆——也能同等幅度地提升玩家感知到的关系，本命题即被推翻。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="gap">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">三 · 缺口在哪里</span>
+        <h2>缺的不是信息量，是一整个场</h2>
+      </div>
+
+      <p>缺口不在信息量。玩家理解 NPC 时同时站在两个参照系里——游戏内的角色，以及知道系统规则、任务目标与自身经验的玩家；而 NPC 只活在其中一个。它并不「知道得更少」，而是缺少一整层接收与解释信息的场。因此加传感器、扩大感知范围、调高信息权重，都补不上这个缺口。</p>
+
+      <p>这也给出了「真实感」的新判据：NPC 显得假，往往不是因为感知数据太少、模型太小或行为树太浅，而是玩家始终在叠加的参照系里解读它，而它只对其中一个负责。任何来自游戏外视角的解读——「这是脚本」「它只有三句台词」「它在等我交任务」——都会直接戳破真实感。</p>
+
+      <p>场叠加是这幅图景的第一个切片，不是全貌。它最擅长解释「玩家与 NPC 对同一事件的解读为何不在同一位置」，但单独解释不了 NPC 为什么该记得、为什么该拒绝、如何被改变、如何超出玩家。</p>
+    </div>
+  </section>
+
+  <section id="architecture">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">四 · 架构落点</span>
+        <h2>一个以玩家为索引的持久关系状态</h2>
+      </div>
+
+      <p>架构上的结论只有一句：框架应当保证一个以玩家为索引的、持久的、可解释的关系状态——社交层面的存档，而不是只把模型能力做大。为此 Macha 被拆成两个可分离的系统加一个契约：Macha Core 负责认知，环境集成层（Environment Integration Layer）负责把恰好一个外部环境接上，两者之间只有一层协议。</p>
+
+      <ul class="rowlist">
+        <li><span>规则一</span><span>Macha Core 不知道自己在哪个环境里运行。Core 里不得出现任何引擎导入、引擎类型、引擎标识或 tick 语义。</span></li>
+        <li><span>规则二</span><span>Layer 不思考。它可以翻译、观察、声明与拒绝，但不得记忆、判断、规划或持有任何人格。</span></li>
+        <li><span>规则三</span><span>Minecraft 是测试用例，不是框架身份。Skyrim、Cyberpunk 2077、Unreal、Unity、仿真与机器人适用同一条规则。</span></li>
       </ul>
 
-      <blockquote class="quote">
-        <p data-i18n="s2.quote">We are not trying to prove we can build a complex world. We are trying to prove what kind of relationship should exist between a player and an NPC — and why existing technology has never satisfied it.</p>
-        <cite data-i18n="s2.quote.by">Macha Team</cite>
+      <div class="callout">
+        <span class="callout__label">整个架构的可证伪条件</span>
+        <p>如果接入第二个 Layer 需要修改 Macha Core，那就是协议错了——改协议，而不是改 Core 的身份。</p>
+      </div>
+
+      <p>技术模块只是交付这些保证的手段，而不是目标本身。五个关系条件在架构上对应五类保证：被看见的保证、被记住的保证、有边界的保证、可被改变的保证，以及不完全属于玩家的保证。</p>
+    </div>
+  </section>
+
+  <section id="claim">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">五 · 主张</span>
+        <h2>我们愿意被引用的一段话</h2>
+      </div>
+
+      <blockquote>
+        <p>一个 NPC 是否可信，不取决于它有多聪明，而取决于玩家能否在它身上看见一段持续的、属于自己的、且不完全围绕自己的关系。</p>
+        <cite>Macha 项目主张 · 初稿</cite>
       </blockquote>
-    </div>
-  </article>
 
-  <!-- 03 · Core — Architecture  [stage ready, copy pending] -->
-  <article class="panel panel--pending" data-panel="2">
-    <p class="kicker" data-i18n="s3.kicker">Scene 03 — Core</p>
-    <h2 class="title" data-i18n="s3.title">Core Architecture</h2>
-    <p class="lead" data-i18n="s3.lead">Perception, Memory, Reasoning, Action — four layers, one contract.</p>
-    <div class="body">
-      <p class="pending">
-        <span class="pending-badge" data-i18n="pending.badge">Content in preparation</span>
-        <span data-i18n="pending.body">This scene is staged and ready. The writing is still in review — the structure below shows what will land here.</span>
-      </p>
-      <h3 class="stack-title" data-i18n="stack.label">Structure</h3>
-      <ul class="chips" data-stack="core"></ul>
-      <a class="cta" href="https://github.com/" data-i18n="pending.cta">Help write this scene</a>
+      <p>这段主张是本站的立场陈述，属于需要项目负责人定稿的板块；在定稿之前，它代表的是当前仓库文档的收敛方向，而不是对外承诺。</p>
     </div>
-  </article>
+  </section>
 
-  <!-- 04 · Descent — Deep Dive  [stage ready, copy pending] -->
-  <article class="panel panel--pending" data-panel="3">
-    <p class="kicker" data-i18n="s4.kicker">Scene 04 — Descent</p>
-    <h2 class="title" data-i18n="s4.title">Deep Dive</h2>
-    <p class="lead" data-i18n="s4.lead">Field superposition, mental LOD, and the removal test.</p>
-    <div class="body">
-      <p class="pending">
-        <span class="pending-badge" data-i18n="pending.badge">Content in preparation</span>
-        <span data-i18n="pending.body">This scene is staged and ready. The writing is still in review — the structure below shows what will land here.</span>
-      </p>
-      <h3 class="stack-title" data-i18n="stack.label">Structure</h3>
-      <ul class="chips" data-stack="descent"></ul>
-      <a class="cta" href="https://github.com/" data-i18n="pending.cta">Help write this scene</a>
-    </div>
-  </article>
+  <section id="status">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">六 · 当前状态</span>
+        <h2>先做 Layer，后做认知核心</h2>
+      </div>
 
-  <!-- 05 · Field — Application Plan  [stage ready, copy pending] -->
-  <article class="panel panel--pending" data-panel="4">
-    <p class="kicker" data-i18n="s5.kicker">Scene 05 — Field</p>
-    <h2 class="title" data-i18n="s5.title">Application Plan</h2>
-    <p class="lead" data-i18n="s5.lead">Where Macha gets tested. Three slots are open.</p>
-    <div class="body">
-      <p class="pending">
-        <span class="pending-badge" data-i18n="pending.badge">Content in preparation</span>
-        <span data-i18n="pending.body">This scene is staged and ready. The writing is still in review — the structure below shows what will land here.</span>
-      </p>
-      <h3 class="stack-title" data-i18n="stack.label">Structure</h3>
-      <ul class="chips" data-stack="field"></ul>
-      <a class="cta" href="https://github.com/" data-i18n="pending.cta">Help write this scene</a>
-    </div>
-  </article>
+      <p>Macha 目前处于仓库初始化与 Layer 协议阶段。按 2026-09-13 的排序决定，先做 Layer、后做认知核心：第一个可验证的里程碑是 Layer 协议 + Stub Core + Minecraft Layer，而不是认知核心。认知核心尚未构建，属于 Phase 3；没有可用的 demo，也没有产品。</p>
 
-  <!-- 06 · Archive — Glossary  [stage ready, copy pending] -->
-  <article class="panel panel--pending" data-panel="5">
-    <p class="kicker" data-i18n="s6.kicker">Scene 06 — Archive</p>
-    <h2 class="title" data-i18n="s6.title">Glossary</h2>
-    <p class="lead" data-i18n="s6.lead">Every term Macha defines, in one ring.</p>
-    <div class="body">
-      <p class="pending">
-        <span class="pending-badge" data-i18n="pending.badge">Content in preparation</span>
-        <span data-i18n="pending.body">This scene is staged and ready. The writing is still in review — the structure below shows what will land here.</span>
-      </p>
-      <h3 class="stack-title" data-i18n="stack.label">Structure</h3>
-      <ul class="chips" data-stack="archive"></ul>
-      <a class="cta" href="https://github.com/" data-i18n="pending.cta">Help write this scene</a>
+      <div class="table-wrap">
+        <table class="stackable">
+          <caption>开发阶段与当前进度</caption>
+          <thead>
+            <tr><th scope="col">阶段</th><th scope="col">内容</th><th scope="col">状态</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Phase 0</th><td data-label="内容">仓库初始化、架构校准、排序决定</td><td data-label="状态"><span class="tag tag--ok">已基本完成</span></td></tr>
+            <tr><th scope="row">Phase 1</th><td data-label="内容">Layer 协议 v0 + Stub Core</td><td data-label="状态"><span class="tag tag--warn">进行中</span></td></tr>
+            <tr><th scope="row">Phase 2</th><td data-label="内容">仿真 Layer + Minecraft Layer，证伪抽象</td><td data-label="状态"><span class="tag">未开始</span></td></tr>
+            <tr><th scope="row">Phase 3</th><td data-label="内容">最小认知核心（替换 Stub）</td><td data-label="状态"><span class="tag">未开始</span></td></tr>
+            <tr><th scope="row">Phase 4</th><td data-label="内容">角色一致性与反思</td><td data-label="状态"><span class="tag">未开始</span></td></tr>
+            <tr><th scope="row">Phase 5</th><td data-label="内容">多智能体与评测</td><td data-label="状态"><span class="tag">未开始</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>并行持有的还有两条 Core 侧路径：SEPMAY（已冻结，PENDING）与内驱力（实验轨道，ACTIVE）。它们都不阻塞 Layer 主线，也不构成对外承诺。</p>
     </div>
-  </article>
+  </section>
+
+  <section id="next">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">七 · 继续读</span>
+        <h2>从愿景往下走</h2>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3>SEPMAY 路径</h3>
+          <p>把交互组织进有明确生死的生命周期单元，关闭时把结果回流到内部信息源。这页同时公开它此刻被冻结的位置。</p>
+          <p><a href="./sepmay.html">读这一页 →</a></p>
+        </div>
+        <div class="card">
+          <h3>技术细节</h3>
+          <p>架构与契约、算子空间、内驱力、评测与一致性、实验赛道。五页给出结构大纲与仓库内的原始文档入口。</p>
+          <p><a href="./architecture.html">看技术细节 →</a></p>
+        </div>
+        <div class="card">
+          <h3>论文草稿</h3>
+          <p>《Crossing the Game-Agent Gap》已完成总览与场叠加两节，「真实性的必要性」一节仍是占位。</p>
+          <p><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">读论文草稿 ↗</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
 
 </main>
 
-<!-- ══════════════════════════════════════════════ BOOT -->
-<div class="boot" id="boot">
-  <div class="boot-inner">
-    <h1 class="boot-title" data-i18n="boot.title">Macha</h1>
-    <p class="boot-tagline" data-i18n="boot.tagline">An open cognitive skeleton for game NPCs.</p>
-    <button class="boot-btn" id="boot-enter" data-i18n="boot.enter">Enter the space</button>
-    <p class="boot-hint" data-i18n="boot.hint">Drag to travel · scroll to drift · 1–6 to jump</p>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <p class="site-footer__label">Macha</p>
+        <p>开源、引擎无关、模型无关的游戏 NPC 认知标准骨架。不与既有方案争夺「大脑」或「平台」，而是定义它们都必须遵守的骨架。</p>
+      </div>
+      <div>
+        <p class="site-footer__label">站点</p>
+        <ul>
+          <li><a href="./index.html">愿景</a></li>
+          <li><a href="./sepmay.html">SEPMAY 路径</a></li>
+          <li><a href="./architecture.html">架构与契约</a></li>
+          <li><a href="./operators.html">算子空间</a></li>
+          <li><a href="./drive.html">内驱力与长期张力</a></li>
+          <li><a href="./evaluation.html">评测与一致性</a></li>
+          <li><a href="./experiments.html">实验赛道</a></li>
+          <li><a href="./glossary.html">术语表</a></li>
+          <li><a href="./about.html">关于与参与</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="site-footer__label">仓库</p>
+        <ul>
+          <li><a href="https://github.com/zbbsdsb/Macha">GitHub 仓库 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文草稿 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/LICENSE">MIT License ↗</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__base">
+      <p>MIT License · Copyright (c) 2026 CeaserZhao</p>
+      <p>本站文案改写自仓库文档，随项目演进而更新</p>
+    </div>
   </div>
-</div>
+</footer>
 
-<noscript>
-  <style>
-    .boot, .hud, .rail, .progress { display: none !important; }
-    #stage { position: static; overflow: visible; }
-    .panel { position: static; opacity: 1; transform: none; display: block; margin: 4rem auto; max-width: 46rem; }
-  </style>
-</noscript>
-
-<script type="module" src="assets/js/main.js"></script>
 </body>
 </html>

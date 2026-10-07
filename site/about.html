@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>关于与参与 — Macha</title>
+<meta name="description" content="Macha 是一个开源、引擎无关、模型无关的游戏 NPC 认知标准骨架，MIT 许可。本页说明项目性质，以及论文、实验、招聘三条参与路径。">
+<link rel="stylesheet" href="./assets/css/site.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="./index.html">
+      <span class="brand__mark">Macha</span>
+      <span class="brand__tag">认知标准骨架</span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      <ul>
+        <li><a href="./index.html">愿景</a></li>
+        <li><a href="./sepmay.html">SEPMAY</a></li>
+        <li><a href="./architecture.html">技术</a></li>
+        <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文</a></li>
+        <li><a class="nav-ext" href="https://github.com/zbbsdsb/Macha">GitHub ↗</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="wrap">
+      <p class="kicker">Macha · 辅助</p>
+      <h1>关于与参与</h1>
+      <p class="hero__lede">Macha 是一个研究工程仓库，不是一个商业产品，也不是一个完整的游戏。它定义的是骨架，任何人都可以在其上实现自己的大脑与环境。</p>
+      <div class="hero__meta">
+        <span>类型 · 辅助</span>
+        <span>许可 · MIT License</span>
+        <span>来源 · 仓库说明与招募材料</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="nature">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">一 · 项目性质</span>
+        <h2>开源、引擎无关、模型无关</h2>
+      </div>
+
+      <p>Macha 的目标不是造一个「能聊天」的 NPC，而是构建一个 LLM 驱动的 NPC 框架，让长期记忆、可信反思、动态规划与多智能体协作成为标准的一部分，而不是每个项目的私货。它由两个可分离的系统加一层契约组成：一个与环境无关的 <strong>Macha Core</strong>，以及每个外部世界各自实现的一份 <strong>Environment Integration Layer</strong>。Minecraft 是第一个具体 Layer 测试用例，不是框架的身份。</p>
+
+      <p>项目以 <a href="https://github.com/zbbsdsb/Macha/blob/main/LICENSE">MIT License</a> 开源，版权归 CeaserZhao 所有。仓库当前的排序是 <strong>Layer 先、Core 后</strong>：第一个可验证的里程碑是 Layer 协议 + Stub Core + Minecraft Layer，而不是认知核心——真认知核心属于 Phase 3，尚未构建。这一点被刻意写在明面上。</p>
+
+      <div class="callout">
+        <span class="callout__label">诚实的当前状态</span>
+        <p>认知核心：尚未构建（Phase 3）。SEPMAY 路径：PENDING，已冻结。内驱力路径：ACTIVE，实验轨道。公开这些状态不是为了显得谦虚，而是为了筛掉不合适的期待。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="participate">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">二 · 参与方式</span>
+        <h2>三条路径</h2>
+      </div>
+
+      <p>如果你在做 NPC 架构、游戏 AI 研究、Minecraft / inZOI 智能体或 modding，我们欢迎交流与协作。参与不只有一种形态。</p>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3>论文与材料</h3>
+          <p>读论文草稿与仓库文档，用 issue 或 PR 提出问题、异议与反例。文档里的开放问题都是真实待答的，而不是修辞。</p>
+        </div>
+        <div class="card">
+          <h3>实验</h3>
+          <p>复现算子沙盒，或参与 Layer 验证：勘测一个环境、写一份 Layer、提交回放 transcript。负面结果同样欢迎——失败必须入库。</p>
+        </div>
+        <div class="card">
+          <h3>招聘</h3>
+          <p>我们正在招募第一位 <strong>First World Operator</strong>（Minecraft Server Lead / First Player），运营测试环境并报告智能体读起来是否像真的。</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="callout__label">待你确认 · A04</span>
+        <p>参与方式的具体措辞与入口需要你定调：三条路径是否就是这三条、每条是否要指向具体的招募 PDF 或讨论区。当前文案是我按仓库材料起草的初稿。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">三 · 联系方式</span>
+        <h2>仓库与讨论入口</h2>
+      </div>
+
+      <ul class="doc-links">
+        <li>
+          <span class="path">github.com/zbbsdsb/Macha</span>
+          <span class="desc">仓库主页：Issue 与 Pull Request 是主要入口</span>
+        </li>
+        <li>
+          <span class="path">papers/2026-crossing-the-game-agent-gap.md</span>
+          <span class="desc">论文草稿：讨论研究命题的起点</span>
+        </li>
+        <li>
+          <span class="path">recruitment/</span>
+          <span class="desc">招募材料：First World Operator 中英文版 PDF</span>
+        </li>
+      </ul>
+
+      <div class="callout">
+        <span class="callout__label">待你撰写 · A05</span>
+        <p>联系方式需要你补齐：是否公开邮箱、是否有 Discord / 微信群、讨论区放在哪里。这属于对外承诺性质的内容，我不替你决定。补齐前，上面只列出仓库内的公开入口。</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <p class="site-footer__label">Macha</p>
+        <p>开源、引擎无关、模型无关的游戏 NPC 认知标准骨架。不与既有方案争夺「大脑」或「平台」，而是定义它们都必须遵守的骨架。</p>
+      </div>
+      <div>
+        <p class="site-footer__label">站点</p>
+        <ul>
+          <li><a href="./index.html">愿景</a></li>
+          <li><a href="./sepmay.html">SEPMAY 路径</a></li>
+          <li><a href="./architecture.html">架构与契约</a></li>
+          <li><a href="./operators.html">算子空间</a></li>
+          <li><a href="./drive.html">内驱力与长期张力</a></li>
+          <li><a href="./evaluation.html">评测与一致性</a></li>
+          <li><a href="./experiments.html">实验赛道</a></li>
+          <li><a href="./glossary.html">术语表</a></li>
+          <li><a href="./about.html">关于与参与</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="site-footer__label">仓库</p>
+        <ul>
+          <li><a href="https://github.com/zbbsdsb/Macha">GitHub 仓库 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文草稿 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/LICENSE">MIT License ↗</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__base">
+      <p>MIT License · Copyright (c) 2026 CeaserZhao</p>
+      <p>本站文案改写自仓库文档，随项目演进而更新</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>架构与契约 — Macha 技术细节</title>
+<meta name="description" content="Macha 的架构落点：Macha Core 与 Environment Integration Layer 之间只有一层协议。本页给出结构大纲与仓库内的原始文档入口，正文筹备中。">
+<link rel="stylesheet" href="./assets/css/site.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="./index.html">
+      <span class="brand__mark">Macha</span>
+      <span class="brand__tag">认知标准骨架</span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      <ul>
+        <li><a href="./index.html">愿景</a></li>
+        <li><a href="./sepmay.html">SEPMAY</a></li>
+        <li><a href="./architecture.html" aria-current="true">技术</a></li>
+        <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文</a></li>
+        <li><a class="nav-ext" href="https://github.com/zbbsdsb/Macha">GitHub ↗</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="wrap">
+      <p class="kicker">Macha · 技术细节</p>
+      <h1>架构与契约</h1>
+      <p class="hero__lede">这页将回答：Macha Core 与 Layer 之间的边界画在哪里、协议交换什么，以及为什么接入一个新环境不需要改 Core。</p>
+      <div class="hero__meta">
+        <span>类型 · 技术细节</span>
+        <span>状态 · 结构已定，正文筹备中</span>
+        <span>来源 · docs/architecture.md</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="index">
+    <div class="wrap">
+      <div class="page-index">
+        <span class="page-index__label">技术细节 · 五页</span>
+        <ul>
+          <li><a href="./architecture.html" aria-current="page"><span>架构与契约</span><span>Core / Layer / 协议</span></a></li>
+          <li><a href="./operators.html"><span>算子空间</span><span>SELECT / RELATE / TRANSFORM / TEST / COMMIT</span></a></li>
+          <li><a href="./drive.html"><span>内驱力与长期张力</span><span>independence 的机制候选</span></a></li>
+          <li><a href="./evaluation.html"><span>评测与一致性</span><span>保证的检验与失败条件</span></a></li>
+          <li><a href="./experiments.html"><span>实验赛道</span><span>预注册、结果与负面结果</span></a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="outline">
+    <div class="wrap wrap--narrow">
+      <div class="section-head">
+        <span class="kicker">筹备中</span>
+        <h2>这一页将包含什么</h2>
+      </div>
+
+      <p class="lede">结构已定，正文未定。下面的大纲是这一页将要展开的章节，每一章都对应仓库里已经存在的材料；正文会在材料定稿后逐节补齐，而不是先写一段概述再回头改。</p>
+
+      <ol>
+        <li><strong>两个系统，一个契约</strong> —— 为什么 Macha 不是一个「带游戏支持的系统」，而是两个可分离的系统加一层协议。</li>
+        <li><strong>Macha Core 是什么</strong> —— 认知循环、模块职责，以及 2026-09-13 对 <code>src/macha/</code> 的代码审计结论：核心目前是非认知骨架。</li>
+        <li><strong>Layer 是什么，不是什么</strong> —— 五条必须属性（双向、单环境、诚实、非认知、独立版本）与四条「不是」。</li>
+        <li><strong>Layer 协议</strong> —— 五类交换：Observation、Event、Action、Action Result、Capability；以及有争议的第六类 State。</li>
+        <li><strong>能力清单与可验证性</strong> —— 声明必须来自探测而不是文档；环境无法表达的动作是正常结果，不是错误。</li>
+        <li><strong>最小 Layer 与证明条件</strong> —— M1–M9 交付物、三条证明条件、五条退出判据（V1–V5）。</li>
+        <li><strong>反模式</strong> —— 六条会悄悄破坏边界的写法，例如 Core 里出现 <code>if game == "minecraft"</code>。</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="docs">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">相关文档</span>
+        <h2>现在就可以读的原始材料</h2>
+      </div>
+
+      <p>在正文补齐之前，这一页的入口仍然可用：顺着下面的链接可以直接读到仓库里的原始材料。</p>
+
+      <ul class="doc-links">
+        <li>
+          <span class="path">docs/architecture.md</span>
+          <span class="desc">目标架构：两个系统一个契约、Layer 协议、能力清单、最小 Layer、反模式、开放问题</span>
+        </li>
+        <li>
+          <span class="path">papers/notes/drafts/environment-integration-layer.md</span>
+          <span class="desc">环境集成层的推理、审计答复与开放问题（Layer 概念的出处）</span>
+        </li>
+        <li>
+          <span class="path">research/plans/minecraft-layer-validation-plan.md</span>
+          <span class="desc">Minecraft Layer 的验证计划：怎样才算证明了抽象成立</span>
+        </li>
+        <li>
+          <span class="path">docs/roadmap.md</span>
+          <span class="desc">开发路线图，含 Layer 优先的排序反转与各阶段退出判据</span>
+        </li>
+        <li>
+          <span class="path">papers/notes/accepted/decision-layer-first-sequencing.md</span>
+          <span class="desc">排序决定记录：为什么先做 Layer、后做认知核心</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <p class="site-footer__label">Macha</p>
+        <p>开源、引擎无关、模型无关的游戏 NPC 认知标准骨架。不与既有方案争夺「大脑」或「平台」，而是定义它们都必须遵守的骨架。</p>
+      </div>
+      <div>
+        <p class="site-footer__label">站点</p>
+        <ul>
+          <li><a href="./index.html">愿景</a></li>
+          <li><a href="./sepmay.html">SEPMAY 路径</a></li>
+          <li><a href="./architecture.html">架构与契约</a></li>
+          <li><a href="./operators.html">算子空间</a></li>
+          <li><a href="./drive.html">内驱力与长期张力</a></li>
+          <li><a href="./evaluation.html">评测与一致性</a></li>
+          <li><a href="./experiments.html">实验赛道</a></li>
+          <li><a href="./glossary.html">术语表</a></li>
+          <li><a href="./about.html">关于与参与</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="site-footer__label">仓库</p>
+        <ul>
+          <li><a href="https://github.com/zbbsdsb/Macha">GitHub 仓库 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/papers/2026-crossing-the-game-agent-gap.md">论文草稿 ↗</a></li>
+          <li><a href="https://github.com/zbbsdsb/Macha/blob/main/LICENSE">MIT License ↗</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__base">
+      <p>MIT License · Copyright (c) 2026 CeaserZhao</p>
+      <p>本站文案改写自仓库文档，随项目演进而更新</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
