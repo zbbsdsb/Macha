@@ -100,6 +100,11 @@
 - **何时必须回答**：与 **D4 同时**（写最小可证伪版本之前）。
 - **谁来答**：用户 + 实现方。
 - **出处**：[`operator-space.md`](operator-space.md) §3.5。
+- **部分证据（2026-10-07，E1，非裁决）**：[`../../questions/Q-02-operator-space-primitives.md`](../../questions/Q-02-operator-space-primitives.md)
+  的 E-S1 里，**continuity 全程没有用到处理中途 COMMIT**——Thread A 写完即关闭，Thread B 才读，
+  「关闭时回流」这一条基线**足以**支撑 continuity。
+  **但这不裁决本条**：沙盒的 COMMIT 是显式调用，与 IC 的关闭时点不是同一个机制；
+  且本实验不构成「中途提交是必要的」这一反例。**真正的压力会出现在 E-S2（v1/v2 并存）**。
 
 ## D10 · 候选基是否可分 / 是否完备
 
@@ -109,6 +114,13 @@
 - **何时必须回答**：E-OS1 跑完之后。
 - **谁来答**：实验 + 用户裁决。
 - **出处**：[`operator-space.md`](operator-space.md) §3 · §11.2。
+- **部分证据（2026-10-07，E1，非裁决）**：
+  - **SELECT 在 continuity 档可删**（`no_select` ablation 终态不变）→ 它的价值落在**可写性**
+    （让后续算子不必硬编码 unit id），不落在 continuity。**这不等于「SELECT 与 TRANSFORM 不可分」**——
+    要判那句话，需要一个「unit id 不可硬编码」的实验，v1 没做。
+  - **`unmapped_steps = 0`**：continuity 档**没有出现「都不是」的步骤**，候选基在这一档**未显缺口**。
+  - **`RELATE` / `TEST` 至今零实验**。因此「五算子够用」**尚未获得任何支持**，
+    「可分 / 完备」**仍然未答**。E-S2 / E-S3 跑完前不要引用本条作为结论。
 
 ## D11 · Operator Selection 归谁（与 Q-01 的"预算仲裁"是同一问题）
 

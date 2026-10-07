@@ -315,6 +315,19 @@ def test_control_cannot_name_the_step_that_changed_state():
     assert mm["intermediate_units"] == 0
 
 
+def test_select_is_removable_from_continuity():
+    """H-C's pre-registered ablation: delete SELECT, keep the rest.
+
+    Recorded as an OBSERVATION, not a goal. If this test ever starts failing
+    because someone made SELECT load-bearing again, that is a real behaviour
+    change and Q-02 §6 has to be updated, not this assertion quietly patched.
+    """
+    full, _ = scenarios.run_prog()
+    cut, _ = scenarios.run_prog_no_select()
+    assert scenarios.state_signature(full) == scenarios.state_signature(cut)
+    assert bool(cut.tracer.rows)
+
+
 def test_metrics_are_mechanically_computable():
     sb, _ = scenarios.run_prog()
     m = metrics_mod.compute_metrics(sb.tracer.rows)

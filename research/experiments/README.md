@@ -2,9 +2,14 @@
 
 Case-validation working space for the paper's claims.
 
-Currently empty. Intended for the 3–5 game-NPC case studies (fork / merge 4 in
+Intended for the 3–5 game-NPC case studies (fork / merge 4 in
 `papers/notes/accepted/05-macha-question-tree.md`) that must use the relationship language to
 explain successes and failures before the four relationship archetypes are fixed.
+
+**Current occupant**: [`operator_sandbox/`](operator_sandbox/) — the first experiment actually
+run here (E-S1, 2026-10-07, evidence level **E1**). It answers
+[`../questions/Q-02-operator-space-primitives.md`](../questions/Q-02-operator-space-primitives.md)
+and asks nothing about the case studies above.
 
 This is a **draft/试错 layer** — into `research/`, not `papers/`. Nothing here is a
 conclusion until promoted.

@@ -184,6 +184,29 @@ def prog_thread_b() -> list[OperatorCall]:
     ]
 
 
+def prog_no_select_thread_a() -> list[OperatorCall]:
+    """H-C's ablation, named in the pre-registration: the same program with the
+    SELECT step deleted and TRANSFORM handed an explicit reference instead.
+
+    If this still reaches the same terminal state, SELECT contributed nothing to
+    continuity and the five-primitive split is finer than the task needs.
+    """
+    return [
+        OperatorCall(
+            op="TRANSFORM",
+            params={"transform_name": "normalize"},
+            input_refs=["u0001"],
+            why="ablation: same work, no SELECT step",
+        ),
+        OperatorCall(
+            op="COMMIT",
+            params={"key": KEY_EVENTS},
+            input_refs=["last:TRANSFORM"],
+            why="ablation: make the structured version survive",
+        ),
+    ]
+
+
 def mono_thread_a() -> list[OperatorCall]:
     return [
         OperatorCall(
@@ -221,6 +244,19 @@ def run_prog() -> tuple[Sandbox, dict]:
     focus_b = list(ws_b.focus)
     sb.close(ws_b)
 
+    return sb, {"thread_b_focus": focus_b}
+
+
+def run_prog_no_select() -> tuple[Sandbox, dict]:
+    sb = Sandbox(providers=common_providers())
+    sb.seed = "const"
+
+    ws_a = run_program(
+        sb, "t-A", prog_no_select_thread_a(), seed_payloads=[I1_TEXT]
+    )
+    ws_b = run_program(sb, "t-B", prog_thread_b(), open_only=True)
+    focus_b = list(ws_b.focus)
+    sb.close(ws_b)
     return sb, {"thread_b_focus": focus_b}
 
 

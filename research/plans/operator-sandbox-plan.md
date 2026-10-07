@@ -1,10 +1,28 @@
-# Operator Sandbox — 第一阶段实施计划（PLAN ONLY）
+# Operator Sandbox — 第一阶段实施计划
 
-> **STATUS: PLAN — 本轮不写代码。** 计划日期 2026-09-25。
+> **STATUS: Step 1–3 已执行（2026-10-07）。Step 4–8 未开始。** 计划日期 2026-09-25。
 > **目标**：建一个足够小的 **Operator Interpreter / Cognitive Sandbox**，让五个候选 primitive
 > （`SELECT / RELATE / TRANSFORM / TEST / COMMIT`）能真的跑起来，并用三个最小实验回答
 > "这套算子空间能不能表达 continuity / reinterpretation / contradiction"。
 > **不是**目标：证明五个已完备、把 SepMay 设计完、写 Core/SDK。
+>
+> **执行结果（截至 2026-10-07）**
+>
+> | Step | 状态 | 依据 |
+> |---|---|---|
+> | 0 评审 + 两条腿 | ✅ 走**研究腿** | [`../questions/Q-02-operator-space-primitives.md`](../questions/Q-02-operator-space-primitives.md)（预注册冻结于 `d24f2d`） |
+> | 1 spine（model/workspace/state/trace） | ✅ | [`../experiments/operator_sandbox/`](../experiments/operator_sandbox/) |
+> | 2 算子 + registry + 线性 runner | ✅ | 同上；**只实现 SELECT / TRANSFORM / COMMIT**（§12.2 的"三加二"） |
+> | 3 Exp1 + 对照 | ✅ | `runs/exp1/{prog,mono,no_select}/`；28 tests passed |
+> | 4 RELATE / TEST + Exp2 | ⬜ | 待预注册 |
+> | 5 Exp3 | ⬜ | 待预注册 |
+> | 6 replay / README | ✅ README · ✅ trace hash 确定性 | — |
+> | 7 复盘写回 | ✅ | `operator-space.md` §3.1/§11.2 · `open-decisions.md` D9/D10 · Q-02 §6 |
+> | 8 继续 / 停止 | ⬜ **未到决策点** | E-S2/E-S3 未跑，不具备裁决条件 |
+>
+> **E-S1 的结论一句话**：continuity 可被表达；分解带来了可归因性（3 vs 1）；
+> **SELECT 在这一档可删**（价值在可写性，不在 continuity）。等级 **E1**，不支持外推。
+> **「五算子够用」仍未获任何支持**——`RELATE` / `TEST` 至今零实验。
 >
 > 上游设计：[`../paths/01-sepmay-ivy/operator-space.md`](../paths/01-sepmay-ivy/operator-space.md)（研究草案）·
 > [`../paths/01-sepmay-ivy/README.md`](../paths/01-sepmay-ivy/README.md)（IC 路径本体）·

@@ -33,6 +33,9 @@ EXPERIMENTS = {
     "exp1": {
         "title": "E-S1 Continuity",
         "arms": {"prog": scenarios.run_prog, "mono": scenarios.run_mono},
+        # The ablation named in Q-02's pre-registration as H-C's falsifier. Not a
+        # third design: it is the prog program with one step deleted.
+        "ablations": {"no_select": scenarios.run_prog_no_select},
     },
 }
 
@@ -45,7 +48,8 @@ def write_json(path: str, data) -> None:
 
 def run(exp_id: str, arm: str) -> dict:
     spec = EXPERIMENTS[exp_id]
-    sandbox, extra = spec["arms"][arm]()
+    runner_fn = spec["arms"].get(arm) or spec.get("ablations", {})[arm]
+    sandbox, extra = runner_fn()
 
     out_dir = os.path.join(RUNS, exp_id, arm)
     os.makedirs(out_dir, exist_ok=True)
@@ -82,6 +86,8 @@ def main() -> int:
     results = {}
     for arm in spec["arms"]:
         results[arm] = run(args.exp, arm)
+    for name in spec.get("ablations", {}):
+        results[name] = run(args.exp, name)
 
     for arm, r in results.items():
         m = r["metrics"]
@@ -120,6 +126,22 @@ def main() -> int:
                   "supports H-B"
                   if prog_m["attributable_changes"] > mono_m["attributable_changes"]
                   else "H-B KILLED",
+              ))
+        print()
+
+    abl = results.get("no_select")
+    if abl:
+        same = abl["state_signature"] == results["prog"]["state_signature"]
+        got = bool(abl["thread_b_focus"])
+        print("H-C ablation (pre-registered as H-C's falsifier): prog with SELECT")
+        print("  deleted.")
+        print("  terminal state unchanged = %s" % same)
+        print("  thread B still retrieves  = %s" % got)
+        print("  ->  %s"
+              % (
+                  "H-C survives (SELECT and TRANSFORM are not separable here)"
+                  if not (same and got)
+                  else "SELECT contributed nothing to continuity"
               ))
     return 0
 

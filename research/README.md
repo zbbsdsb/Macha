@@ -19,11 +19,16 @@ deleted, rewritten, or proven wrong without ceremony. Nothing here is a delivera
     ([index](plans/minecraft-layer/README.md)): stack lock, file-level project structure, protocol v0,
     observation/event set, build & boundary rules. Plan only; no code yet.
   - `plans/operator-sandbox-plan.md` — **Operator Sandbox 第一阶段实施计划**（SepMay 算子空间）：
-    仓库审计、位置决定（为何落在 `experiments/`）、**语言与依赖决定（Python / 纯标准库）**、最小数据模型、
-    五个算子契约、执行与 trace 模型、三个实验（Continuity / Reinterpretation / Contradiction，**含 `prog` vs `mono`
-    对照组与三个可数指标**）、测试策略、延后清单、实现顺序（**含 Step 0 两条腿与 G1–G4 止损闸门**）、
-    **预期效果与天花板（E0/E1，不产生宿主可见能力）**、首 commit。
-    **PLAN ONLY — 未写代码**；上游设计见 `paths/01-sepmay-ivy/operator-space.md`。
+    仓库审计、位置决定（为何落在 `experiments/`）、语言与依赖决定（Python / 纯标准库）、最小数据模型、
+    五个算子契约、执行与 trace 模型、三个实验（Continuity / Reinterpretation / Contradiction，含 `prog` vs `mono`
+    对照组与三个可数指标）、测试策略、延后清单、实现顺序（含 Step 0 两条腿与 G1–G4 止损闸门）、
+    预期效果与天花板、**执行进度表（Step 1–3 已完成，4–8 未开始）**。
+    上游设计见 `paths/01-sepmay-ivy/operator-space.md`。
+- `experiments/operator_sandbox/` — **代码已落地**（Step 1–3，2026-10-07）。标准库 Python，
+  10 个文件：`SELECT / TRANSFORM / COMMIT` 三个算子 + 线性 runner + E-S1 及其 `prog`/`mono`/`no_select`
+  三份运行（`runs/exp1/`，已提交进 git）+ 28 条测试。
+  预注册与结果：[`questions/Q-02-operator-space-primitives.md`](questions/Q-02-operator-space-primitives.md)（等级 **E1**）。
+  **不是 Core，Core 不依赖它**；`src/macha` 与 `layers/` 未被触碰。
 - `projects/` — **execution** projects (dated): what to do, in what order, with a handover checklist.
   Design/spec docs stay in `plans/`; a project folder only answers "how do we get there".
   - `projects/2026-09-14-mc-vertical-slice/` — Minecraft Layer vertical slice (M0–M6, up to

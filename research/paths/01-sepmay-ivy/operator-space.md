@@ -4,7 +4,10 @@
 > 本文件把 README §2 图里那个叫"算子集合（一切即插件）"的空盒子第一次填上内容，形式是**可实验、可反驳的候选**，不是 taxonomy。
 > **本轮不写代码**（审计结论：仓内没有 Operator abstraction；见 §12）。
 > **第一阶段的工程实施计划**（沙盒放哪、最小数据模型、算子契约、执行与 trace、三个实验、实现顺序）：
-> [`../../plans/operator-sandbox-plan.md`](../../plans/operator-sandbox-plan.md)（**PLAN ONLY**）。
+> [`../../plans/operator-sandbox-plan.md`](../../plans/operator-sandbox-plan.md)。
+> **代码已落地**（标准库 Python；`SELECT / TRANSFORM / COMMIT` + E-S1 的三份运行）：
+> [`../../experiments/operator_sandbox/`](../../experiments/operator_sandbox/) ·
+> 预注册与结果：[`../../questions/Q-02-operator-space-primitives.md`](../../questions/Q-02-operator-space-primitives.md)。
 > 相关：[`README.md`](README.md) · [`open-decisions.md`](open-decisions.md)（D8–D11）· [`../../README.md`](../../README.md)（路径索引）·
 > [`../../../docs/architecture.md`](../../../docs/architecture.md) §1.5（算子在接收域图里的位置）· 路径二 §1.5（内驱力算子占的那一格）
 
@@ -134,6 +137,12 @@ Operator 的核心问题只有一个：**什么发生了变化？**
 - **Primary effect**：**可见范围改变**，内容本身不变
 - **Can compose with**：几乎总是入口；常见接 RELATE / TRANSFORM / TEST，且 TEST 与 RELATE 的输出常**再次**进入 SELECT
 - **Open questions**：选择依据从哪来——是算子的一部分，还是 §9 的 selection policy？"找到 X"与"确认这就是 X"是同一个操作吗（SELECT 与 TEST 是否可分）？
+
+> **E-S1 实测（2026-10-07，等级 E1）**：SELECT 不产生新 unit（可测），且在 continuity 这一档
+> **可以整步删掉而终态不变**（`no_select` ablation）。但它并非空转——它把 unit 放进 focus，
+> 使后续算子不必硬编码 unit id。**因此本档的结论是「SELECT 的价值落在可写性，不落在 continuity」，
+> 既不是「SELECT 无用」，**也不是**「SELECT 与 TRANSFORM 不可分」**。
+> 出处：[`../../questions/Q-02-operator-space-primitives.md`](../../questions/Q-02-operator-space-primitives.md) §6.2。
 
 ### 3.2 RELATE
 
@@ -401,6 +410,25 @@ NPC 收到了什么？
 | **E-OS1 标注实验（最便宜，先做）** | 拿一条 trace（真跑、手写或脚本化的 transcript 均可），逐步标注它对应哪个候选 operator（**允许标"都不是"**） | 产出三个数：① **覆盖率**（能被五个覆盖的步数比）② **缺口感**（"都不是"的步数及其样子）③ **信度**（两名标注者一致率）。若"都不是"持续集中在同一类步骤 → 有一个 operator 缺失（这是发现，不是失败）；若一致率低 → 五个算子的定义不合格，先改定义 | 任何步骤都能塞进任一算子、标注全靠事后解释 → **定义太松，本草案作废重来** |
 | **E-OS2 组合实验** | 取 §8 里最容易拿到来源的那个 Method，尝试写出 operator program | 三选一：① 表达成功 → 记 pattern ② 需要新 primitive → 候选 ③ 表达失败 → 反例 | 为凑出链路而临时发明算子 → 记录为**理论污染**，不算结果 |
 | **E-OS3 状态依赖实验** | 固定 Information、固定 operator、变 Internal State，看输出是否不同（§7 的 Bob 例）；再反过来固定 state 变 information | 必须能**事先**写出"在 state S 下输出 X"的可证伪预测 | 所有差异都用"state 不同"解释 → 不可反驳，实验作废 |
+
+> **2026-10-07：E-OS1 的一个子集已跑（E1）。** 不是标注实验，而是**可执行的对照实验**：
+> [`../../questions/Q-02-operator-space-primitives.md`](../../questions/Q-02-operator-space-primitives.md)
+> 的 **E-S1（Continuity）** 在 [`../../experiments/operator_sandbox/`](../../experiments/operator_sandbox/) 里
+> 跑出三条真实 trace（`prog` / `mono` / `no_select`）。三条假设（边界成立 / 分解必要 / SELECT 冗余）
+> **全部与预注册预测一致**。
+>
+> **对 §11.2 的补充数据**：`unmapped_steps = 0`——continuity 这一档**没有出现「都不是」的步骤**，
+> 即五个候选基在这一档**没有显出缺口**。但这**不是** E-OS1 的完整结论：
+> ① 只覆盖 continuity，reinterpretation 与 contradiction 未跑；
+> ② 单场景单次，E1，不外推；
+> ③ `RELATE` / `TEST` **至今未被任何实验触及**，因此「五算子够用」**尚未获得任何支持**。
+>
+> **对 §3 的第一个实测回写**：SELECT 在 continuity 档可删（价值在可写性，见 §3.1 补注）。
+> **对 §7（状态语义）的一个观测**：E-S1 **没有**用到处理中途 COMMIT——A 写完即关闭，B 才读。
+> 即「关闭时回流」这条基线**足以**支撑 continuity。这**不构成**对 D9 的裁决（缺反例压力）。
+>
+> **仍未跑的三条**：E-OS1 的完整标注（含两名标注者一致率）· E-OS2（Method → operator program）·
+> E-OS3（固定 operator 变 State）。**E-OS3 仍是唯一能验证 §7 那条"Bob 例"的设计。**
 
 ### 11.3 Substrate（诚实说明：本轮不需要 Core，也不需要改 Layer）
 
