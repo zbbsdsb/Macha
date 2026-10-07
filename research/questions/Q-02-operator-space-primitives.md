@@ -63,7 +63,7 @@ related: 路径一 [`../paths/01-sepmay-ivy/operator-space.md`](../paths/01-sepm
 ## 4. Pre-registration（**提交后不得修改**）
 
 ```yaml
-prereg: <见 §4.1 回填说明；本块其余内容自本文件首次提交起冻结>
+prereg: d24f2dbdc2211fc1c610d09a54f05087306dfed1   # 预测内容冻结于该提交；本行于第二次提交回填
 experiment: E-S1（Continuity）。一个 NPC，两次「见到玩家」：
              Thread A：seed I1「玩家拿走了箱子里的东西」→ SELECT → TRANSFORM(normalize) → COMMIT → 关闭；
              Thread B：**不 seed 任何东西** → SELECT(state) → 关闭。
@@ -134,7 +134,8 @@ python research/experiments/operator_sandbox/run_experiment.py exp1
 |---|---|---|---|
 | 2026-10-07 | observed | §1 的四条：算子只有标签没有定义 · continuity 无实现 · 路径 §6 的"只定义不检验"症状 | — |
 | 2026-10-07 | questioned | 通过 Gate 1：可判定（trace 里能判）· 会改变候选基增删与 D10 · literature/ 无覆盖 | — |
-| 2026-10-07 | pre-registered | 通过 Gate 2：H-A/H-B/H-C 三条竞争假设各带机制+预测+falsifier；E-S1 预测块已写死（含已知的 `attributable_steps` 缺陷与两个补充原始计数） | 见 §4.1 |
+| 2026-10-07 | pre-registered | 通过 Gate 2：H-A/H-B/H-C 三条竞争假设各带机制+预测+falsifier；E-S1 预测块已写死（含已知的 `attributable_steps` 缺陷与两个补充原始计数） | `d24f2d` |
+| 2026-10-07 | pre-registered | 回填 `prereg:` hash（§4.1 第二次提交）。**仅改 `prereg:` 一行与本表**，预测块其余内容未动 | 见下条 commit |
 
 ## 9. Next questions
 
