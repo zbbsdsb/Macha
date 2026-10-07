@@ -44,6 +44,12 @@ python -m http.server 8000
 
 `site/` 是纯静态目录，可直接托管在任意静态主机（GitHub Pages、Cloudflare Pages、Netlify、任意对象存储 + CDN）。没有构建步骤，把目录内容原样发布即可。入口文件是 `index.html`。
 
+仓库已配置 GitHub Actions：[`.github/workflows/pages.yml`](../.github/workflows/pages.yml)。当 `site/**` 或该 workflow 自身在 `main` 上发生变更时，它会把 `site/` 目录整体作为 Pages artifact 上传并发布；也可在 Actions 页手动触发（`workflow_dispatch`）。
+
+首次启用需要人工设置一次：仓库 **Settings → Pages → Build and deployment → Source** 选 **GitHub Actions**。之后无需再动。
+
+站点全部使用相对路径（`./index.html`、`./assets/...`），因此发布到项目页子路径 `https://zbbsdsb.github.io/Macha/` 与自定义域名根路径都能正常工作，不需要改路径。
+
 ---
 
 ## 编辑指南
