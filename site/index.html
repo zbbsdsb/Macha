@@ -29,20 +29,47 @@
 
 <main>
 
-  <section class="hero">
-    <div class="wrap">
-      <p class="kicker">Macha · 认知标准骨架</p>
-      <h1>让 NPC 真的像世界里的一个人</h1>
-      <p class="hero__lede">开源、引擎无关、模型无关的游戏 NPC 认知标准骨架。</p>
-      <div class="hero__meta">
-        <span>状态 · Layer 协议阶段</span>
-        <span>许可 · MIT</span>
-        <span>更新 · 2026-10-07</span>
+  <section class="hero hero--split">
+    <div class="wrap hero__grid">
+      <div class="hero__copy">
+        <p class="kicker">Macha · 认知标准骨架</p>
+        <h1>让 NPC 真的像世界里的一个人</h1>
+        <p class="hero__lede">开源、引擎无关、模型无关的游戏 NPC 认知标准骨架。</p>
+        <div class="hero__actions">
+          <a class="btn" href="./sepmay.html">读 SEPMAY 路径</a>
+          <a class="btn btn--ghost" href="./architecture.html">看技术细节</a>
+        </div>
+        <div class="hero__meta">
+          <span>状态 · Layer 协议阶段</span>
+          <span>许可 · MIT</span>
+          <span>更新 · 2026-10-07</span>
+        </div>
       </div>
-      <div class="hero__actions">
-        <a class="btn" href="./sepmay.html">读 SEPMAY 路径</a>
-        <a class="btn btn--ghost" href="./architecture.html">看技术细节</a>
-      </div>
+
+      <figure class="state-map">
+        <figcaption class="state-map__caption">关系状态 · 以玩家为索引</figcaption>
+        <svg viewBox="0 0 480 480" aria-hidden="true" focusable="false">
+          <circle class="sm-ring" cx="240" cy="240" r="132"></circle>
+          <circle class="sm-ring sm-ring--inner" cx="240" cy="240" r="78"></circle>
+          <line class="sm-spoke" x1="240" y1="240" x2="240" y2="108"></line>
+          <line class="sm-spoke" x1="240" y1="240" x2="366" y2="199"></line>
+          <line class="sm-spoke" x1="240" y1="240" x2="318" y2="347"></line>
+          <line class="sm-spoke" x1="240" y1="240" x2="162" y2="347"></line>
+          <line class="sm-spoke" x1="240" y1="240" x2="114" y2="199"></line>
+          <rect class="sm-core" x="188" y="220" width="104" height="40" rx="20"></rect>
+          <text class="sm-core-label" x="240" y="241" text-anchor="middle" dominant-baseline="central">关系状态</text>
+          <circle class="sm-node" cx="240" cy="108" r="7"></circle>
+          <circle class="sm-node" cx="366" cy="199" r="7"></circle>
+          <circle class="sm-node" cx="318" cy="347" r="7"></circle>
+          <circle class="sm-node" cx="162" cy="347" r="7"></circle>
+          <circle class="sm-node" cx="114" cy="199" r="7"></circle>
+          <text class="sm-label" x="240" y="92" text-anchor="middle">看见我</text>
+          <text class="sm-label" x="381" y="204">记得我</text>
+          <text class="sm-label" x="333" y="352">可被改变</text>
+          <text class="sm-label" x="148" y="352" text-anchor="end">它是它自己</text>
+          <text class="sm-label" x="100" y="204" text-anchor="end">超出我</text>
+        </svg>
+      </figure>
     </div>
   </section>
 

@@ -38,26 +38,32 @@
 
 ## 3. 视觉令牌
 
-近单色：白底、近黑字、一条极细的分隔线。**强调色就是正文色本身**，层级靠字号与字重建立，不靠颜色。无阴影、无渐变、无泛光。完整令牌定义在 [`assets/css/site.css`](assets/css/site.css) 顶部，以下为要点：
+近单色：白底、近黑字、一条极细的分隔线。**强调色就是正文色本身**，层级靠字号与字重建立，不靠颜色。
+
+页面上只有一处颜色：首屏一层极淡的多色环境光晕（`.hero::before`）。它是唯一使用渐变与模糊的元素，只出现在首屏、被压到所有文字之下，并被遮罩在四边淡出，因此不会在 hero 边界留下硬边。除此之外的深度由**发丝边框 + 极浅投影**给出：面板是白底、1px 边框、大圆角，投影只用于把面板从白底上轻轻托起，而不是制造戏剧感。
+
+完整令牌定义在 [`assets/css/site.css`](assets/css/site.css) 顶部，以下为要点：
 
 | 类别 | 令牌 | 值 |
 |---|---|---|
-| 表面 | `--bg` / `--surface` / `--surface-muted` | `#FFFFFF` / `#FAFAFA` / `#F4F4F4` |
-| 分隔线 | `--rule` / `--rule-strong` | `#E6E6E6` / `#C4C4C4` |
-| 文字 | `--ink` / `--ink-secondary` / `--ink-muted` | `#0D0D0D` / `#3C3C3C` / `#6B6B6B` |
-| 语义（仅表示真实状态） | `--ok` / `--warn` / `--bad` | `#1A7F37` / `#9A6700` / `#B42318` |
+| 表面 | `--bg` / `--bg-soft` / `--surface` / `--surface-muted` | `#FFFFFF` / `#FAFAFA` / `#F7F7F8` / `#EFEFF1` |
+| 分隔线 | `--rule` / `--rule-strong` | `#ECECEC` / `#D8D8D8` |
+| 文字 | `--ink` / `--ink-secondary` / `--ink-muted` | `#0D0D0D` / `#454545` / `#6E6E6E` |
+| 环境光晕 | `--glow-teal` / `-blue` / `-violet` / `-lime` | 4%–20% 透明度的四色，仅供 `.hero::before` |
+| 投影 | `--shadow-sm` / `--shadow-md` | 1px 级静置阴影 / 悬停时的抬升阴影 |
+| 语义（仅表示真实状态） | `--ok` / `--warn` / `--bad` | `#1A7F37` / `#96650A` / `#C0392B` |
 | 间距 | `--space-1` … `--space-9` | 4 / 8 / 12 / 16 / 24 / 32 / 48 / 64 / 96 px |
-| 圆角 | `--radius-sm` / `-md` / `-lg` / `-pill` | 4 / 8 / 12 / 999 px |
-| 阅读栏 | `--max-narrow` / `--max-wide` | 760px / 900px |
+| 圆角 | `--radius-sm` / `-md` / `-lg` / `-xl` / `-pill` | 8 / 12 / 20 / 28 / 999 px |
+| 阅读栏 | `--max-text` / `--max-wide` | 720px / 1160px |
 
-深色模式由 `prefers-color-scheme` 覆盖同一组令牌，不新增组件样式。
+深色模式由 `prefers-color-scheme` 覆盖同一组令牌（含光晕与投影），不新增组件样式。
 
-**字体**（两套，自托管，Latin 部分已随站提交；CJK 走系统回退）：
+**字体**（两套，自托管，全部已随站提交）：
 
-- 无衬线 `Instrument Sans` —— 正文、标题。
-- 等宽 `Geist Mono` —— 路径、版本号、标签、代码、`.kicker`、`caption`。
+- 无衬线 `Inter`（Latin）+ `Noto Sans SC`（CJK）—— 正文、标题。中文不再回退到系统字体，与拉丁文保持同一语气。
+- 等宽 `Geist Mono` —— 只用于纯拉丁内容：`code` / `pre` / `.doc-links .path` 这类仓库路径与代码。含中文的小标签（`.kicker` / `caption` / `.callout__label` / `.page-index__label` / `.hero__meta` / 页脚栏目标题）一律走无衬线并加字距——中文字形没有真正的等宽版本，交给等宽栈回退会掉进系统衬线字体。
 
-**动效**：页面上唯一会动的东西是 hover 时的 0.15s 短过渡；`prefers-reduced-motion` 下全部关闭。
+**动效**：hover 时的 0.18s 短过渡；卡片悬停时上移 2px 并加深投影。`prefers-reduced-motion` 下全部关闭。
 
 ---
 
@@ -65,14 +71,16 @@
 
 样式全部在 `site.css`，页面只组合 class，不写内联样式：
 
-- 布局：`.wrap` / `.wrap--narrow`、`main > section` 的章节节奏（96px 上间距 + 1px 顶线）
-- 头部：`.site-header` / `.brand` / `.site-nav`
-- 首屏：`.hero` / `.hero__lede` / `.hero__meta` / `.hero__actions` / `.btn`
-- 文字块：`.section-head` / `.kicker` / `.lede`
+- 布局：`.wrap` / `.wrap--narrow`、`main > section` 的章节节奏（只靠白空间分隔，不画顶线）
+- 头部：`.site-header`（半透明底 + 背景模糊）/ `.brand` / `.site-nav`
+- 首屏：`.hero`（自带环境光晕）/ `.hero--split` + `.hero__grid` + `.hero__copy`（文案左、视觉右的分栏，仅愿景页用）/ `.hero__lede` / `.hero__meta` / `.hero__actions`
+- 首屏视觉：`.state-map` 面板与 `.sm-ring` / `.sm-spoke` / `.sm-node` / `.sm-core` / `.sm-label`，内联 SVG 画出「以玩家为索引的关系状态」；纯装饰，`aria-hidden`，同一信息由下方正文列表承担
+- 按钮：`.btn`（实心药丸）/ `.btn--ghost`（白底描边药丸）
+- 文字块：`.section-head` / `.kicker`（前置一条引导线）/ `.lede`
 - 表格：`.table-wrap` + `table.stackable`（窄屏转为卡片式，不依赖横向滚动条）
-- 块：`.card` / `.callout` / `blockquote` / `.grid-2` / `.grid-3` / `.rowlist` / `.tag`
+- 块：`.card`（白底 + 发丝边框 + 悬停抬升）/ `.callout` / `blockquote` / `.grid-2` / `.grid-3` / `.rowlist` / `.tag`
 - 技术页专用：`.page-index`（五页互链）、`.doc-links`（指向仓库路径）
-- 页脚：`.site-footer` / `.site-footer__grid` / `.site-footer__base`
+- 页脚：`.site-footer`（浅底）/ `.site-footer__grid` / `.site-footer__base`
 
 ---
 
